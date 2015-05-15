@@ -1,0 +1,8 @@
+@font-face {
+	font-family: 'helveticabq light';
+	src: url('helveticabq-light-webfont.eot');
+	src: url('helveticabq-light-webfont.eot?#iefix') format('embedded-opentype'),
+		url('helveticabq-light-webfont.woff') format('woff'),
+		url('helveticabq-light-webfont.ttf') format('truetype'),
+		url('helveticabq-light-webfont.svg') format('svg');
+}
