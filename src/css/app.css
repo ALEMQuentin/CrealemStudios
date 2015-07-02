@@ -50,6 +50,7 @@ table {
 
 body{
 	font-family: Open Sans;
+	background-color: rgb(216, 214, 214);
 }
 
 a{
@@ -57,7 +58,7 @@ a{
 	text-decoration:none;
 }
 /*
-*********************** HEADER *******************
+************* HEADER *************
  */
 
 header{
@@ -120,7 +121,6 @@ header{
 .search-form form{padding:0 20px;text-align:right;}
 .search-input{
 	height:30px;
-	-webkit-border-radius: 5px;
 	border-radius: 5px;
 	border:none;
 	width:80%;
@@ -129,7 +129,6 @@ header{
 	background:#319b23;
 	border:none;
 	color:#FFF;
-	-webkit-border-radius: 5px;
 	border-radius: 5px;
 	font-size:14px;
 	padding:8px 9px;
@@ -145,7 +144,6 @@ header{
 	display:inline-block;
 	vertical-align:middle;
 	width:30px;
-	-webkit-border-radius: 25px;
 	border-radius: 25px;
 }
 .account i {
@@ -159,7 +157,6 @@ header{
 .topmenu{
 	background:#fff;
 	padding:10px 0;
-	-webkit-border-radius: 5px;
 	border-radius: 5px;
 	z-index: 2;
 	position:absolute;
@@ -168,7 +165,6 @@ header{
 	width:200px;
 	font-family:Open sans;
 	font-weight:300;
-	-webkit-box-shadow: 0 3px 8px rgba(0, 0, 0, .25);
 	box-shadow: 0 3px 8px rgba(0, 0, 0, .25);
 }
 .topmenu a{
@@ -222,7 +218,7 @@ header{
 .submenu .sub-content a{border:inherit;height:30px;line-height:30px;}
 .submenu .sub-content a:hover{border:inherit;}
 /*
-******************** CONTENT ***********************
+************** CONTENT **************
 */
 
 .section{
@@ -322,7 +318,7 @@ article ul li{
 	margin: 3px 20px 0 20px;
 }
 /*
-******************** FOOTER ************************
+************ FOOTER *************
  */
 .footer{
 	position:absolute;

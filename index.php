@@ -21,20 +21,20 @@
 				<div class="breadcrumb">
 					<div class="br-content">
 						<span class="home">
-							<a href="#">DASHBOARD</a>
+							<a href="#">Home</a>
 						</span>
 						<span class="path-divider">/</span>
 						<span class="link">
-							<a href="#">Utilisateurs</a>
+							<a href="#">Menu</a>
 						</span>
 						<span class="path-divider">/</span>
 						<span class="text">
-							<p>Ajout d'un utilisateur</p>
+							<p>Sous-Menu</p>
 						</span>
 					</div>
 				</div>
 				<div class="search-form">
-					<form action="#">
+					<form action="inc/resultats_recherche.php" method="post">
 						<input type="text" name="search" class="search-input" placeholder="Recherche…">
 						<button type="submit">
 							<i class="ion-search"></i>
