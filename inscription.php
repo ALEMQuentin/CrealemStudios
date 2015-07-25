@@ -12,12 +12,12 @@ if (isset($_POST['inscription']) && $_POST['inscription'] == 'Inscription') {
 		mysql_select_db ('db_crealemstudios', $base);
 
 		// on recherche si ce login est déjà utilisé par un autre membre
-		$sql = 'SELECT count(*) FROM t_users WHERE login="'.mysql_escape_string($_POST['login']).'"';
+		$sql = 'SELECT count(*) FROM t_membre WHERE login="'.mysql_escape_string($_POST['login']).'"';
 		$req = mysql_query($sql) or die('Erreur SQL !<br />'.$sql.'<br />'.mysql_error());
 		$data = mysql_fetch_array($req);
 
 		if ($data[0] == 0) {
-		$sql = 'INSERT INTO `t_users`VALUES("", "'.mysql_escape_string($_POST['login']).'", "'.mysql_escape_string(md5($_POST['pass'])).'")';
+		$sql = 'INSERT INTO t_membre VALUES("", "'.mysql_escape_string($_POST['login']).'", "'.mysql_escape_string(md5($_POST['pass'])).'")';
 		mysql_query($sql) or die('Erreur SQL !'.$sql.'<br />'.mysql_error());
 
 		session_start();

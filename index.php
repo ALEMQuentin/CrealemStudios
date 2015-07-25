@@ -3,11 +3,11 @@
 if (isset($_POST['connexion']) && $_POST['connexion'] == 'Connexion') {
 	if ((isset($_POST['login']) && !empty($_POST['login'])) && (isset($_POST['pass']) && !empty($_POST['pass']))) {
 
-	$base = mysql_connect ('serveur', 'login', 'password');
-	mysql_select_db ('nom_base', $base);
+	$base = mysql_connect ('localhost', 'root', 'root');
+	mysql_select_db ('db_crealemstudios', $base);
 
 	// on teste si une entrée de la base contient ce couple login / pass
-	$sql = 'SELECT count(*) FROM membre WHERE login="'.mysql_escape_string($_POST['login']).'" AND pass_md5="'.mysql_escape_string(md5($_POST['pass'])).'"';
+	$sql = 'SELECT * FROM t_membre WHERE login="'.mysql_escape_string($_POST['login']).'" AND pass_md5="'.mysql_escape_string(md5($_POST['pass'])).'"';
 	$req = mysql_query($sql) or die('Erreur SQL !<br />'.$sql.'<br />'.mysql_error());
 	$data = mysql_fetch_array($req);
 
@@ -37,10 +37,23 @@ if (isset($_POST['connexion']) && $_POST['connexion'] == 'Connexion') {
 ?>
 <html>
 <head>
-<title>Accueil</title>
+	<title>Accueil</title>
+	<link rel="stylesheet" href="src/css/app.css">
+	<link rel="stylesheet" href="src/assets/ionicons-1.5.2/css/ionicons.min.css">
+	<link href='http://fonts.googleapis.com/css?family=Open+Sans:300italic,400italic,600italic,700italic,800italic,400,300,600,700,800' rel='stylesheet' type='text/css'>
+	<!--[if lt IE 9]>
+		<script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+		<![endif]-->
 </head>
 
 <body>
+
+<?php
+include("inc/header.php");
+
+include("inc/sidebar.php");
+?>
+<section>
 Connexion à l'espace membre :<br />
 <form action="index.php" method="post">
 Login : <input type="text" name="login" value="<?php if (isset($_POST['login'])) echo htmlentities(trim($_POST['login'])); ?>"><br />
@@ -51,5 +64,15 @@ Mot de passe : <input type="password" name="pass" value="<?php if (isset($_POST[
 <?php
 if (isset($erreur)) echo '<br /><br />',$erreur;
 ?>
+
+</section>
+
+<?php
+include("inc/footer.php");
+?>
+
 </body>
+<script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js"></script>
+<script type="text/javascript" src="src/js/app.js"></script>
+
 </html>
