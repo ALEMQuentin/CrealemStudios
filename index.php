@@ -57,8 +57,8 @@ include("inc/sidebar.php");
 <article id="un" class="article">
 <h2>Connexion</h2><br />
 <form action="index.php" method="post">
-<input type="text" name="login" value="<?php if (isset($_POST['login'])) echo htmlentities(trim($_POST['login'])); ?>" placeholder="Login"><br />
-<input type="password" name="pass" value="<?php if (isset($_POST['pass'])) echo htmlentities(trim($_POST['pass'])); ?>" placeholder="mot de passe"><br />
+<input type="text" name="login" value="<?php if (isset($_POST['login'])) echo htmlentities(trim($_POST['login'])); ?>" placeholder="Login" required><br />
+<input type="password" name="pass" value="<?php if (isset($_POST['pass'])) echo htmlentities(trim($_POST['pass'])); ?>" placeholder="mot de passe" required><br />
 <button id="btn" type="submit" name="connexion" value="Connexion">Connexion</button></form>
 <?php
 if (isset($erreur)) echo '<br /><br />',$erreur;
@@ -104,9 +104,9 @@ if (isset($_POST['inscription']) && $_POST['inscription'] == 'Inscription') {
 ?>
 <h2>Inscription</h2><br />
 <form action="inscription.php" method="post">
-<input type="text" name="login" value="<?php if (isset($_POST['login'])) echo htmlentities(trim($_POST['login'])); ?>" placeholder="login"><br />
-<input type="password" name="pass" value="<?php if (isset($_POST['pass'])) echo htmlentities(trim($_POST['pass'])); ?>" placeholder="mot de passe"><br />
-<input type="password" name="pass_confirm" value="<?php if (isset($_POST['pass_confirm'])) echo htmlentities(trim($_POST['pass_confirm'])); ?>" placeholder="confirmé votre mot de passe"><br />
+<input type="text" name="login" value="<?php if (isset($_POST['login'])) echo htmlentities(trim($_POST['login'])); ?>" placeholder="login" required><br />
+<input type="password" name="pass" value="<?php if (isset($_POST['pass'])) echo htmlentities(trim($_POST['pass'])); ?>" placeholder="mot de passe" required><br />
+<input type="password" name="pass_confirm" value="<?php if (isset($_POST['pass_confirm'])) echo htmlentities(trim($_POST['pass_confirm'])); ?>" placeholder="confirmer votre mot de passe" required><br />
 <button id="btn" type="submit" name="inscription" value="Inscription">Inscription</button>
 </form>
 <?php
