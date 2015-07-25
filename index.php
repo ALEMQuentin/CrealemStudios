@@ -23,7 +23,7 @@
 			<div class="breadcrumb">
 				<div class="br-content">
 					<span class="home">
-							<a href="#">Home</a>
+							<a href="#">Dashboard</a>
 						</span>
 					<span class="path-divider">/</span>
 					<span class="link">
