@@ -236,13 +236,14 @@ header {
 	overflow: auto;
 }
 .article {
-	width: 30%;
+	width: 29%;
 	height: 500px;
 	background: rgb(255, 255, 255);
 	border-radius: 5px;
 	margin-left: 2.5%;
 	margin-top: 22px;
 	z-index: 1;
+	padding: 5px;
 }
 .article h2 {
 	margin: 5px;
@@ -278,7 +279,7 @@ header {
 }
 #deux {
 	position: absolute;
-	top: 258px;
+	top: 405px;
 	left: 32.5%;
 	z-index: 1;
 }
@@ -315,6 +316,20 @@ article ul li {
 	width: 86%;
 	margin: 3px 20px 0 20px;
 }
+.article a {
+	color: green;
+}
+
+.welcome {
+	width: 94%;
+	height: 20%;
+	text-align: center;
+}
+
+.welcome h2 {
+	margin-top: 20px;
+}
+
 
 /*
 ************ FOOTER *************

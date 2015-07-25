@@ -203,7 +203,7 @@
 				<input type="file" for="image" src="image/jpg">
 				<input type="submit" value="Sauvegarder" id="btn">
 			</form>
-			<img src="http://lorempixel.com/310/136/business" style="border-radius:0 0 7px 7px; margin-left:3px">
+			<img src="http://lorempixel.com/300/136/business" style="border-radius:0 0 7px 7px; margin-left:3px">
 		</article>
 	</section>
 	<div class="footer">
