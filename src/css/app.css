@@ -228,7 +228,7 @@ header {
 
 .section {
 	width: 82%;
-	height: 84.25%;
+	height: 85.5%;
 	background-color: rgb(216, 214, 214);
 	position: absolute;
 	top: 70px;
@@ -237,7 +237,6 @@ header {
 }
 .article {
 	width: 29%;
-	height: 500px;
 	background: rgb(255, 255, 255);
 	border-radius: 5px;
 	margin-left: 2.5%;
@@ -262,9 +261,8 @@ header {
 	height: 200px;
 	margin: 3px;
 }
-#quatre form {
+form {
 	width: 98%;
-	height: 323px;
 	margin: 3px;
 }
 #deux,
@@ -279,8 +277,8 @@ header {
 }
 #deux {
 	position: absolute;
-	top: 405px;
-	left: 32.5%;
+	top: 410px;
+	left: 32.4%;
 	z-index: 1;
 }
 .section textarea {
@@ -329,7 +327,10 @@ article ul li {
 .welcome h2 {
 	margin-top: 20px;
 }
-
+.accueil {
+	float: none;
+	margin-left: 35%;
+}
 
 /*
 ************ FOOTER *************

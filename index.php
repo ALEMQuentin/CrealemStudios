@@ -54,7 +54,7 @@ include("inc/header.php");
 include("inc/sidebar.php");
 ?>
 <section class="section">
-<article id="un" class="article">
+<article id="un" class="article accueil">
 <h2>Connexion</h2><br />
 <form action="index.php" method="post">
 <input type="text" name="login" value="<?php if (isset($_POST['login'])) echo htmlentities(trim($_POST['login'])); ?>" placeholder="Login" required><br />
@@ -64,7 +64,7 @@ include("inc/sidebar.php");
 if (isset($erreur)) echo '<br /><br />',$erreur;
 ?>
 </article>
-<article id="quatre" class="article">
+<article id="quatre" class="article accueil">
 <?php
 // on teste si le visiteur a soumis le formulaire
 if (isset($_POST['inscription']) && $_POST['inscription'] == 'Inscription') {
