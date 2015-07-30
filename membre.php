@@ -24,8 +24,8 @@ if (!isset($_SESSION['login'])) {
 
 	<section class="section">
 		<article class="article welcome"><h2>Bienvenue <?php echo htmlentities(trim($_SESSION['login'])); ?> !</h2><br />
-<a href="deconnexion.php">Déconnexion</a></article>
-		<article class="article" id="un">
+<a href="inc/deconnexion.php">Déconnexion</a></article>
+				<article class="article" id="un">
 			<h2>Listes des pages</h2>
 			<ul>
 				<li>Nom des pages du CMS !!</li>

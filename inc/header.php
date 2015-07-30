@@ -34,7 +34,7 @@
 			<div class="topmenu hide" id="topbar-menu">
 				<a href=""><i class="ion-person"></i> Mes informations</a>
 				<a href=""><i class="ion-briefcase"></i> Mon entreprise</a>
-				<a href=""><i class="ion-power"></i> Se deconnecter</a>
+				<a href="inc/deconnexion.php"><i class="ion-power"></i> Se deconnecter</a>
 			</div>
 		</div>
 	</header>
