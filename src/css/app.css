@@ -109,7 +109,6 @@ header {
 	overflow: hidden;
 }
 .search-form form {
-	padding: 0 20px;
 	text-align: right;
 }
 .search-input {
@@ -291,7 +290,9 @@ form {
 }
 .section input {
 	width: 99%;
+	height: 40px;
 	margin: 5px 0;
+	padding-bottom: 3px;
 	background: rgb(255, 255, 255);
 	border: 0px;
 	border-bottom: 1px solid rgb(35, 94, 144);
@@ -300,12 +301,13 @@ form {
 	font-size: 0.7em;
 }
 #btn {
-	width: 30%;
-	height: 10%;
+	width: 90px;
+	height: 40px;
 	color: #fff;
 	border-radius: 3px;
 	background: rgb(35, 144, 43);
 	margin-left: 69%;
+	margin-top: 15px;
 	cursor: pointer;
 	border: 0px;
 }
