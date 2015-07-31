@@ -89,7 +89,7 @@ if (!isset($_SESSION['login'])) {
 		</article>
 		<article class="article" id="quatre">
 			<h2>Une idée ?</h2>
-			<form action="brouillon.php" method="post">
+			<form action="inc/brouillon.php" method="post">
 				<input type="text" placeholder="Titre">
 				<textarea placeholder="Placez votre contenu ici"></textarea>
 				<label for="image">Insérer votre image</label>
