@@ -317,16 +317,15 @@ article ul li {
 .accueil {
 	float: none;
 	margin-left: 35%;
+	margin-bottom: 22px;
 }
 
 .large {
 	width: 65%;
-	height: 700px;
 }
 
 .small {
 	width: 25%;
-	height: 700px;
 }
 
 .large, .small {

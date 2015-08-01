@@ -18,7 +18,7 @@ if (isset($_POST['connexion']) && $_POST['connexion'] == 'Connexion') {
 	if ($data[0] == 1) {
 		session_start();
 		$_SESSION['login'] = $_POST['login'];
-		header('Location: membre.php');
+		header('Location: dashboard.php');
 		exit();
 	}
 	// si on ne trouve aucune réponse, le visiteur s'est trompé soit dans son login, soit dans son mot de passe
@@ -89,7 +89,7 @@ if (isset($_POST['inscription']) && $_POST['inscription'] == 'Inscription') {
 
 		session_start();
 		$_SESSION['login'] = $_POST['login'];
-		header('Location: membre.php');
+		header('Location: dashboard.php');
 		exit();
 		}
 		else {
