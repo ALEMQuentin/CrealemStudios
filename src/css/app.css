@@ -227,19 +227,19 @@ header {
 
 .section {
 	width: 82%;
-	height: 85.5%;
+	height: 79%;
 	background-color: rgb(216, 214, 214);
 	position: absolute;
 	top: 70px;
 	left: 230px;
 	overflow: auto;
+	padding: 22px 0 22px 0;
 }
 .article {
 	width: 29%;
 	background: rgb(255, 255, 255);
 	border-radius: 5px;
 	margin-left: 2.5%;
-	margin-top: 22px;
 	z-index: 1;
 	padding: 5px;
 }
@@ -248,38 +248,22 @@ header {
 	padding: 5px;
 	text-align: center;
 }
-#un ul {
+#un ul, #deux ul, #trois ul {
 	height: 205px;
 	margin: 3px;
 }
-#deux ul {
-	height: 200px;
-	margin: 3px;
-}
-#trois ul {
-	height: 200px;
-	margin: 3px;
-}
+
 form {
 	width: 98%;
 	margin: 3px;
 }
-#deux,
-#trois {
-	height: 242px;
-}
+
 #un,
-#deux,
 #trois,
 #quatre {
 	float: left;
 }
-#deux {
-	position: absolute;
-	top: 410px;
-	left: 32.4%;
-	z-index: 1;
-}
+
 .section textarea {
 	width: 98%;
 	height: 182px;
@@ -324,6 +308,7 @@ article ul li {
 	width: 94%;
 	height: 20%;
 	text-align: center;
+	margin-bottom: 22px;
 }
 
 .welcome h2 {
@@ -332,6 +317,22 @@ article ul li {
 .accueil {
 	float: none;
 	margin-left: 35%;
+}
+
+.large {
+	width: 65%;
+	height: 700px;
+}
+
+.small {
+	width: 25%;
+	height: 700px;
+}
+
+.large, .small {
+	border-radius: 5px;
+	background-color: rgb( 255, 255, 255 );
+	float: left;
 }
 
 /*

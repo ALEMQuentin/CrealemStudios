@@ -60,7 +60,7 @@ if (!isset($_SESSION['login'])) {
 				<li>Nom des articles du CMS !!</li>
 			</ul>
 		</article>
-		<article class="article" id="deux">
+		<article class="article" id="trois">
 			<h2>Quoi de neuf ?</h2>
 			<ul>
 				<li>News de Crealem Studios !!</li>
@@ -77,8 +77,7 @@ if (!isset($_SESSION['login'])) {
 				<li>News de Crealem Studios !!</li>
 				<li>News de Crealem Studios !!</li>
 			</ul>
-		</article>
-		<article class="article" id="trois">
+			<hr/>
 			<h2>Statistiques</h2>
 			<ul>
 				<li>Utilisateurs en ligne</li>

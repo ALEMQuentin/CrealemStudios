@@ -1,11 +1,11 @@
 	<div class="nav">
 		<div class="menu">
-			<a href="#"><i class="ion-home"></i> Dashboard</a>
+			<a href="membre.php"><i class="ion-home"></i> Dashboard</a>
 		</div>
 		<div class="submenu" id="submenu">
 			<a href="#"><i class="ion-edit"></i> Pages <i class="ion-chevron-down right " id="icon"></i></a>
 			<div class="sub-content hide" id="sub-content">
-				<a href="#"> Ajouter une page</a>
+				<a href="edit.php"> Ajouter une page</a>
 				<a href="#"> Toutes les pages</a>
 			</div>
 		</div>
