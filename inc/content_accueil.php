@@ -65,11 +65,11 @@
 		<article class="article" id="quatre">
 			<h2>Une idée ?</h2>
 			<form action="inc/brouillon.php" method="post">
-				<input type="text" placeholder="Titre">
+				<input type="text" placeholder="Titre" class="input">
 				<textarea placeholder="Placez votre contenu ici"></textarea>
 				<label for="image">Insérer votre image</label>
-				<input type="file" for="image" src="image/jpg">
-				<input type="submit" value="Sauvegarder" id="btn">
+				<input type="file" class="input" for="image" src="image/jpg">
+				<input type="submit" value="Sauvegarder" class="btn" class="input">
 			</form>
 		</article>
 	</section>
