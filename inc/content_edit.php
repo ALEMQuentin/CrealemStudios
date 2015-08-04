@@ -1,7 +1,7 @@
 <section class="section">
 	<article class="article large">
 		<h2>Éditer une page</h2>
-		<form>
+		<form action="brouillon.php" methode="GET">
 		<input type="text" name="title" placeholder="Titre" class="input">
     	<textarea id="editor" name="content" placeholder="Écrivez votre article ici"></textarea>
 		<hr>
@@ -13,11 +13,11 @@
 	</article>
 	<article class="article small">
 		<h2>Publier</h2>
-		<form action="inc/brouillon.php" methode="POST">
+		<form action="inc/brouillon.php" methode="GET">
 		<button class="btn grey" type="submit" style="float:none">Enregistrer en tant que brouillon</button>
 		</form>
 		<hr>
-		<form action="inc/registred.php" methode="POST">
+		<form action="inc/registred.php" methode="GET">
 		<button class="btn" type="submit">Publier</button>
 		</form>
 	</article>
