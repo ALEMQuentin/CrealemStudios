@@ -8,7 +8,6 @@
 		<h2>Référencement</h2>
 		<input type="text" name="motcles" placeholder="Mots clés" class="input">
 		<textarea name="description" placeholder="Description"></textarea>
-		<input type="text" name="titlemeta" placeholder="Titre métadonnée" class="input">
 		</form>
 	</article>
 	<article class="article small">
