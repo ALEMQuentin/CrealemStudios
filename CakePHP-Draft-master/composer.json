@@ -1,0 +1,33 @@
+{
+  "name":"grafikart/cakephp-draft",
+  "version": "1.0.0",
+  "description":"Draft will give you the ability to quickly generate draft for your model.",
+  "type":"cakephp-plugin",
+  "keywords":[
+    "cakephp",
+    "draft",
+    "model",
+    "models",
+    "behaviour"
+  ],
+  "homepage":"https://github.com/Grafikart/CakePHP-Draft",
+  "license":"MIT",
+  "authors":[
+    {
+      "name": "Jonathan Boyer",
+      "email": "contact@grafikart.fr",
+      "homepage": "http://jonathan-boyer.fr/",
+      "role": "Maintainer"
+    }
+  ],
+  "support":{
+    "source":"https://github.com/Grafikart/CakePHP-Draft",
+    "issues":"https://github.com/Grafikart/CakePHP-Draft/issues"
+  },
+  "require":{
+    "composer/installers":"*"
+  },
+  "extra": {
+    "installer-name": "Draft"
+  }
+}
