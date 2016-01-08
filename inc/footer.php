@@ -4,7 +4,7 @@
 				Crealem <strong>Studios</strong></a>
 		</div>
 		<div class="link">
-			<a href="">A propos</a>
+			<a href="">À propos</a>
 			<div class="separator">|</div>
 			<a href="">Aide</a>
 			<div class="separator">|</div>

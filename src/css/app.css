@@ -275,7 +275,7 @@ form {
 	width: 99%;
 	height: 40px;
 	margin: 5px 0;
-	padding-bottom: 3px;
+	padding-bottom: 0;
 	background: rgb(255, 255, 255);
 	border: 0px;
 	border-bottom: 1px solid rgb(35, 94, 144);
