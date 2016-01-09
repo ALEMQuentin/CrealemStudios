@@ -102,7 +102,7 @@ if (isset($_POST['inscription']) && $_POST['inscription'] == 'Inscription') {
 	}
 }
 ?>
-<h2>Inscription</h2><br />
+<h3>Inscription</h3><br />
 <form action="inscription.php" method="post">
 <input type="text" name="login" value="<?php if (isset($_POST['login'])) echo htmlentities(trim($_POST['login'])); ?>" placeholder="Login" required class="input"><br />
 <input type="password" name="pass" value="<?php if (isset($_POST['pass'])) echo htmlentities(trim($_POST['pass'])); ?>" placeholder="mot de passe" required class="input"><br />

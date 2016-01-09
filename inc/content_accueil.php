@@ -2,7 +2,7 @@
 		<article class="article welcome"><h2>Bienvenue <?php echo htmlentities(trim($_SESSION['login'])); ?> !</h2><br />
 <a href="inc/deconnexion.php">Déconnexion</a></article>
 				<article class="article" id="un">
-			<h2>Listes des pages</h2>
+			<h3>Listes des pages</h3>
 			<ul>
 				<li>Nom des pages du CMS !!</li>
 				<li>Nom des pages du CMS !!</li>
@@ -19,7 +19,7 @@
 				<li>Nom des pages du CMS !!</li>
 			</ul>
 			<hr/>
-			<h2>Listes des articles</h2>
+			<h3>Listes des articles</h3>
 			<ul>
 				<li>Nom des articles du CMS !!</li>
 				<li>Nom des articles du CMS !!</li>
@@ -37,7 +37,7 @@
 			</ul>
 		</article>
 		<article class="article" id="trois">
-			<h2>Quoi de neuf ?</h2>
+			<h3>Quoi de neuf ?</h3>
 			<ul>
 				<li>News de Crealem Studios !!</li>
 				<li>News de Crealem Studios !!</li>
@@ -54,7 +54,7 @@
 				<li>News de Crealem Studios !!</li>
 			</ul>
 			<hr/>
-			<h2>Statistiques</h2>
+			<h3>Statistiques</h3>
 			<ul>
 				<li>Utilisateurs en ligne</li>
 				<li>Visites du jour</li>
@@ -63,7 +63,7 @@
 			</ul>
 		</article>
 		<article class="article" id="quatre">
-			<h2>Une idée ?</h2>
+			<h3>Une idée ?</h3>
 			<form action="inc/brouillon.php" method="post">
 				<input type="text" placeholder="Titre" class="input">
 				<textarea placeholder="Placez votre contenu ici"></textarea>

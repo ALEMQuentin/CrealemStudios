@@ -5,13 +5,13 @@
 		<input type="text" name="title" placeholder="Titre" class="input">
     	<textarea id="editor" name="content" placeholder="Écrivez votre article ici"></textarea>
 		<hr>
-		<h2>Référencement</h2>
+		<h3>Référencement</h3>
 		<input type="text" name="motcles" placeholder="Mots clés" class="input">
 		<textarea name="description" placeholder="Description"></textarea>
 		</form>
 	</article>
 	<article class="article small">
-		<h2>Publier</h2>
+		<h3>Publier</h3>
 		<form action="inc/brouillon.php" methode="GET">
 		<button class="btn grey" type="submit" style="float:none">Enregistrer en tant que brouillon</button>
 		</form>
@@ -21,7 +21,7 @@
 		</form>
 	</article>
 	<article class="article small" style="margin-top:22px;">
-		<h2>Catégories</h2>
+		<h3>Catégories</h3>
 		<div class="tabs-panel">
 		<input type="checkbox" class="category" id="category1"><label for="category1" class="category">Catégorie 1</label>
 		</div>

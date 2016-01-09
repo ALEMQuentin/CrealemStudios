@@ -116,6 +116,7 @@ header {
 	border-radius: 5px;
 	border: none;
 	width: 80%;
+	font-size: 15px;
 }
 .search-form button {
 	background: #319b23;
@@ -246,6 +247,13 @@ header {
 	margin: 5px;
 	padding: 5px;
 	text-align: center;
+	font-size: 25px
+}
+.article h3 {
+	margin: 5px;
+	padding: 5px;
+	text-align: center;
+	font-size: 20px
 }
 #un ul, #deux ul, #trois ul {
 	height: 205px;
@@ -273,12 +281,12 @@ form {
 }
 .section .input {
 	width: 99%;
-	height: 40px;
-	margin: 5px 0;
-	padding-bottom: 0;
+	margin: 10px 0;
+	padding: 5px 0 1px;
 	background: rgb(255, 255, 255);
 	border: 0px;
 	border-bottom: 1px solid rgb(35, 94, 144);
+	font-size: 20px;
 }
 .section label {
 	font-size: 0.8em;

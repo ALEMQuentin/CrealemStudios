@@ -32,7 +32,7 @@
 				<i class="ion-chevron-down" id='ico-account'></i>
 			</div>
 			<div class="topmenu hide" id="topbar-menu">
-				<a href="info.php"><i class="ion-person"></i> Mes informations</a>
+				<a href="info.php"><i class="ion-person"></i> Mes Coordonnées</a>
 				<a href="company.php"><i class="ion-briefcase"></i> Mon entreprise</a>
 				<a href="inc/deconnexion.php"><i class="ion-power"></i> Se deconnecter</a>
 			</div>
