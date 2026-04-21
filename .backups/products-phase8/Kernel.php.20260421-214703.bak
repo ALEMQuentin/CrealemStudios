@@ -821,9 +821,7 @@ class Kernel
     {
         if ($action === 'categories') {
             $categories = $this->fetchAllSafe("
-                SELECT c.*,
-                       p.name AS parent_name,
-                       (SELECT COUNT(*) FROM product_category_relations r WHERE r.category_id = c.id) AS products_count
+                SELECT c.*, p.name AS parent_name
                 FROM product_categories c
                 LEFT JOIN product_categories p ON p.id = c.parent_id
                 ORDER BY c.sort_order ASC, c.name ASC
@@ -882,8 +880,7 @@ class Kernel
         if ($action === 'attributes') {
             $attributes = $this->fetchAllSafe("
                 SELECT a.*,
-                       (SELECT COUNT(*) FROM product_attribute_terms t WHERE t.attribute_id = a.id) AS terms_count,
-                       (SELECT COUNT(DISTINCT r.product_id) FROM product_attribute_relations r WHERE r.attribute_id = a.id) AS products_count
+                       (SELECT COUNT(*) FROM product_attribute_terms t WHERE t.attribute_id = a.id) AS terms_count
                 FROM product_attributes a
                 ORDER BY a.sort_order ASC, a.name ASC
             ");
@@ -942,16 +939,7 @@ class Kernel
             $id = (int)($_GET['id'] ?? 0);
             $attribute = $this->fetchOne("SELECT * FROM product_attributes WHERE id = :id", ['id' => $id]);
             if (!$attribute) redirectTo('/admin.php?module=products&action=attributes&error=Attribut introuvable');
-
-            $terms = $this->fetchAllSafe("
-                SELECT t.*,
-                       (SELECT COUNT(*) FROM product_attribute_relations r WHERE r.term_id = t.id) AS products_count,
-                       (SELECT COUNT(*) FROM product_variation_attribute_values v WHERE v.term_id = t.id) AS variations_count
-                FROM product_attribute_terms t
-                WHERE t.attribute_id = " . $id . "
-                ORDER BY t.sort_order ASC, t.name ASC
-            ");
-
+            $terms = $this->fetchAllSafe("SELECT * FROM product_attribute_terms WHERE attribute_id = " . $id . " ORDER BY sort_order ASC, name ASC");
             $this->render('Termes d’attribut', $this->resolveView(['modules/product-attribute-terms-list.php']), compact('attribute', 'terms'));
             return;
         }
@@ -1436,7 +1424,6 @@ class Kernel
             $statusFilter = trim($_GET['status_filter'] ?? '');
             $typeFilter = trim($_GET['type_filter'] ?? '');
             $stockFilter = trim($_GET['stock_filter'] ?? '');
-            $categoryFilter = (int)($_GET['category_filter'] ?? 0);
 
             $products = $this->fetchAllSafe("
                 SELECT p.*,
@@ -1465,15 +1452,7 @@ class Kernel
                 $products = array_values(array_filter($products, fn($p) => ($p['stock_status'] ?? '') === $stockFilter));
             }
 
-            if ($categoryFilter > 0 && $this->tableExists('product_category_relations')) {
-                $rows = $this->fetchAllSafe("SELECT product_id FROM product_category_relations WHERE category_id = " . $categoryFilter);
-                $allowedIds = array_map(fn($row) => (int)$row['product_id'], $rows);
-                $products = array_values(array_filter($products, fn($p) => in_array((int)$p['id'], $allowedIds, true)));
-            }
-
-            $categoryOptions = $this->fetchAllSafe("SELECT id, name FROM product_categories ORDER BY name ASC");
-
-            $this->render('Produits', $this->resolveView(['modules/products-list.php']), compact('products', 'categoryOptions'));
+            $this->render('Produits', $this->resolveView(['modules/products-list.php']), compact('products'));
             return;
         }
 

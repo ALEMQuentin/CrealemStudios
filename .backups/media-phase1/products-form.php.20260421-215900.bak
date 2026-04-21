@@ -103,7 +103,6 @@
                         <div class="col-md-3 mt-4">
                             <label class="form-label">Image produit (ID média)</label>
                             <input type="number" class="form-control" name="featured_media_id" value="<?= e((string)($product['featured_media_id'] ?? '')) ?>">
-                            <div class="text-muted mt-1">Voir la bibliothèque : <a href="/admin.php?module=media">Médias</a></div>
                         </div>
 
                         <div class="col-md-3 mt-4">

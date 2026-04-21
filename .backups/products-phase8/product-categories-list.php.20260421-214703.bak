@@ -21,7 +21,6 @@
                             <th>Nom</th>
                             <th>Slug</th>
                             <th>Parent</th>
-                            <th>Produits</th>
                             <th>Ordre</th>
                             <th>Actions</th>
                         </tr>
@@ -33,7 +32,6 @@
                             <td><?= e($category['name'] ?? '') ?></td>
                             <td><code><?= e($category['slug'] ?? '') ?></code></td>
                             <td><?= e($category['parent_name'] ?? '-') ?></td>
-                            <td><?= e((string)($category['products_count'] ?? '0')) ?></td>
                             <td><?= e((string)($category['sort_order'] ?? '0')) ?></td>
                             <td class="d-flex gap-2 flex-wrap">
                                 <a class="btn btn-sm btn-outline-secondary" href="/admin.php?module=products&action=edit_category&id=<?= (int)$category['id'] ?>">Modifier</a>

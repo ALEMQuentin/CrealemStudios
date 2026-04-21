@@ -23,8 +23,6 @@
                             <th>ID</th>
                             <th>Nom</th>
                             <th>Slug</th>
-                            <th>Produits</th>
-                            <th>Variations</th>
                             <th>Ordre</th>
                             <th>Actions</th>
                         </tr>
@@ -35,8 +33,6 @@
                             <td><?= (int)$term['id'] ?></td>
                             <td><?= e($term['name'] ?? '') ?></td>
                             <td><code><?= e($term['slug'] ?? '') ?></code></td>
-                            <td><?= e((string)($term['products_count'] ?? '0')) ?></td>
-                            <td><?= e((string)($term['variations_count'] ?? '0')) ?></td>
                             <td><?= e((string)($term['sort_order'] ?? '0')) ?></td>
                             <td class="d-flex gap-2 flex-wrap">
                                 <a class="btn btn-sm btn-outline-secondary" href="/admin.php?module=products&action=edit_attribute_term&id=<?= (int)$attribute['id'] ?>&term_id=<?= (int)$term['id'] ?>">Modifier</a>

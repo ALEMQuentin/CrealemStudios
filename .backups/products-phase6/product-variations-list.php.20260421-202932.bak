@@ -6,7 +6,6 @@
         </div>
         <div class="d-flex gap-2 flex-wrap">
             <a class="btn btn-outline-secondary" href="/admin.php?module=products&action=edit&id=<?= (int)$product['id'] ?>">Retour au produit</a>
-            <a class="btn btn-outline-secondary" href="/admin.php?module=products&action=generate_variations&id=<?= (int)$product['id'] ?>" onclick="return confirm('Générer automatiquement les variations manquantes à partir des attributs du produit ?')">Générer les variations</a>
             <a class="btn btn-primary" href="/admin.php?module=products&action=create_variation&id=<?= (int)$product['id'] ?>">Ajouter une variation</a>
         </div>
     </div>
@@ -23,10 +22,9 @@
                         <tr>
                             <th>ID</th>
                             <th>SKU</th>
-                            <th>Combinaison</th>
                             <th>Prix</th>
                             <th>Stock</th>
-                            <th>Statut</th>
+                            <th>Valeurs d’attributs</th>
                             <th>Actions</th>
                         </tr>
                     </thead>
@@ -35,7 +33,6 @@
                         <tr>
                             <td><?= (int)$variation['id'] ?></td>
                             <td><code><?= e($variation['sku'] ?? '') ?></code></td>
-                            <td><?= e($variation['attributes_summary'] ?? '') ?></td>
                             <td>
                                 <?php if (($variation['sale_price'] ?? '') !== null && $variation['sale_price'] !== ''): ?>
                                     <strong><?= e((string)$variation['sale_price']) ?></strong>
@@ -48,7 +45,9 @@
                                 <?= e($variation['stock_status'] ?? 'instock') ?>
                                 <br><span class="text-muted">Qté: <?= e((string)($variation['stock_quantity'] ?? '')) ?></span>
                             </td>
-                            <td><?= e($variation['status'] ?? '') ?></td>
+                            <td>
+                                <?= e($variation['attributes_summary'] ?? '') ?>
+                            </td>
                             <td class="d-flex gap-2 flex-wrap">
                                 <a class="btn btn-sm btn-outline-secondary" href="/admin.php?module=products&action=edit_variation&id=<?= (int)$product['id'] ?>&variation_id=<?= (int)$variation['id'] ?>">Modifier</a>
                                 <a class="btn btn-sm btn-outline-danger" href="/admin.php?module=products&action=delete_variation&id=<?= (int)$product['id'] ?>&variation_id=<?= (int)$variation['id'] ?>" onclick="return confirm('Supprimer cette variation ?')">Supprimer</a>
