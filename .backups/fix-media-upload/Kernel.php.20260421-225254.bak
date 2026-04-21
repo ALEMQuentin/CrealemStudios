@@ -506,54 +506,14 @@ class Kernel
         redirectTo('/admin.php?module=blog');
     }
 
-    private 
-    function handleMedia($action)
+    private function handleMedia(string $action): void
     {
-        if ($action === 'save') {
-
-            // POST → upload
-            if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-
-                if (!isset($_FILES['file'])) {
-                    echo "Aucun fichier";
-                    return;
-                }
-
-                $file = $_FILES['file'];
-                $name = time() . '-' . basename($file['name']);
-                $target = __DIR__ . '/../../public/uploads/' . $name;
-
-                if (!is_dir(dirname($target))) {
-                    mkdir(dirname($target), 0777, true);
-                }
-
-                if (move_uploaded_file($file['tmp_name'], $target)) {
-                    echo "<h2>Upload réussi</h2>";
-                    echo "<a href='/uploads/$name' target='_blank'>Voir le fichier</a>";
-                } else {
-                    echo "Erreur upload";
-                }
-
-                return;
-            }
-
-            // GET → afficher formulaire
-            $this->render(
-                'Ajouter un média',
-                $this->resolveView(['modules/media-form.php']),
-                []
-            );
+        if ($action === 'index') {
+            $mediaItems = $this->fetchAllSafe("SELECT * FROM media ORDER BY id DESC");
+            $this->render('Médias', $this->resolveView(['modules/media-list.php']), compact('mediaItems'));
             return;
         }
 
-        // LISTE MEDIA
-        $this->render(
-            'Médias',
-            $this->resolveView(['modules/media-list.php']),
-            []
-        );
-    }
-    
         if ($action === 'upload' && $_SERVER['REQUEST_METHOD'] === 'POST') {
             if (empty($_FILES['media_file']) || $_FILES['media_file']['error'] !== UPLOAD_ERR_OK) {
                 redirectTo('/admin.php?module=media&error=Upload impossible');
