@@ -55,12 +55,6 @@ class Kernel
                 return;
             case 'products':
                 $this->handleProducts($action);
-                break;
-
-            case 'variations':
-                echo "<h1>Variations produits</h1>";
-                break;
-                $this->handleProducts($action);
                 return;
         }
 
@@ -279,28 +273,56 @@ class Kernel
             redirectTo('/admin.php?module=pages&action=blocks&id=' . $id . '&success=Bloc supprimé');
         }
 
-            $file = $_FILES['file'];
-            $name = time() . '-' . basename($file['name']);
-            $target = __DIR__ . '/../../public/uploads/' . $name;
+        if ($action === 'save' && $_SERVER['REQUEST_METHOD'] === 'POST') {
+            $id = (int)($_GET['id'] ?? 0);
+            $slug = trim($_POST['slug'] ?? '');
 
-            if (move_uploaded_file($file['tmp_name'], $target)) {
-                echo "<h2>Upload réussi</h2>";
-                echo "<a href='/uploads/$name' target='_blank'>Voir le fichier</a>";
-            } else {
-                echo "Erreur upload";
+            if (Content::slugExists($this->pdo, 'page', $slug, $id)) {
+                redirectTo('/admin.php?module=pages&error=Slug déjà utilisé');
             }
 
-            return;
+            $now = date('Y-m-d H:i:s');
+            $data = [
+                'type' => 'page',
+                'title' => trim($_POST['title'] ?? ''),
+                'slug' => $slug,
+                'excerpt' => null,
+                'content' => trim($_POST['content'] ?? ''),
+                'status' => trim($_POST['status'] ?? 'draft'),
+                'author_id' => null,
+                'parent_id' => null,
+                'menu_order' => 0,
+                'updated_at' => $now,
+            ];
+
+            if ($id > 0) {
+                Content::update($this->pdo, $id, $data);
+                $contentId = $id;
+            } else {
+                $data['created_at'] = $now;
+                $contentId = Content::create($this->pdo, $data);
+            }
+
+            $this->syncCommonMeta($contentId);
+
+            redirectTo('/admin.php?module=pages&success=Page enregistrée');
         }
 
-        // GET → afficher formulaire
-        $this->render(
-            'Ajouter un média',
-            $this->resolveView(['modules/media-form.php']),
-            []
-        );
-        return;
+        if ($action === 'delete') {
+            $id = (int)($_GET['id'] ?? 0);
+            Content::delete($this->pdo, $id);
+            redirectTo('/admin.php?module=pages&success=Page supprimée');
+        }
+
+        redirectTo('/admin.php?module=pages');
     }
+
+    private function handleBlog(string $action): void
+    {
+        if ($action === 'index') {
+            $posts = Content::allByType($this->pdo, 'post');
+            $this->render('Blog', $this->resolveView(['modules/blog-list.php']), compact('posts'));
+            return;
         }
 
         if ($action === 'categories') {
@@ -423,28 +445,73 @@ class Kernel
             return;
         }
 
-            $file = $_FILES['file'];
-            $name = time() . '-' . basename($file['name']);
-            $target = __DIR__ . '/../../public/uploads/' . $name;
+        if ($action === 'save' && $_SERVER['REQUEST_METHOD'] === 'POST') {
+            $id = (int)($_GET['id'] ?? 0);
+            $slug = trim($_POST['slug'] ?? '');
 
-            if (move_uploaded_file($file['tmp_name'], $target)) {
-                echo "<h2>Upload réussi</h2>";
-                echo "<a href='/uploads/$name' target='_blank'>Voir le fichier</a>";
-            } else {
-                echo "Erreur upload";
+            if (Content::slugExists($this->pdo, 'post', $slug, $id)) {
+                redirectTo('/admin.php?module=blog&error=Slug déjà utilisé');
             }
 
-            return;
+            $now = date('Y-m-d H:i:s');
+            $data = [
+                'type' => 'post',
+                'title' => trim($_POST['title'] ?? ''),
+                'slug' => $slug,
+                'excerpt' => trim($_POST['excerpt'] ?? ''),
+                'content' => trim($_POST['content'] ?? ''),
+                'status' => trim($_POST['status'] ?? 'draft'),
+                'author_id' => null,
+                'parent_id' => null,
+                'menu_order' => 0,
+                'updated_at' => $now,
+            ];
+
+            if ($id > 0) {
+                Content::update($this->pdo, $id, $data);
+                $contentId = $id;
+            } else {
+                $data['created_at'] = $now;
+                $contentId = Content::create($this->pdo, $data);
+            }
+
+            $this->syncCommonMeta($contentId);
+
+            if ($this->tableExists('post_category_relations')) {
+                $this->pdo->prepare("DELETE FROM post_category_relations WHERE post_id = :post_id")->execute(['post_id' => $contentId]);
+
+                $categoryIds = $_POST['category_ids'] ?? [];
+                $stmt = $this->pdo->prepare("INSERT INTO post_category_relations (post_id, category_id) VALUES (:post_id, :category_id)");
+
+                foreach ($categoryIds as $categoryId) {
+                    $categoryId = (int)$categoryId;
+                    if ($categoryId > 0) {
+                        $stmt->execute([
+                            'post_id' => $contentId,
+                            'category_id' => $categoryId,
+                        ]);
+                    }
+                }
+            }
+
+            redirectTo('/admin.php?module=blog&success=Article enregistré');
         }
 
-        // GET → afficher formulaire
-        $this->render(
-            'Ajouter un média',
-            $this->resolveView(['modules/media-form.php']),
-            []
-        );
-        return;
+        if ($action === 'delete') {
+            $id = (int)($_GET['id'] ?? 0);
+            Content::delete($this->pdo, $id);
+            redirectTo('/admin.php?module=blog&success=Article supprimé');
+        }
+
+        redirectTo('/admin.php?module=blog');
     }
+
+    private function handleMedia(string $action): void
+    {
+        if ($action === 'index') {
+            $mediaItems = $this->fetchAllSafe("SELECT * FROM media ORDER BY id DESC");
+            $this->render('Médias', $this->resolveView(['modules/media-list.php']), compact('mediaItems'));
+            return;
         }
 
         if ($action === 'upload' && $_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -513,7 +580,7 @@ class Kernel
             redirectTo('/admin.php?module=media&success=Média supprimé');
         }
 
-        return;
+        redirectTo('/admin.php?module=media');
     }
 
     private function handleMenus(string $action): void
@@ -544,28 +611,57 @@ class Kernel
             return;
         }
 
-            $file = $_FILES['file'];
-            $name = time() . '-' . basename($file['name']);
-            $target = __DIR__ . '/../../public/uploads/' . $name;
+        if ($action === 'save' && $_SERVER['REQUEST_METHOD'] === 'POST') {
+            $id = (int)($_GET['id'] ?? 0);
+            $now = date('Y-m-d H:i:s');
 
-            if (move_uploaded_file($file['tmp_name'], $target)) {
-                echo "<h2>Upload réussi</h2>";
-                echo "<a href='/uploads/$name' target='_blank'>Voir le fichier</a>";
-            } else {
-                echo "Erreur upload";
+            $data = [
+                'name' => trim($_POST['name'] ?? ''),
+                'location_key' => trim($_POST['location_key'] ?? ''),
+                'updated_at' => $now,
+            ];
+
+            if ($id > 0) {
+                $this->updateRow('menus', $id, $data);
+                redirectTo('/admin.php?module=menus&success=Menu modifié');
             }
 
-            return;
+            $data['created_at'] = $now;
+            $this->insertRow('menus', $data);
+
+            redirectTo('/admin.php?module=menus&success=Menu ajouté');
         }
 
-        // GET → afficher formulaire
-        $this->render(
-            'Ajouter un média',
-            $this->resolveView(['modules/media-form.php']),
-            []
-        );
-        return;
-    }
+        if ($action === 'delete') {
+            $id = (int)($_GET['id'] ?? 0);
+
+            if ($this->tableExists('menu_items')) {
+                $stmt = $this->pdo->prepare("DELETE FROM menu_items WHERE menu_id = :menu_id");
+                $stmt->execute(['menu_id' => $id]);
+            }
+
+            $this->deleteById('menus', $id);
+            redirectTo('/admin.php?module=menus&success=Menu supprimé');
+        }
+
+        if ($action === 'items') {
+            $id = (int)($_GET['id'] ?? 0);
+            $menu = $this->fetchOne("SELECT * FROM menus WHERE id = :id", ['id' => $id]);
+
+            if (!$menu) {
+                redirectTo('/admin.php?module=menus&error=Menu introuvable');
+            }
+
+            $items = [];
+            if ($this->tableExists('menu_items')) {
+                $stmt = $this->pdo->prepare("SELECT * FROM menu_items WHERE menu_id = :menu_id ORDER BY sort_order ASC, id ASC");
+                $stmt->execute(['menu_id' => $id]);
+                $items = $stmt->fetchAll(PDO::FETCH_ASSOC);
+            }
+
+            $pagesForMenu = Content::allByType($this->pdo, 'page');
+            $this->render('Éléments du menu', $this->resolveView(['modules/menu-items.php']), compact('menu', 'items', 'pagesForMenu'));
+            return;
         }
 
         if ($action === 'add_item' && $_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -635,52 +731,105 @@ class Kernel
             return;
         }
 
-            $file = $_FILES['file'];
-            $name = time() . '-' . basename($file['name']);
-            $target = __DIR__ . '/../../public/uploads/' . $name;
+        if ($action === 'save' && $_SERVER['REQUEST_METHOD'] === 'POST') {
+            $id = (int)($_GET['id'] ?? 0);
+            $now = date('Y-m-d H:i:s');
 
-            if (move_uploaded_file($file['tmp_name'], $target)) {
-                echo "<h2>Upload réussi</h2>";
-                echo "<a href='/uploads/$name' target='_blank'>Voir le fichier</a>";
-            } else {
-                echo "Erreur upload";
+            $data = [
+                'name' => trim($_POST['name'] ?? ''),
+                'email' => trim($_POST['email'] ?? ''),
+                'role' => trim($_POST['role'] ?? 'editor'),
+                'updated_at' => $now,
+            ];
+
+            $password = trim($_POST['password'] ?? '');
+
+            if ($id > 0) {
+                if ($password !== '') {
+                    $data['password'] = password_hash($password, PASSWORD_DEFAULT);
+                }
+
+                $this->updateRow('users', $id, $data);
+                redirectTo('/admin.php?module=users&success=Utilisateur modifié');
             }
 
+            $data['password'] = password_hash($password !== '' ? $password : 'admin1234', PASSWORD_DEFAULT);
+            $data['created_at'] = $now;
+            $this->insertRow('users', $data);
+
+            redirectTo('/admin.php?module=users&success=Utilisateur ajouté');
+        }
+
+        if ($action === 'delete') {
+            $id = (int)($_GET['id'] ?? 0);
+            $this->deleteById('users', $id);
+            redirectTo('/admin.php?module=users&success=Utilisateur supprimé');
+        }
+
+        redirectTo('/admin.php?module=users');
+    }
+
+    private function handleSettings(string $action): void
+    {
+        if ($action === 'index') {
+            $this->render('Paramètres', $this->resolveView(['modules/settings-form.php']), []);
             return;
         }
 
-        // GET → afficher formulaire
-        $this->render(
-            'Ajouter un média',
-            $this->resolveView(['modules/media-form.php']),
-            []
-        );
-        return;
-    }
-        }
+        if ($action === 'save' && $_SERVER['REQUEST_METHOD'] === 'POST') {
+            $moduleKeys = [
+                'module_products',
+                'module_blog',
+                'module_forms',
+                'module_booking',
+                'module_clients',
+                'module_testimonials',
+                'module_gallery',
+                'module_subscriptions',
+            ];
 
-            $file = $_FILES['file'];
-            $name = time() . '-' . basename($file['name']);
-            $target = __DIR__ . '/../../public/uploads/' . $name;
+            $trackingKeys = [
+                'tracking_gtm_id',
+                'tracking_meta_pixel_id',
+                'tracking_tiktok_pixel_id',
+                'tracking_head_custom',
+                'tracking_body_custom',
+                'tracking_footer_custom',
+                'site_name',
+                'site_tagline',
+                'theme',
+                'custom_css_global',
+            ];
 
-            if (move_uploaded_file($file['tmp_name'], $target)) {
-                echo "<h2>Upload réussi</h2>";
-                echo "<a href='/uploads/$name' target='_blank'>Voir le fichier</a>";
-            } else {
-                echo "Erreur upload";
+            foreach ($moduleKeys as $key) {
+                saveSetting($this->pdo, $key, isset($_POST[$key]) ? '1' : '0');
             }
 
-            return;
+            foreach ($trackingKeys as $key) {
+                saveSetting($this->pdo, $key, trim($_POST[$key] ?? ''));
+            }
+
+            $this->settings = getSettings($this->pdo);
+            redirectTo('/admin.php?module=settings&success=Paramètres enregistrés');
         }
 
-        // GET → afficher formulaire
-        $this->render(
-            'Ajouter un média',
-            $this->resolveView(['modules/media-form.php']),
-            []
-        );
-        return;
+        redirectTo('/admin.php?module=settings');
     }
+
+
+    private function handleProducts(string $action): void
+    {
+        if ($action === 'categories') {
+            $categories = $this->fetchAllSafe("
+                SELECT c.*,
+                       p.name AS parent_name,
+                       (SELECT COUNT(*) FROM product_category_relations r WHERE r.category_id = c.id) AS products_count
+                FROM product_categories c
+                LEFT JOIN product_categories p ON p.id = c.parent_id
+                ORDER BY c.sort_order ASC, c.name ASC
+            ");
+            $this->render('Catégories produit', $this->resolveView(['modules/product-categories-list.php']), compact('categories'));
+            return;
         }
 
         if ($action === 'create_category') {
@@ -1409,28 +1558,150 @@ class Kernel
             return;
         }
 
-            $file = $_FILES['file'];
-            $name = time() . '-' . basename($file['name']);
-            $target = __DIR__ . '/../../public/uploads/' . $name;
+        if ($action === 'save' && $_SERVER['REQUEST_METHOD'] === 'POST') {
+            $id = (int)($_GET['id'] ?? 0);
 
-            if (move_uploaded_file($file['tmp_name'], $target)) {
-                echo "<h2>Upload réussi</h2>";
-                echo "<a href='/uploads/$name' target='_blank'>Voir le fichier</a>";
+            $data = [
+                'title' => trim($_POST['title'] ?? ''),
+                'slug' => trim($_POST['slug'] ?? ''),
+                'content' => trim($_POST['content'] ?? ''),
+                'short_description' => trim($_POST['short_description'] ?? ''),
+                'status' => trim($_POST['status'] ?? 'draft'),
+                'featured_media_id' => ($_POST['featured_media_id'] ?? '') !== '' ? (int)$_POST['featured_media_id'] : null,
+                'sku' => trim($_POST['sku'] ?? ''),
+                'regular_price' => ($_POST['regular_price'] ?? '') !== '' ? (float)$_POST['regular_price'] : null,
+                'sale_price' => ($_POST['sale_price'] ?? '') !== '' ? (float)$_POST['sale_price'] : null,
+                'manage_stock' => (int)($_POST['manage_stock'] ?? 0),
+                'stock_quantity' => ($_POST['stock_quantity'] ?? '') !== '' ? (int)$_POST['stock_quantity'] : null,
+                'stock_status' => trim($_POST['stock_status'] ?? 'instock'),
+                'catalog_visibility' => trim($_POST['catalog_visibility'] ?? 'visible'),
+                'product_type' => trim($_POST['product_type'] ?? 'simple'),
+                'weight' => ($_POST['weight'] ?? '') !== '' ? (float)$_POST['weight'] : null,
+                'length' => ($_POST['length'] ?? '') !== '' ? (float)$_POST['length'] : null,
+                'width' => ($_POST['width'] ?? '') !== '' ? (float)$_POST['width'] : null,
+                'height' => ($_POST['height'] ?? '') !== '' ? (float)$_POST['height'] : null,
+                'sort_order' => (int)($_POST['sort_order'] ?? 0),
+                'updated_at' => date('Y-m-d H:i:s'),
+            ];
+
+            if ($id > 0) {
+                $this->updateRow('products', $id, $data);
+                $productId = $id;
             } else {
-                echo "Erreur upload";
+                $data['created_at'] = date('Y-m-d H:i:s');
+                $productId = $this->insertRow('products', $data);
             }
 
-            return;
+            if ($this->tableExists('product_category_relations')) {
+                $stmt = $this->pdo->prepare("DELETE FROM product_category_relations WHERE product_id = :product_id");
+                $stmt->execute(['product_id' => $productId]);
+
+                $categoryIds = $_POST['category_ids'] ?? [];
+                $stmt = $this->pdo->prepare("INSERT INTO product_category_relations (product_id, category_id) VALUES (:product_id, :category_id)");
+                foreach ($categoryIds as $categoryId) {
+                    $categoryId = (int)$categoryId;
+                    if ($categoryId > 0) {
+                        $stmt->execute([
+                            'product_id' => $productId,
+                            'category_id' => $categoryId,
+                        ]);
+                    }
+                }
+            }
+
+            if ($this->tableExists('product_attribute_relations')) {
+                $stmt = $this->pdo->prepare("DELETE FROM product_attribute_relations WHERE product_id = :product_id");
+                $stmt->execute(['product_id' => $productId]);
+
+                $attributeIds = array_map('intval', $_POST['attribute_ids'] ?? []);
+                $attributeTermIds = $_POST['attribute_term_ids'] ?? [];
+
+                $stmt = $this->pdo->prepare("
+                    INSERT INTO product_attribute_relations (product_id, attribute_id, term_id)
+                    VALUES (:product_id, :attribute_id, :term_id)
+                ");
+
+                foreach ($attributeIds as $attributeId) {
+                    $terms = $attributeTermIds[$attributeId] ?? [];
+                    foreach ($terms as $termId) {
+                        $termId = (int)$termId;
+                        if ($attributeId > 0 && $termId > 0) {
+                            $stmt->execute([
+                                'product_id' => $productId,
+                                'attribute_id' => $attributeId,
+                                'term_id' => $termId,
+                            ]);
+                        }
+                    }
+                }
+            }
+
+            if ($this->tableExists('product_gallery_relations')) {
+                $stmt = $this->pdo->prepare("DELETE FROM product_gallery_relations WHERE product_id = :product_id");
+                $stmt->execute(['product_id' => $productId]);
+
+                $galleryMediaIdsString = trim($_POST['gallery_media_ids'] ?? '');
+                if ($galleryMediaIdsString !== '') {
+                    $mediaIds = array_values(array_filter(array_map('trim', explode(',', $galleryMediaIdsString)), fn($v) => $v !== ''));
+                    $stmt = $this->pdo->prepare("
+                        INSERT INTO product_gallery_relations (product_id, media_id, sort_order)
+                        VALUES (:product_id, :media_id, :sort_order)
+                    ");
+                    foreach ($mediaIds as $index => $mediaId) {
+                        $mediaId = (int)$mediaId;
+                        if ($mediaId > 0) {
+                            $stmt->execute([
+                                'product_id' => $productId,
+                                'media_id' => $mediaId,
+                                'sort_order' => $index,
+                            ]);
+                        }
+                    }
+                }
+            }
+
+            redirectTo('/admin.php?module=products&success=Produit enregistré');
         }
 
-        // GET → afficher formulaire
-        $this->render(
-            'Ajouter un média',
-            $this->resolveView(['modules/media-form.php']),
-            []
-        );
-        return;
+        if ($action === 'delete') {
+            $id = (int)($_GET['id'] ?? 0);
+            if ($this->tableExists('product_category_relations')) {
+                $stmt = $this->pdo->prepare("DELETE FROM product_category_relations WHERE product_id = :product_id");
+                $stmt->execute(['product_id' => $id]);
+            }
+            if ($this->tableExists('product_attribute_relations')) {
+                $stmt = $this->pdo->prepare("DELETE FROM product_attribute_relations WHERE product_id = :product_id");
+                $stmt->execute(['product_id' => $id]);
+            }
+            if ($this->tableExists('product_gallery_relations')) {
+                $stmt = $this->pdo->prepare("DELETE FROM product_gallery_relations WHERE product_id = :product_id");
+                $stmt->execute(['product_id' => $id]);
+            }
+            if ($this->tableExists('product_variations')) {
+                $variationIds = $this->fetchAllSafe("SELECT id FROM product_variations WHERE product_id = " . $id);
+                foreach ($variationIds as $row) {
+                    $variationId = (int)$row['id'];
+                    if ($this->tableExists('product_variation_attribute_values')) {
+                        $stmt = $this->pdo->prepare("DELETE FROM product_variation_attribute_values WHERE variation_id = :variation_id");
+                        $stmt->execute(['variation_id' => $variationId]);
+                    }
+                }
+                $stmt = $this->pdo->prepare("DELETE FROM product_variations WHERE product_id = :product_id");
+                $stmt->execute(['product_id' => $id]);
+            }
+            $this->deleteById('products', $id);
+            redirectTo('/admin.php?module=products&success=Produit supprimé');
+        }
+
+        redirectTo('/admin.php?module=products');
     }
+
+    private function handleForms(string $action): void
+    {
+        if ($action === 'index') {
+            $forms = $this->fetchAllSafe("SELECT * FROM forms ORDER BY id DESC");
+            $this->render('Formulaires', $this->resolveView(['modules/forms-list.php']), compact('forms'));
+            return;
         }
 
         if ($action === 'create') {
@@ -1449,28 +1720,40 @@ class Kernel
             return;
         }
 
-            $file = $_FILES['file'];
-            $name = time() . '-' . basename($file['name']);
-            $target = __DIR__ . '/../../public/uploads/' . $name;
-
-            if (move_uploaded_file($file['tmp_name'], $target)) {
-                echo "<h2>Upload réussi</h2>";
-                echo "<a href='/uploads/$name' target='_blank'>Voir le fichier</a>";
+        if ($action === 'save' && $_SERVER['REQUEST_METHOD'] === 'POST') {
+            $id = (int)($_GET['id'] ?? 0);
+            $data = [
+                'title' => trim($_POST['title'] ?? ''),
+                'slug' => trim($_POST['slug'] ?? ''),
+                'description' => trim($_POST['description'] ?? ''),
+                'form_schema_json' => trim($_POST['form_schema_json'] ?? '[]'),
+                'status' => trim($_POST['status'] ?? 'draft'),
+                'updated_at' => date('Y-m-d H:i:s'),
+            ];
+            if ($id > 0) {
+                $this->updateRow('forms', $id, $data);
             } else {
-                echo "Erreur upload";
+                $data['created_at'] = date('Y-m-d H:i:s');
+                $this->insertRow('forms', $data);
             }
-
-            return;
+            redirectTo('/admin.php?module=forms&success=Formulaire enregistré');
         }
 
-        // GET → afficher formulaire
-        $this->render(
-            'Ajouter un média',
-            $this->resolveView(['modules/media-form.php']),
-            []
-        );
-        return;
+        if ($action === 'delete') {
+            $id = (int)($_GET['id'] ?? 0);
+            $this->deleteById('forms', $id);
+            redirectTo('/admin.php?module=forms&success=Formulaire supprimé');
+        }
+
+        redirectTo('/admin.php?module=forms');
     }
+
+    private function handleGallery(string $action): void
+    {
+        if ($action === 'index') {
+            $galleryItems = $this->fetchAllSafe("SELECT * FROM gallery_items ORDER BY sort_order ASC, id ASC");
+            $this->render('Galerie', $this->resolveView(['modules/gallery-list.php']), compact('galleryItems'));
+            return;
         }
 
         if ($action === 'create') {
@@ -1489,28 +1772,39 @@ class Kernel
             return;
         }
 
-            $file = $_FILES['file'];
-            $name = time() . '-' . basename($file['name']);
-            $target = __DIR__ . '/../../public/uploads/' . $name;
-
-            if (move_uploaded_file($file['tmp_name'], $target)) {
-                echo "<h2>Upload réussi</h2>";
-                echo "<a href='/uploads/$name' target='_blank'>Voir le fichier</a>";
+        if ($action === 'save' && $_SERVER['REQUEST_METHOD'] === 'POST') {
+            $id = (int)($_GET['id'] ?? 0);
+            $data = [
+                'title' => trim($_POST['title'] ?? ''),
+                'image_media_id' => ($_POST['image_media_id'] ?? '') !== '' ? (int)$_POST['image_media_id'] : null,
+                'caption' => trim($_POST['caption'] ?? ''),
+                'sort_order' => (int)($_POST['sort_order'] ?? 0),
+                'updated_at' => date('Y-m-d H:i:s'),
+            ];
+            if ($id > 0) {
+                $this->updateRow('gallery_items', $id, $data);
             } else {
-                echo "Erreur upload";
+                $data['created_at'] = date('Y-m-d H:i:s');
+                $this->insertRow('gallery_items', $data);
             }
-
-            return;
+            redirectTo('/admin.php?module=gallery&success=Élément enregistré');
         }
 
-        // GET → afficher formulaire
-        $this->render(
-            'Ajouter un média',
-            $this->resolveView(['modules/media-form.php']),
-            []
-        );
-        return;
+        if ($action === 'delete') {
+            $id = (int)($_GET['id'] ?? 0);
+            $this->deleteById('gallery_items', $id);
+            redirectTo('/admin.php?module=gallery&success=Élément supprimé');
+        }
+
+        redirectTo('/admin.php?module=gallery');
     }
+
+    private function handleTestimonials(string $action): void
+    {
+        if ($action === 'index') {
+            $testimonials = $this->fetchAllSafe("SELECT * FROM testimonials ORDER BY id DESC");
+            $this->render('Avis', $this->resolveView(['modules/testimonials-list.php']), compact('testimonials'));
+            return;
         }
 
         if ($action === 'create') {
@@ -1529,28 +1823,40 @@ class Kernel
             return;
         }
 
-            $file = $_FILES['file'];
-            $name = time() . '-' . basename($file['name']);
-            $target = __DIR__ . '/../../public/uploads/' . $name;
-
-            if (move_uploaded_file($file['tmp_name'], $target)) {
-                echo "<h2>Upload réussi</h2>";
-                echo "<a href='/uploads/$name' target='_blank'>Voir le fichier</a>";
+        if ($action === 'save' && $_SERVER['REQUEST_METHOD'] === 'POST') {
+            $id = (int)($_GET['id'] ?? 0);
+            $data = [
+                'author_name' => trim($_POST['author_name'] ?? ''),
+                'company' => trim($_POST['company'] ?? ''),
+                'content' => trim($_POST['content'] ?? ''),
+                'rating' => (int)($_POST['rating'] ?? 5),
+                'status' => trim($_POST['status'] ?? 'published'),
+                'updated_at' => date('Y-m-d H:i:s'),
+            ];
+            if ($id > 0) {
+                $this->updateRow('testimonials', $id, $data);
             } else {
-                echo "Erreur upload";
+                $data['created_at'] = date('Y-m-d H:i:s');
+                $this->insertRow('testimonials', $data);
             }
-
-            return;
+            redirectTo('/admin.php?module=testimonials&success=Avis enregistré');
         }
 
-        // GET → afficher formulaire
-        $this->render(
-            'Ajouter un média',
-            $this->resolveView(['modules/media-form.php']),
-            []
-        );
-        return;
+        if ($action === 'delete') {
+            $id = (int)($_GET['id'] ?? 0);
+            $this->deleteById('testimonials', $id);
+            redirectTo('/admin.php?module=testimonials&success=Avis supprimé');
+        }
+
+        redirectTo('/admin.php?module=testimonials');
     }
+
+    private function handleClients(string $action): void
+    {
+        if ($action === 'index') {
+            $clients = $this->fetchAllSafe("SELECT * FROM clients ORDER BY id DESC");
+            $this->render('Clients', $this->resolveView(['modules/clients-list.php']), compact('clients'));
+            return;
         }
 
         if ($action === 'create') {
@@ -1569,28 +1875,41 @@ class Kernel
             return;
         }
 
-            $file = $_FILES['file'];
-            $name = time() . '-' . basename($file['name']);
-            $target = __DIR__ . '/../../public/uploads/' . $name;
-
-            if (move_uploaded_file($file['tmp_name'], $target)) {
-                echo "<h2>Upload réussi</h2>";
-                echo "<a href='/uploads/$name' target='_blank'>Voir le fichier</a>";
+        if ($action === 'save' && $_SERVER['REQUEST_METHOD'] === 'POST') {
+            $id = (int)($_GET['id'] ?? 0);
+            $data = [
+                'first_name' => trim($_POST['first_name'] ?? ''),
+                'last_name' => trim($_POST['last_name'] ?? ''),
+                'email' => trim($_POST['email'] ?? ''),
+                'phone' => trim($_POST['phone'] ?? ''),
+                'company' => trim($_POST['company'] ?? ''),
+                'notes' => trim($_POST['notes'] ?? ''),
+                'updated_at' => date('Y-m-d H:i:s'),
+            ];
+            if ($id > 0) {
+                $this->updateRow('clients', $id, $data);
             } else {
-                echo "Erreur upload";
+                $data['created_at'] = date('Y-m-d H:i:s');
+                $this->insertRow('clients', $data);
             }
-
-            return;
+            redirectTo('/admin.php?module=clients&success=Client enregistré');
         }
 
-        // GET → afficher formulaire
-        $this->render(
-            'Ajouter un média',
-            $this->resolveView(['modules/media-form.php']),
-            []
-        );
-        return;
+        if ($action === 'delete') {
+            $id = (int)($_GET['id'] ?? 0);
+            $this->deleteById('clients', $id);
+            redirectTo('/admin.php?module=clients&success=Client supprimé');
+        }
+
+        redirectTo('/admin.php?module=clients');
     }
+
+    private function handleBooking(string $action): void
+    {
+        if ($action === 'index') {
+            $bookings = $this->fetchAllSafe("SELECT * FROM bookings ORDER BY id DESC");
+            $this->render('Réservations', $this->resolveView(['modules/booking-list.php']), compact('bookings'));
+            return;
         }
 
         if ($action === 'create') {
@@ -1609,28 +1928,42 @@ class Kernel
             return;
         }
 
-            $file = $_FILES['file'];
-            $name = time() . '-' . basename($file['name']);
-            $target = __DIR__ . '/../../public/uploads/' . $name;
-
-            if (move_uploaded_file($file['tmp_name'], $target)) {
-                echo "<h2>Upload réussi</h2>";
-                echo "<a href='/uploads/$name' target='_blank'>Voir le fichier</a>";
+        if ($action === 'save' && $_SERVER['REQUEST_METHOD'] === 'POST') {
+            $id = (int)($_GET['id'] ?? 0);
+            $data = [
+                'client_id' => ($_POST['client_id'] ?? '') !== '' ? (int)$_POST['client_id'] : null,
+                'title' => trim($_POST['title'] ?? ''),
+                'booking_date' => trim($_POST['booking_date'] ?? ''),
+                'booking_time' => trim($_POST['booking_time'] ?? ''),
+                'status' => trim($_POST['status'] ?? 'pending'),
+                'amount' => ($_POST['amount'] ?? '') !== '' ? (float)$_POST['amount'] : null,
+                'notes' => trim($_POST['notes'] ?? ''),
+                'updated_at' => date('Y-m-d H:i:s'),
+            ];
+            if ($id > 0) {
+                $this->updateRow('bookings', $id, $data);
             } else {
-                echo "Erreur upload";
+                $data['created_at'] = date('Y-m-d H:i:s');
+                $this->insertRow('bookings', $data);
             }
-
-            return;
+            redirectTo('/admin.php?module=booking&success=Réservation enregistrée');
         }
 
-        // GET → afficher formulaire
-        $this->render(
-            'Ajouter un média',
-            $this->resolveView(['modules/media-form.php']),
-            []
-        );
-        return;
+        if ($action === 'delete') {
+            $id = (int)($_GET['id'] ?? 0);
+            $this->deleteById('bookings', $id);
+            redirectTo('/admin.php?module=booking&success=Réservation supprimée');
+        }
+
+        redirectTo('/admin.php?module=booking');
     }
+
+    private function handleSubscriptions(string $action): void
+    {
+        if ($action === 'index') {
+            $subscriptions = $this->fetchAllSafe("SELECT * FROM subscriptions ORDER BY id DESC");
+            $this->render('Abonnements', $this->resolveView(['modules/subscriptions-list.php']), compact('subscriptions'));
+            return;
         }
 
         if ($action === 'create') {
@@ -1649,28 +1982,79 @@ class Kernel
             return;
         }
 
-            $file = $_FILES['file'];
-            $name = time() . '-' . basename($file['name']);
-            $target = __DIR__ . '/../../public/uploads/' . $name;
-
-            if (move_uploaded_file($file['tmp_name'], $target)) {
-                echo "<h2>Upload réussi</h2>";
-                echo "<a href='/uploads/$name' target='_blank'>Voir le fichier</a>";
+        if ($action === 'save' && $_SERVER['REQUEST_METHOD'] === 'POST') {
+            $id = (int)($_GET['id'] ?? 0);
+            $data = [
+                'title' => trim($_POST['title'] ?? ''),
+                'description' => trim($_POST['description'] ?? ''),
+                'price' => ($_POST['price'] ?? '') !== '' ? (float)$_POST['price'] : null,
+                'billing_cycle' => trim($_POST['billing_cycle'] ?? 'monthly'),
+                'status' => trim($_POST['status'] ?? 'active'),
+                'updated_at' => date('Y-m-d H:i:s'),
+            ];
+            if ($id > 0) {
+                $this->updateRow('subscriptions', $id, $data);
             } else {
-                echo "Erreur upload";
+                $data['created_at'] = date('Y-m-d H:i:s');
+                $this->insertRow('subscriptions', $data);
             }
-
-            return;
+            redirectTo('/admin.php?module=subscriptions&success=Abonnement enregistré');
         }
 
-        // GET → afficher formulaire
-        $this->render(
-            'Ajouter un média',
-            $this->resolveView(['modules/media-form.php']),
-            []
-        );
-        return;
+        if ($action === 'delete') {
+            $id = (int)($_GET['id'] ?? 0);
+            $this->deleteById('subscriptions', $id);
+            redirectTo('/admin.php?module=subscriptions&success=Abonnement supprimé');
+        }
+
+        redirectTo('/admin.php?module=subscriptions');
     }
+
+
+    private function syncCommonMeta(int $contentId): void
+    {
+        $metaTitle = trim($_POST['meta_title'] ?? '');
+        $metaDescription = trim($_POST['meta_description'] ?? '');
+        $featuredMediaId = trim((string)($_POST['featured_media_id'] ?? ''));
+
+        if ($metaTitle !== '') {
+            Content::setMeta($this->pdo, $contentId, 'meta_title', $metaTitle);
+        } else {
+            Content::deleteMeta($this->pdo, $contentId, 'meta_title');
+        }
+
+        if ($metaDescription !== '') {
+            Content::setMeta($this->pdo, $contentId, 'meta_description', $metaDescription);
+        } else {
+            Content::deleteMeta($this->pdo, $contentId, 'meta_description');
+        }
+
+        if ($featuredMediaId !== '') {
+            Content::setMeta($this->pdo, $contentId, 'featured_media_id', $featuredMediaId);
+        } else {
+            Content::deleteMeta($this->pdo, $contentId, 'featured_media_id');
+        }
+    }
+
+    private function fetchBlocks(int $contentId): array
+    {
+        return $this->fetchAllSafe("SELECT * FROM content_blocks WHERE content_id = " . (int)$contentId . " ORDER BY sort_order ASC, id ASC");
+    }
+
+    private function moveBlock(int $contentId, int $blockId, string $direction): void
+    {
+        $blocks = $this->fetchBlocks($contentId);
+        $index = null;
+
+        foreach ($blocks as $i => $block) {
+            if ((int)$block['id'] === $blockId) {
+                $index = $i;
+                break;
+            }
+        }
+
+        if ($index === null) {
+            return;
         }
 
         if ($direction === 'up' && $index > 0) {
@@ -1850,39 +2234,4 @@ class Kernel
             return 0;
         }
     }
-
-    function handleMedia($action)
-    {
-
-                $file = $_FILES['file'];
-                $name = time() . '-' . basename($file['name']);
-                $target = __DIR__ . '/../../public/uploads/' . $name;
-
-                if (move_uploaded_file($file['tmp_name'], $target)) {
-                    echo "<h2>Upload réussi</h2>";
-                    echo "<a href='/uploads/$name' target='_blank'>Voir le fichier</a>";
-                } else {
-                    echo "Erreur upload";
-                }
-
-                return;
-            }
-
-            // GET → afficher formulaire
-            $this->render(
-                'Ajouter un média',
-                $this->resolveView(['modules/media-form.php']),
-                []
-            );
-            return;
-        }
-
-        // Liste médias
-        $this->render(
-            'Médias',
-            $this->resolveView(['modules/media-list.php']),
-            []
-        );
-    }
-
 }
