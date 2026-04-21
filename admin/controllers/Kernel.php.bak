@@ -95,6 +95,7 @@ class Kernel
 
             $this->render('Pages', $this->resolveView(['modules/pages-list.php']), compact('pages'));
             return;
+        }
 
         if ($action === 'create') {
             $page = [
@@ -507,10 +508,6 @@ class Kernel
 
     private function handleMedia(string $action): void
     {
-        // DEBUG_MEDIA_ACTION
-        error_log('MEDIA ACTION: ' . $action);
-
-    {
         if ($action === 'index') {
             $mediaItems = $this->fetchAllSafe("SELECT * FROM media ORDER BY id DESC");
             $this->render('Médias', $this->resolveView(['modules/media-list.php']), compact('mediaItems'));
@@ -592,6 +589,7 @@ class Kernel
             $menus = $this->fetchAllSafe("SELECT * FROM menus ORDER BY id DESC");
             $this->render('Menus', $this->resolveView(['modules/menus-list.php']), compact('menus'));
             return;
+        }
 
         if ($action === 'create') {
             $menu = ['name' => '', 'location_key' => ''];
@@ -711,6 +709,7 @@ class Kernel
             $users = $this->fetchAllSafe("SELECT * FROM users ORDER BY id DESC");
             $this->render('Utilisateurs', $this->resolveView(['modules/users-list.php']), compact('users'));
             return;
+        }
 
         if ($action === 'create') {
             $user = ['name' => '', 'email' => '', 'role' => 'editor'];
@@ -1476,6 +1475,7 @@ class Kernel
 
             $this->render('Produits', $this->resolveView(['modules/products-list.php']), compact('products', 'categoryOptions'));
             return;
+        }
 
         if ($action === 'create') {
             $product = [
@@ -1702,6 +1702,7 @@ class Kernel
             $forms = $this->fetchAllSafe("SELECT * FROM forms ORDER BY id DESC");
             $this->render('Formulaires', $this->resolveView(['modules/forms-list.php']), compact('forms'));
             return;
+        }
 
         if ($action === 'create') {
             $form = ['title' => '', 'slug' => '', 'description' => '', 'form_schema_json' => '[]', 'status' => 'draft'];
@@ -1753,6 +1754,7 @@ class Kernel
             $galleryItems = $this->fetchAllSafe("SELECT * FROM gallery_items ORDER BY sort_order ASC, id ASC");
             $this->render('Galerie', $this->resolveView(['modules/gallery-list.php']), compact('galleryItems'));
             return;
+        }
 
         if ($action === 'create') {
             $galleryItem = ['title' => '', 'image_media_id' => '', 'caption' => '', 'sort_order' => 0];
@@ -1803,6 +1805,7 @@ class Kernel
             $testimonials = $this->fetchAllSafe("SELECT * FROM testimonials ORDER BY id DESC");
             $this->render('Avis', $this->resolveView(['modules/testimonials-list.php']), compact('testimonials'));
             return;
+        }
 
         if ($action === 'create') {
             $testimonial = ['author_name' => '', 'company' => '', 'content' => '', 'rating' => 5, 'status' => 'published'];
@@ -1854,6 +1857,7 @@ class Kernel
             $clients = $this->fetchAllSafe("SELECT * FROM clients ORDER BY id DESC");
             $this->render('Clients', $this->resolveView(['modules/clients-list.php']), compact('clients'));
             return;
+        }
 
         if ($action === 'create') {
             $client = ['first_name' => '', 'last_name' => '', 'email' => '', 'phone' => '', 'company' => '', 'notes' => ''];
@@ -1906,6 +1910,7 @@ class Kernel
             $bookings = $this->fetchAllSafe("SELECT * FROM bookings ORDER BY id DESC");
             $this->render('Réservations', $this->resolveView(['modules/booking-list.php']), compact('bookings'));
             return;
+        }
 
         if ($action === 'create') {
             $booking = ['client_id' => '', 'title' => '', 'booking_date' => '', 'booking_time' => '', 'status' => 'pending', 'amount' => '', 'notes' => ''];
@@ -1959,6 +1964,7 @@ class Kernel
             $subscriptions = $this->fetchAllSafe("SELECT * FROM subscriptions ORDER BY id DESC");
             $this->render('Abonnements', $this->resolveView(['modules/subscriptions-list.php']), compact('subscriptions'));
             return;
+        }
 
         if ($action === 'create') {
             $subscription = ['title' => '', 'description' => '', 'price' => '', 'billing_cycle' => 'monthly', 'status' => 'active'];
