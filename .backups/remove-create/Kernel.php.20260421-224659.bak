@@ -97,6 +97,29 @@ class Kernel
             return;
         }
 
+        if ($action === 'create') {
+            $page = [
+                'title' => '',
+                'slug' => '',
+                'content' => '',
+                'status' => 'draft',
+            ];
+            $pageMeta = [
+                'meta_title' => '',
+                'meta_description' => '',
+                'featured_media_id' => '',
+            ];
+            $mediaLibrary = $this->fetchAllSafe("SELECT id, filename, original_name, path FROM media ORDER BY id DESC");
+            $isEdit = false;
+
+            $this->render('Ajouter une page', $this->resolveView(['modules/pages-form.php']), [
+                'page' => array_merge($page, $pageMeta),
+                'mediaLibrary' => $mediaLibrary,
+                'isEdit' => $isEdit,
+            ]);
+            return;
+        }
+
         if ($action === 'edit') {
             $id = (int)($_GET['id'] ?? 0);
             $page = Content::findById($this->pdo, $id);
@@ -372,6 +395,26 @@ class Kernel
             redirectTo('/admin.php?module=blog&action=categories&success=Catégorie supprimée');
         }
 
+        if ($action === 'create') {
+            $post = [
+                'title' => '',
+                'slug' => '',
+                'excerpt' => '',
+                'content' => '',
+                'status' => 'draft',
+                'meta_title' => '',
+                'meta_description' => '',
+                'featured_media_id' => '',
+            ];
+            $mediaLibrary = $this->fetchAllSafe("SELECT id, filename, original_name, path FROM media ORDER BY id DESC");
+            $blogCategories = $this->fetchAllSafe("SELECT * FROM post_categories ORDER BY name ASC");
+            $selectedCategoryIds = [];
+            $isEdit = false;
+
+            $this->render('Ajouter un article', $this->resolveView(['modules/blog-form.php']), compact('post', 'mediaLibrary', 'blogCategories', 'selectedCategoryIds', 'isEdit'));
+            return;
+        }
+
         if ($action === 'edit') {
             $id = (int)($_GET['id'] ?? 0);
             $post = Content::findById($this->pdo, $id);
@@ -548,6 +591,13 @@ class Kernel
             return;
         }
 
+        if ($action === 'create') {
+            $menu = ['name' => '', 'location_key' => ''];
+            $isEdit = false;
+            $this->render('Ajouter un menu', $this->resolveView(['modules/menus-form.php']), compact('menu', 'isEdit'));
+            return;
+        }
+
         if ($action === 'edit') {
             $id = (int)($_GET['id'] ?? 0);
             $menu = $this->fetchOne("SELECT * FROM menus WHERE id = :id", ['id' => $id]);
@@ -658,6 +708,13 @@ class Kernel
         if ($action === 'index') {
             $users = $this->fetchAllSafe("SELECT * FROM users ORDER BY id DESC");
             $this->render('Utilisateurs', $this->resolveView(['modules/users-list.php']), compact('users'));
+            return;
+        }
+
+        if ($action === 'create') {
+            $user = ['name' => '', 'email' => '', 'role' => 'editor'];
+            $isEdit = false;
+            $this->render('Ajouter un utilisateur', $this->resolveView(['modules/users-form.php']), compact('user', 'isEdit'));
             return;
         }
 
@@ -1420,7 +1477,36 @@ class Kernel
             return;
         }
 
-        $selectedAttributeIds = [];
+        if ($action === 'create') {
+            $product = [
+                'title' => '',
+                'slug' => '',
+                'content' => '',
+                'short_description' => '',
+                'status' => 'draft',
+                'featured_media_id' => '',
+                'sku' => '',
+                'regular_price' => '',
+                'sale_price' => '',
+                'manage_stock' => 0,
+                'stock_quantity' => '',
+                'stock_status' => 'instock',
+                'catalog_visibility' => 'visible',
+                'product_type' => 'simple',
+                'weight' => '',
+                'length' => '',
+                'width' => '',
+                'height' => '',
+                'sort_order' => 0,
+            ];
+            $productCategories = $this->fetchAllSafe("SELECT * FROM product_categories ORDER BY sort_order ASC, name ASC");
+            $selectedCategoryIds = [];
+            $allAttributes = $this->fetchAllSafe("SELECT * FROM product_attributes ORDER BY sort_order ASC, name ASC");
+            $attributeTermsMap = [];
+            foreach ($allAttributes as $attribute) {
+                $attributeTermsMap[(int)$attribute['id']] = $this->fetchAllSafe("SELECT * FROM product_attribute_terms WHERE attribute_id = " . (int)$attribute['id'] . " ORDER BY sort_order ASC, name ASC");
+            }
+            $selectedAttributeIds = [];
             $selectedAttributeTerms = [];
             $galleryMediaIdsString = '';
             $isEdit = false;
@@ -1618,6 +1704,13 @@ class Kernel
             return;
         }
 
+        if ($action === 'create') {
+            $form = ['title' => '', 'slug' => '', 'description' => '', 'form_schema_json' => '[]', 'status' => 'draft'];
+            $isEdit = false;
+            $this->render('Ajouter un formulaire', $this->resolveView(['modules/forms-form.php']), compact('form', 'isEdit'));
+            return;
+        }
+
         if ($action === 'edit') {
             $id = (int)($_GET['id'] ?? 0);
             $form = $this->fetchOne("SELECT * FROM forms WHERE id = :id", ['id' => $id]);
@@ -1660,6 +1753,13 @@ class Kernel
         if ($action === 'index') {
             $galleryItems = $this->fetchAllSafe("SELECT * FROM gallery_items ORDER BY sort_order ASC, id ASC");
             $this->render('Galerie', $this->resolveView(['modules/gallery-list.php']), compact('galleryItems'));
+            return;
+        }
+
+        if ($action === 'create') {
+            $galleryItem = ['title' => '', 'image_media_id' => '', 'caption' => '', 'sort_order' => 0];
+            $isEdit = false;
+            $this->render('Ajouter un élément de galerie', $this->resolveView(['modules/gallery-form.php']), compact('galleryItem', 'isEdit'));
             return;
         }
 
@@ -1707,6 +1807,13 @@ class Kernel
             return;
         }
 
+        if ($action === 'create') {
+            $testimonial = ['author_name' => '', 'company' => '', 'content' => '', 'rating' => 5, 'status' => 'published'];
+            $isEdit = false;
+            $this->render('Ajouter un avis', $this->resolveView(['modules/testimonials-form.php']), compact('testimonial', 'isEdit'));
+            return;
+        }
+
         if ($action === 'edit') {
             $id = (int)($_GET['id'] ?? 0);
             $testimonial = $this->fetchOne("SELECT * FROM testimonials WHERE id = :id", ['id' => $id]);
@@ -1749,6 +1856,13 @@ class Kernel
         if ($action === 'index') {
             $clients = $this->fetchAllSafe("SELECT * FROM clients ORDER BY id DESC");
             $this->render('Clients', $this->resolveView(['modules/clients-list.php']), compact('clients'));
+            return;
+        }
+
+        if ($action === 'create') {
+            $client = ['first_name' => '', 'last_name' => '', 'email' => '', 'phone' => '', 'company' => '', 'notes' => ''];
+            $isEdit = false;
+            $this->render('Ajouter un client', $this->resolveView(['modules/clients-form.php']), compact('client', 'isEdit'));
             return;
         }
 
@@ -1798,6 +1912,13 @@ class Kernel
             return;
         }
 
+        if ($action === 'create') {
+            $booking = ['client_id' => '', 'title' => '', 'booking_date' => '', 'booking_time' => '', 'status' => 'pending', 'amount' => '', 'notes' => ''];
+            $isEdit = false;
+            $this->render('Ajouter une réservation', $this->resolveView(['modules/booking-form.php']), compact('booking', 'isEdit'));
+            return;
+        }
+
         if ($action === 'edit') {
             $id = (int)($_GET['id'] ?? 0);
             $booking = $this->fetchOne("SELECT * FROM bookings WHERE id = :id", ['id' => $id]);
@@ -1842,6 +1963,13 @@ class Kernel
         if ($action === 'index') {
             $subscriptions = $this->fetchAllSafe("SELECT * FROM subscriptions ORDER BY id DESC");
             $this->render('Abonnements', $this->resolveView(['modules/subscriptions-list.php']), compact('subscriptions'));
+            return;
+        }
+
+        if ($action === 'create') {
+            $subscription = ['title' => '', 'description' => '', 'price' => '', 'billing_cycle' => 'monthly', 'status' => 'active'];
+            $isEdit = false;
+            $this->render('Ajouter un abonnement', $this->resolveView(['modules/subscriptions-form.php']), compact('subscription', 'isEdit'));
             return;
         }
 
