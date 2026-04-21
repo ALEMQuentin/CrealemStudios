@@ -95,7 +95,6 @@ class Kernel
 
             $this->render('Pages', $this->resolveView(['modules/pages-list.php']), compact('pages'));
             return;
-        }
 
         if ($action === 'create') {
             $page = [
@@ -508,312 +507,115 @@ class Kernel
 
     private function handleMedia(string $action): void
     {
+        error_log('MEDIA ACTION: ' . $action);
+
         if ($action === 'index') {
             $mediaItems = $this->fetchAllSafe("SELECT * FROM media ORDER BY id DESC");
             $this->render('Médias', $this->resolveView(['modules/media-list.php']), compact('mediaItems'));
             return;
         }
 
-        if ($action === 'upload' && $_SERVER['REQUEST_METHOD'] === 'POST') {
-            if (empty($_FILES['media_file']) || $_FILES['media_file']['error'] !== UPLOAD_ERR_OK) {
-                redirectTo('/admin.php?module=media&error=Upload impossible');
-            }
-
-            $allowedMimeTypes = [
-                'image/jpeg',
-                'image/png',
-                'image/webp',
-                'image/gif',
-                'image/svg+xml',
+        if ($action === 'create') {
+            $mediaItem = [
+                'title' => '',
+                'filename' => '',
+                'filepath' => '',
+                'mime_type' => '',
+                'alt_text' => '',
             ];
+            $isEdit = false;
+            $this->render('Ajouter un média', $this->resolveView(['modules/media-form.php']), compact('mediaItem', 'isEdit'));
+            return;
+        }
 
-            $tmpPath = $_FILES['media_file']['tmp_name'];
-            $originalName = $_FILES['media_file']['name'];
-            $mimeType = mime_content_type($tmpPath) ?: 'application/octet-stream';
-            $size = (int)$_FILES['media_file']['size'];
+        if ($action === 'edit') {
+            $id = (int)($_GET['id'] ?? 0);
+            $mediaItem = $this->fetchOne("SELECT * FROM media WHERE id = :id", ['id' => $id]);
+            if (!$mediaItem) {
+                redirectTo('/admin.php?module=media&error=Média introuvable');
+            }
+            $isEdit = true;
+            $this->render('Modifier un média', $this->resolveView(['modules/media-form.php']), compact('mediaItem', 'isEdit'));
+            return;
+        }
 
-            if (!in_array($mimeType, $allowedMimeTypes, true)) {
-                redirectTo('/admin.php?module=media&error=Format non autorisé');
+        if ($action === 'save' && $_SERVER['REQUEST_METHOD'] === 'POST') {
+            $id = (int)($_GET['id'] ?? 0);
+
+            if ($id > 0) {
+                $existing = $this->fetchOne("SELECT * FROM media WHERE id = :id", ['id' => $id]);
+                if (!$existing) {
+                    redirectTo('/admin.php?module=media&error=Média introuvable');
+                }
+
+                $this->updateRow('media', $id, [
+                    'title' => trim($_POST['title'] ?? ''),
+                    'alt_text' => trim($_POST['alt_text'] ?? ''),
+                    'updated_at' => date('Y-m-d H:i:s'),
+                ]);
+
+                redirectTo('/admin.php?module=media&success=Média enregistré');
             }
 
-            $uploadsDir = dirname(__DIR__, 3) . '/public/uploads';
-            if (!is_dir($uploadsDir)) {
-                mkdir($uploadsDir, 0775, true);
+            if (
+                !isset($_FILES['media_file']) ||
+                !is_array($_FILES['media_file']) ||
+                (int)($_FILES['media_file']['error'] ?? 1) !== 0
+            ) {
+                redirectTo('/admin.php?module=media&error=Fichier média manquant');
             }
 
-            $extension = strtolower(pathinfo($originalName, PATHINFO_EXTENSION));
-            $filename = uniqid('media_', true) . '.' . $extension;
-            $destination = $uploadsDir . '/' . $filename;
-            $publicPath = '/uploads/' . $filename;
-            $now = date('Y-m-d H:i:s');
+            $originalName = (string)($_FILES['media_file']['name'] ?? 'file');
+            $tmpName = (string)($_FILES['media_file']['tmp_name'] ?? '');
+            $mimeType = (string)($_FILES['media_file']['type'] ?? '');
+            $safeName = preg_replace('/[^A-Za-z0-9._-]+/', '-', $originalName);
+            $finalName = time() . '-' . $safeName;
 
-            if (!move_uploaded_file($tmpPath, $destination)) {
-                redirectTo('/admin.php?module=media&error=Déplacement du fichier impossible');
+            $projectRoot = dirname(__DIR__, 2);
+            $targetDir = $projectRoot . '/public/uploads';
+            if (!is_dir($targetDir)) {
+                mkdir($targetDir, 0777, true);
             }
 
-            $data = [
-                'filename' => $filename,
-                'original_name' => $originalName,
-                'path' => $publicPath,
+            $targetPath = $targetDir . '/' . $finalName;
+            $publicPath = '/uploads/' . $finalName;
+
+            if (!move_uploaded_file($tmpName, $targetPath)) {
+                redirectTo('/admin.php?module=media&error=Impossible de déplacer le fichier');
+            }
+
+            $this->insertRow('media', [
+                'title' => trim($_POST['title'] ?? ''),
+                'filename' => $finalName,
+                'filepath' => $publicPath,
                 'mime_type' => $mimeType,
-                'size' => $size,
-                'created_at' => $now,
-                'updated_at' => $now,
-            ];
+                'alt_text' => trim($_POST['alt_text'] ?? ''),
+                'sort_order' => 0,
+                'created_at' => date('Y-m-d H:i:s'),
+                'updated_at' => date('Y-m-d H:i:s'),
+            ]);
 
-            $this->insertRow('media', $data);
             redirectTo('/admin.php?module=media&success=Média ajouté');
         }
 
         if ($action === 'delete') {
             $id = (int)($_GET['id'] ?? 0);
-            $item = $this->fetchOne("SELECT * FROM media WHERE id = :id", ['id' => $id]);
+            $mediaItem = $this->fetchOne("SELECT * FROM media WHERE id = :id", ['id' => $id]);
+            if (!$mediaItem) {
+                redirectTo('/admin.php?module=media&error=Média introuvable');
+            }
 
-            if ($item && !empty($item['path'])) {
-                $filePath = dirname(__DIR__, 3) . '/public' . $item['path'];
-                if (file_exists($filePath)) {
-                    @unlink($filePath);
-                }
+            $projectRoot = dirname(__DIR__, 2);
+            $filePath = $projectRoot . '/public' . ($mediaItem['filepath'] ?? '');
+            if (is_file($filePath)) {
+                @unlink($filePath);
             }
 
             $this->deleteById('media', $id);
             redirectTo('/admin.php?module=media&success=Média supprimé');
         }
 
-        return;
-    }
-
-    private function handleMenus(string $action): void
-    {
-        if ($action === 'index') {
-            $menus = $this->fetchAllSafe("SELECT * FROM menus ORDER BY id DESC");
-            $this->render('Menus', $this->resolveView(['modules/menus-list.php']), compact('menus'));
-            return;
-        }
-
-        if ($action === 'create') {
-            $menu = ['name' => '', 'location_key' => ''];
-            $isEdit = false;
-            $this->render('Ajouter un menu', $this->resolveView(['modules/menus-form.php']), compact('menu', 'isEdit'));
-            return;
-        }
-
-        if ($action === 'edit') {
-            $id = (int)($_GET['id'] ?? 0);
-            $menu = $this->fetchOne("SELECT * FROM menus WHERE id = :id", ['id' => $id]);
-
-            if (!$menu) {
-                redirectTo('/admin.php?module=menus&error=Menu introuvable');
-            }
-
-            $isEdit = true;
-            $this->render('Modifier un menu', $this->resolveView(['modules/menus-form.php']), compact('menu', 'isEdit'));
-            return;
-        }
-
-        if ($action === 'save' && $_SERVER['REQUEST_METHOD'] === 'POST') {
-            $id = (int)($_GET['id'] ?? 0);
-            $now = date('Y-m-d H:i:s');
-
-            $data = [
-                'name' => trim($_POST['name'] ?? ''),
-                'location_key' => trim($_POST['location_key'] ?? ''),
-                'updated_at' => $now,
-            ];
-
-            if ($id > 0) {
-                $this->updateRow('menus', $id, $data);
-                redirectTo('/admin.php?module=menus&success=Menu modifié');
-            }
-
-            $data['created_at'] = $now;
-            $this->insertRow('menus', $data);
-
-            redirectTo('/admin.php?module=menus&success=Menu ajouté');
-        }
-
-        if ($action === 'delete') {
-            $id = (int)($_GET['id'] ?? 0);
-
-            if ($this->tableExists('menu_items')) {
-                $stmt = $this->pdo->prepare("DELETE FROM menu_items WHERE menu_id = :menu_id");
-                $stmt->execute(['menu_id' => $id]);
-            }
-
-            $this->deleteById('menus', $id);
-            redirectTo('/admin.php?module=menus&success=Menu supprimé');
-        }
-
-        if ($action === 'items') {
-            $id = (int)($_GET['id'] ?? 0);
-            $menu = $this->fetchOne("SELECT * FROM menus WHERE id = :id", ['id' => $id]);
-
-            if (!$menu) {
-                redirectTo('/admin.php?module=menus&error=Menu introuvable');
-            }
-
-            $items = [];
-            if ($this->tableExists('menu_items')) {
-                $stmt = $this->pdo->prepare("SELECT * FROM menu_items WHERE menu_id = :menu_id ORDER BY sort_order ASC, id ASC");
-                $stmt->execute(['menu_id' => $id]);
-                $items = $stmt->fetchAll(PDO::FETCH_ASSOC);
-            }
-
-            $pagesForMenu = Content::allByType($this->pdo, 'page');
-            $this->render('Éléments du menu', $this->resolveView(['modules/menu-items.php']), compact('menu', 'items', 'pagesForMenu'));
-            return;
-        }
-
-        if ($action === 'add_item' && $_SERVER['REQUEST_METHOD'] === 'POST') {
-            $menuId = (int)($_GET['id'] ?? 0);
-            $itemType = trim($_POST['item_type'] ?? 'custom');
-            $pageId = (int)($_POST['page_id'] ?? 0);
-            $url = trim($_POST['url'] ?? '');
-
-            if ($itemType === 'page' && $pageId > 0) {
-                $pageData = Content::findById($this->pdo, $pageId);
-                if ($pageData && ($pageData['type'] ?? '') === 'page') {
-                    $url = '/?slug=' . $pageData['slug'];
-                }
-            }
-
-            $data = [
-                'menu_id' => $menuId,
-                'label' => trim($_POST['label'] ?? ''),
-                'item_type' => $itemType,
-                'url' => $url,
-                'page_id' => $pageId ?: null,
-                'sort_order' => (int)($_POST['sort_order'] ?? 0),
-                'created_at' => date('Y-m-d H:i:s'),
-                'updated_at' => date('Y-m-d H:i:s'),
-            ];
-
-            $this->insertRow('menu_items', $data);
-            redirectTo('/admin.php?module=menus&action=items&id=' . $menuId . '&success=Élément ajouté');
-        }
-
-        if ($action === 'delete_item') {
-            $menuId = (int)($_GET['id'] ?? 0);
-            $itemId = (int)($_GET['item_id'] ?? 0);
-
-            $this->deleteById('menu_items', $itemId);
-            redirectTo('/admin.php?module=menus&action=items&id=' . $menuId . '&success=Élément supprimé');
-        }
-
-        redirectTo('/admin.php?module=menus');
-    }
-
-    private function handleUsers(string $action): void
-    {
-        if ($action === 'index') {
-            $users = $this->fetchAllSafe("SELECT * FROM users ORDER BY id DESC");
-            $this->render('Utilisateurs', $this->resolveView(['modules/users-list.php']), compact('users'));
-            return;
-        }
-
-        if ($action === 'create') {
-            $user = ['name' => '', 'email' => '', 'role' => 'editor'];
-            $isEdit = false;
-            $this->render('Ajouter un utilisateur', $this->resolveView(['modules/users-form.php']), compact('user', 'isEdit'));
-            return;
-        }
-
-        if ($action === 'edit') {
-            $id = (int)($_GET['id'] ?? 0);
-            $user = $this->fetchOne("SELECT * FROM users WHERE id = :id", ['id' => $id]);
-
-            if (!$user) {
-                redirectTo('/admin.php?module=users&error=Utilisateur introuvable');
-            }
-
-            $isEdit = true;
-            $this->render('Modifier un utilisateur', $this->resolveView(['modules/users-form.php']), compact('user', 'isEdit'));
-            return;
-        }
-
-        if ($action === 'save' && $_SERVER['REQUEST_METHOD'] === 'POST') {
-            $id = (int)($_GET['id'] ?? 0);
-            $now = date('Y-m-d H:i:s');
-
-            $data = [
-                'name' => trim($_POST['name'] ?? ''),
-                'email' => trim($_POST['email'] ?? ''),
-                'role' => trim($_POST['role'] ?? 'editor'),
-                'updated_at' => $now,
-            ];
-
-            $password = trim($_POST['password'] ?? '');
-
-            if ($id > 0) {
-                if ($password !== '') {
-                    $data['password'] = password_hash($password, PASSWORD_DEFAULT);
-                }
-
-                $this->updateRow('users', $id, $data);
-                redirectTo('/admin.php?module=users&success=Utilisateur modifié');
-            }
-
-            $data['password'] = password_hash($password !== '' ? $password : 'admin1234', PASSWORD_DEFAULT);
-            $data['created_at'] = $now;
-            $this->insertRow('users', $data);
-
-            redirectTo('/admin.php?module=users&success=Utilisateur ajouté');
-        }
-
-        if ($action === 'delete') {
-            $id = (int)($_GET['id'] ?? 0);
-            $this->deleteById('users', $id);
-            redirectTo('/admin.php?module=users&success=Utilisateur supprimé');
-        }
-
-        redirectTo('/admin.php?module=users');
-    }
-
-    private function handleSettings(string $action): void
-    {
-        if ($action === 'index') {
-            $this->render('Paramètres', $this->resolveView(['modules/settings-form.php']), []);
-            return;
-        }
-
-        if ($action === 'save' && $_SERVER['REQUEST_METHOD'] === 'POST') {
-            $moduleKeys = [
-                'module_products',
-                'module_blog',
-                'module_forms',
-                'module_booking',
-                'module_clients',
-                'module_testimonials',
-                'module_gallery',
-                'module_subscriptions',
-            ];
-
-            $trackingKeys = [
-                'tracking_gtm_id',
-                'tracking_meta_pixel_id',
-                'tracking_tiktok_pixel_id',
-                'tracking_head_custom',
-                'tracking_body_custom',
-                'tracking_footer_custom',
-                'site_name',
-                'site_tagline',
-                'theme',
-                'custom_css_global',
-            ];
-
-            foreach ($moduleKeys as $key) {
-                saveSetting($this->pdo, $key, isset($_POST[$key]) ? '1' : '0');
-            }
-
-            foreach ($trackingKeys as $key) {
-                saveSetting($this->pdo, $key, trim($_POST[$key] ?? ''));
-            }
-
-            $this->settings = getSettings($this->pdo);
-            redirectTo('/admin.php?module=settings&success=Paramètres enregistrés');
-        }
-
-        redirectTo('/admin.php?module=settings');
+        redirectTo('/admin.php?module=media');
     }
 
 
@@ -1475,7 +1277,6 @@ class Kernel
 
             $this->render('Produits', $this->resolveView(['modules/products-list.php']), compact('products', 'categoryOptions'));
             return;
-        }
 
         if ($action === 'create') {
             $product = [
@@ -1702,7 +1503,6 @@ class Kernel
             $forms = $this->fetchAllSafe("SELECT * FROM forms ORDER BY id DESC");
             $this->render('Formulaires', $this->resolveView(['modules/forms-list.php']), compact('forms'));
             return;
-        }
 
         if ($action === 'create') {
             $form = ['title' => '', 'slug' => '', 'description' => '', 'form_schema_json' => '[]', 'status' => 'draft'];
@@ -1754,7 +1554,6 @@ class Kernel
             $galleryItems = $this->fetchAllSafe("SELECT * FROM gallery_items ORDER BY sort_order ASC, id ASC");
             $this->render('Galerie', $this->resolveView(['modules/gallery-list.php']), compact('galleryItems'));
             return;
-        }
 
         if ($action === 'create') {
             $galleryItem = ['title' => '', 'image_media_id' => '', 'caption' => '', 'sort_order' => 0];
@@ -1805,7 +1604,6 @@ class Kernel
             $testimonials = $this->fetchAllSafe("SELECT * FROM testimonials ORDER BY id DESC");
             $this->render('Avis', $this->resolveView(['modules/testimonials-list.php']), compact('testimonials'));
             return;
-        }
 
         if ($action === 'create') {
             $testimonial = ['author_name' => '', 'company' => '', 'content' => '', 'rating' => 5, 'status' => 'published'];
@@ -1857,7 +1655,6 @@ class Kernel
             $clients = $this->fetchAllSafe("SELECT * FROM clients ORDER BY id DESC");
             $this->render('Clients', $this->resolveView(['modules/clients-list.php']), compact('clients'));
             return;
-        }
 
         if ($action === 'create') {
             $client = ['first_name' => '', 'last_name' => '', 'email' => '', 'phone' => '', 'company' => '', 'notes' => ''];
@@ -1910,7 +1707,6 @@ class Kernel
             $bookings = $this->fetchAllSafe("SELECT * FROM bookings ORDER BY id DESC");
             $this->render('Réservations', $this->resolveView(['modules/booking-list.php']), compact('bookings'));
             return;
-        }
 
         if ($action === 'create') {
             $booking = ['client_id' => '', 'title' => '', 'booking_date' => '', 'booking_time' => '', 'status' => 'pending', 'amount' => '', 'notes' => ''];
@@ -1964,7 +1760,6 @@ class Kernel
             $subscriptions = $this->fetchAllSafe("SELECT * FROM subscriptions ORDER BY id DESC");
             $this->render('Abonnements', $this->resolveView(['modules/subscriptions-list.php']), compact('subscriptions'));
             return;
-        }
 
         if ($action === 'create') {
             $subscription = ['title' => '', 'description' => '', 'price' => '', 'billing_cycle' => 'monthly', 'status' => 'active'];

@@ -580,7 +580,7 @@ class Kernel
             redirectTo('/admin.php?module=media&success=Média supprimé');
         }
 
-        return;
+        redirectTo('/admin.php?module=media');
     }
 
     private function handleMenus(string $action): void
