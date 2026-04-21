@@ -1272,8 +1272,7 @@ class Kernel
             $selectedAttributeIds = [];
             $selectedAttributeTerms = [];
             $isEdit = false;
-            $mediaLibrary = $this->fetchAllSafe("SELECT id, filename, original_name, path, mime_type FROM media ORDER BY id DESC");
-            $this->render('Ajouter un produit', $this->resolveView(['modules/products-form.php']), compact('product', 'productCategories', 'selectedCategoryIds', 'allAttributes', 'attributeTermsMap', 'selectedAttributeIds', 'selectedAttributeTerms', 'mediaLibrary', 'isEdit'));
+            $this->render('Ajouter un produit', $this->resolveView(['modules/products-form.php']), compact('product', 'productCategories', 'selectedCategoryIds', 'allAttributes', 'attributeTermsMap', 'selectedAttributeIds', 'selectedAttributeTerms', 'isEdit'));
             return;
         }
 
@@ -1311,8 +1310,7 @@ class Kernel
             }
 
             $isEdit = true;
-            $mediaLibrary = $this->fetchAllSafe("SELECT id, filename, original_name, path, mime_type FROM media ORDER BY id DESC");
-            $this->render('Modifier un produit', $this->resolveView(['modules/products-form.php']), compact('product', 'productCategories', 'selectedCategoryIds', 'allAttributes', 'attributeTermsMap', 'selectedAttributeIds', 'selectedAttributeTerms', 'mediaLibrary', 'isEdit'));
+            $this->render('Modifier un produit', $this->resolveView(['modules/products-form.php']), compact('product', 'productCategories', 'selectedCategoryIds', 'allAttributes', 'attributeTermsMap', 'selectedAttributeIds', 'selectedAttributeTerms', 'isEdit'));
             return;
         }
 
