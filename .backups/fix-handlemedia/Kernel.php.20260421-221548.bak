@@ -505,7 +505,15 @@ class Kernel
         redirectTo('/admin.php?module=blog');
     }
 
-    
+    function handleMedia(string $action): void
+    {
+        error_log('MEDIA ACTION: ' . $action);
+
+        if ($action === 'index') {
+            $mediaItems = $this->fetchAllSafe("SELECT * FROM media ORDER BY id DESC");
+            $this->render('Médias', $this->resolveView(['modules/media-list.php']), compact('mediaItems'));
+            return;
+        }
 
         if ($action === 'create') {
             $mediaItem = [
@@ -2023,38 +2031,4 @@ class Kernel
     }
 }
 
-}}}}}}}
-    function handleMedia($action)
-    {
-        if ($action === 'index') {
-            $mediaItems = $this->fetchAllSafe("SELECT * FROM media ORDER BY id DESC");
-            $this->render('Médias', $this->resolveView(['modules/media-list.php']), compact('mediaItems'));
-            return;
-        }
-
-        if ($action === 'create') {
-            $mediaItem = [
-                'title' => '',
-                'filename' => '',
-                'filepath' => '',
-                'mime_type' => '',
-                'alt_text' => '',
-            ];
-            $isEdit = false;
-            $this->render('Ajouter un média', $this->resolveView(['modules/media-form.php']), compact('mediaItem', 'isEdit'));
-            return;
-        }
-
-        if ($action === 'edit') {
-            $id = (int)($_GET['id'] ?? 0);
-            $mediaItem = $this->fetchOne("SELECT * FROM media WHERE id = :id", ['id' => $id]);
-            if (!$mediaItem) redirectTo('/admin.php?module=media');
-            $isEdit = true;
-            $this->render('Modifier un média', $this->resolveView(['modules/media-form.php']), compact('mediaItem', 'isEdit'));
-            return;
-        }
-
-        redirectTo('/admin.php?module=media');
-    }
-
-}
+}}}}}}}}
