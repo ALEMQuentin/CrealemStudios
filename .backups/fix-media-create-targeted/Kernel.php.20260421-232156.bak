@@ -514,12 +514,6 @@ class Kernel
             return;
         }
 
-        if ($action === 'create') {
-            $this->render('Ajouter un média', $this->resolveView(['modules/media-form.php']), []);
-            return;
-        }
-
-
         if ($action === 'upload' && $_SERVER['REQUEST_METHOD'] === 'POST') {
             if (empty($_FILES['media_file']) || $_FILES['media_file']['error'] !== UPLOAD_ERR_OK) {
                 redirectTo('/admin.php?module=media&error=Upload impossible');
