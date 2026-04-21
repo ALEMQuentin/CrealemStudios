@@ -99,6 +99,8 @@ $accordionSystemOpen = in_array($currentModule, ['users', 'settings'], true);
                     <a class="cs-admin-subnav-link <?= ($currentModule === 'products' && $currentAction === 'settings') ? 'is-active' : '' ?>" href="/admin.php?module=products&action=settings">
                         Paramètres
                     </a>
+                    <a class="cs-admin-subnav-link <?= ($currentModule === 'products' && in_array($currentAction, ['variations','create_variation','edit_variation'], true)) ? 'is-active' : '' ?>" href="/admin.php?module=products<?= !empty($_GET['id']) ? '&action=variations&id=' . (int)$_GET['id'] : '' ?>">
+                        Variations
                     </a>
                 </div>
                 <?php endif; ?>
