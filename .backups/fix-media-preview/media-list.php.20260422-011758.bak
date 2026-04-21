@@ -33,8 +33,8 @@
                             <td><code><?= e($item['filename'] ?? '') ?></code></td>
                             <td><?= e($item['mime_type'] ?? '') ?></td>
                             <td>
-                                <?php if (!empty($item['path']) && str_starts_with((string)($item['mime_type'] ?? ''), 'image/')): ?>
-                                    <img src="<?= e($item['path']) ?>" alt="" style="max-width:80px; max-height:80px; object-fit:cover; border-radius:8px;">
+                                <?php if (!empty($item['filepath']) && str_starts_with((string)($item['mime_type'] ?? ''), 'image/')): ?>
+                                    <img src="<?= e($item['filepath']) ?>" alt="" style="max-width:80px; max-height:80px; object-fit:cover; border-radius:8px;">
                                 <?php else: ?>
                                     <span class="text-muted">Aperçu indisponible</span>
                                 <?php endif; ?>
