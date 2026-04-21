@@ -4,7 +4,7 @@
             <h2 class="h5 mb-1">Médias</h2>
             <div class="text-muted">Bibliothèque de fichiers</div>
         </div>
-        <a class="btn btn-primary" href="/admin.php?module=media&action=create">Ajouter un média</a>
+        <a class="btn btn-primary" href="/admin.php?module=media&action=save">Ajouter un média</a>
     </div>
 </div>
 
@@ -40,8 +40,8 @@
                                 <?php endif; ?>
                             </td>
                             <td class="d-flex gap-2 flex-wrap">
-                                <a class="btn btn-sm btn-outline-secondary" href="/admin.php?module=media&action=create">Modifier</a>
-                                <a class="btn btn-sm btn-outline-danger" href="/admin.php?module=media&action=create" onclick="return confirm('Supprimer ce média ?')">Supprimer</a>
+                                <a class="btn btn-sm btn-outline-secondary" href="/admin.php?module=media&action=save">Modifier</a>
+                                <a class="btn btn-sm btn-outline-danger" href="/admin.php?module=media&action=save" onclick="return confirm('Supprimer ce média ?')">Supprimer</a>
                             </td>
                         </tr>
                     <?php endforeach; ?>
