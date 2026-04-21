@@ -55,12 +55,6 @@ class Kernel
                 return;
             case 'products':
                 $this->handleProducts($action);
-                break;
-
-            case 'variations':
-                echo "<h1>Variations produits</h1>";
-                break;
-                $this->handleProducts($action);
                 return;
         }
 
