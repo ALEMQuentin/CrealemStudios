@@ -310,25 +310,8 @@ class Kernel
 
         if ($action === 'delete') {
             $id = (int)($_GET['id'] ?? 0);
-            if ($id <= 0) {
-                redirectTo('/admin.php?module=media&error=Média introuvable');
-            }
-
-            $mediaItem = $this->fetchOne("SELECT * FROM media WHERE id = :id", ['id' => $id]);
-            if (!$mediaItem) {
-                redirectTo('/admin.php?module=media&error=Média introuvable');
-            }
-
-            $projectRoot = dirname(__DIR__, 2);
-            $relativePath = $mediaItem['path'] ?? '';
-            $filePath = $projectRoot . '/public' . $relativePath;
-
-            if ($relativePath !== '' && is_file($filePath)) {
-                @unlink($filePath);
-            }
-
-            $this->deleteById('media', $id);
-            redirectTo('/admin.php?module=media&success=Média supprimé');
+            Content::delete($this->pdo, $id);
+            redirectTo('/admin.php?module=pages&success=Page supprimée');
         }
 
         redirectTo('/admin.php?module=pages');
