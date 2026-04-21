@@ -62,7 +62,7 @@ class Kernel
         echo 'Module introuvable';
     }
 
-    function handleDashboard(): void
+    private function handleDashboard(): void
     {
         $stats = [
             'pages' => count(Content::allByType($this->pdo, 'page')),
@@ -81,7 +81,7 @@ class Kernel
         );
     }
 
-    function handlePages(string $action): void
+    private function handlePages(string $action): void
     {
         if ($action === 'index') {
             $q = trim($_GET['q'] ?? '');
@@ -505,7 +505,7 @@ class Kernel
         redirectTo('/admin.php?module=blog');
     }
 
-    function handleMedia(string $action): void
+    private function handleMedia(string $action): void
     {
         error_log('MEDIA ACTION: ' . $action);
 
@@ -619,7 +619,7 @@ class Kernel
     }
 
 
-    function handleProducts(string $action): void
+    private function handleProducts(string $action): void
     {
         if ($action === 'categories') {
             $categories = $this->fetchAllSafe("
@@ -1497,7 +1497,7 @@ class Kernel
         redirectTo('/admin.php?module=products');
     }
 
-    function handleForms(string $action): void
+    private function handleForms(string $action): void
     {
         if ($action === 'index') {
             $forms = $this->fetchAllSafe("SELECT * FROM forms ORDER BY id DESC");
@@ -1548,7 +1548,7 @@ class Kernel
         redirectTo('/admin.php?module=forms');
     }
 
-    function handleGallery(string $action): void
+    private function handleGallery(string $action): void
     {
         if ($action === 'index') {
             $galleryItems = $this->fetchAllSafe("SELECT * FROM gallery_items ORDER BY sort_order ASC, id ASC");
@@ -1598,7 +1598,7 @@ class Kernel
         redirectTo('/admin.php?module=gallery');
     }
 
-    function handleTestimonials(string $action): void
+    private function handleTestimonials(string $action): void
     {
         if ($action === 'index') {
             $testimonials = $this->fetchAllSafe("SELECT * FROM testimonials ORDER BY id DESC");
@@ -1649,7 +1649,7 @@ class Kernel
         redirectTo('/admin.php?module=testimonials');
     }
 
-    function handleClients(string $action): void
+    private function handleClients(string $action): void
     {
         if ($action === 'index') {
             $clients = $this->fetchAllSafe("SELECT * FROM clients ORDER BY id DESC");
@@ -1701,7 +1701,7 @@ class Kernel
         redirectTo('/admin.php?module=clients');
     }
 
-    function handleBooking(string $action): void
+    private function handleBooking(string $action): void
     {
         if ($action === 'index') {
             $bookings = $this->fetchAllSafe("SELECT * FROM bookings ORDER BY id DESC");
@@ -1754,7 +1754,7 @@ class Kernel
         redirectTo('/admin.php?module=booking');
     }
 
-    function handleSubscriptions(string $action): void
+    private function handleSubscriptions(string $action): void
     {
         if ($action === 'index') {
             $subscriptions = $this->fetchAllSafe("SELECT * FROM subscriptions ORDER BY id DESC");
@@ -1806,7 +1806,7 @@ class Kernel
     }
 
 
-    function syncCommonMeta(int $contentId): void
+    private function syncCommonMeta(int $contentId): void
     {
         $metaTitle = trim($_POST['meta_title'] ?? '');
         $metaDescription = trim($_POST['meta_description'] ?? '');
@@ -1831,12 +1831,12 @@ class Kernel
         }
     }
 
-    function fetchBlocks(int $contentId): array
+    private function fetchBlocks(int $contentId): array
     {
         return $this->fetchAllSafe("SELECT * FROM content_blocks WHERE content_id = " . (int)$contentId . " ORDER BY sort_order ASC, id ASC");
     }
 
-    function moveBlock(int $contentId, int $blockId, string $direction): void
+    private function moveBlock(int $contentId, int $blockId, string $direction): void
     {
         $blocks = $this->fetchBlocks($contentId);
         $index = null;
@@ -1865,7 +1865,7 @@ class Kernel
         }
     }
 
-    function swapBlockOrder(int $firstId, int $secondId, int $firstOrder, int $secondOrder): void
+    private function swapBlockOrder(int $firstId, int $secondId, int $firstOrder, int $secondOrder): void
     {
         $now = date('Y-m-d H:i:s');
 
@@ -1883,7 +1883,7 @@ class Kernel
         ]);
     }
 
-    function extractBlockSettings(string $blockType): array
+    private function extractBlockSettings(string $blockType): array
     {
         return match ($blockType) {
             'hero' => [
@@ -1913,7 +1913,7 @@ class Kernel
         };
     }
 
-    function render(string $pageTitle, string $viewPath, array $data = []): void
+    private function render(string $pageTitle, string $viewPath, array $data = []): void
     {
         extract($data);
         $module = $this->module;
@@ -1924,7 +1924,7 @@ class Kernel
         require ADMIN_VIEWS_PATH . '/layouts/admin.php';
     }
 
-    function resolveView(array $candidates): string
+    private function resolveView(array $candidates): string
     {
         $base = ADMIN_VIEWS_PATH . '/';
 
@@ -1938,7 +1938,7 @@ class Kernel
         return $base . 'admin/module-placeholder.php';
     }
 
-    function titleFor(string $module): string
+    private function titleFor(string $module): string
     {
         return match ($module) {
             'products' => 'Produits',
@@ -1952,7 +1952,7 @@ class Kernel
         };
     }
 
-    function tableExists(string $table): bool
+    private function tableExists(string $table): bool
     {
         $stmt = $this->pdo->prepare("SELECT name FROM sqlite_master WHERE type = 'table' AND name = :name LIMIT 1");
         $stmt->execute(['name' => $table]);
@@ -1960,7 +1960,7 @@ class Kernel
         return (bool) $stmt->fetch(PDO::FETCH_ASSOC);
     }
 
-    function insertRow(string $table, array $data): int
+    private function insertRow(string $table, array $data): int
     {
         $columns = array_keys($data);
         $placeholders = array_map(fn($col) => ':' . $col, $columns);
@@ -1972,7 +1972,7 @@ class Kernel
         return (int)$this->pdo->lastInsertId();
     }
 
-    function updateRow(string $table, int $id, array $data): void
+    private function updateRow(string $table, int $id, array $data): void
     {
         $sets = [];
         foreach (array_keys($data) as $column) {
@@ -1986,7 +1986,7 @@ class Kernel
         $stmt->execute($data);
     }
 
-    function deleteById(string $table, int $id): void
+    private function deleteById(string $table, int $id): void
     {
         if (!$this->tableExists($table)) {
             return;
@@ -1996,7 +1996,7 @@ class Kernel
         $stmt->execute(['id' => $id]);
     }
 
-    function fetchAllSafe(string $sql): array
+    private function fetchAllSafe(string $sql): array
     {
         try {
             return $this->pdo->query($sql)->fetchAll(PDO::FETCH_ASSOC);
@@ -2005,7 +2005,7 @@ class Kernel
         }
     }
 
-    function fetchOne(string $sql, array $params = []): ?array
+    private function fetchOne(string $sql, array $params = []): ?array
     {
         try {
             $stmt = $this->pdo->prepare($sql);
@@ -2017,7 +2017,7 @@ class Kernel
         }
     }
 
-    function safeCount(string $table): int
+    private function safeCount(string $table): int
     {
         if (!$this->tableExists($table)) {
             return 0;
