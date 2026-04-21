@@ -559,7 +559,7 @@ class Kernel
 
             $data = [
                 'filename' => $filename,
-                'original_name' => $originalName,
+                
                 'path' => $publicPath,
                 'mime_type' => $mimeType,
                 'size' => $size,
