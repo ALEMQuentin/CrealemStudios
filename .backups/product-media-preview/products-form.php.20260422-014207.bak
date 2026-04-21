@@ -201,7 +201,7 @@
                     <?php else: ?>
                         <div class="cs-media-picker-grid" style="display:grid; grid-template-columns:repeat(auto-fill,minmax(120px,1fr)); gap:12px;">
                             <?php foreach ($mediaLibrary as $media): ?>
-                                <div class="cs-media-picker-item" data-media-id="<?= (int)$media['id'] ?>" style="border:1px solid #e5e7eb; border-radius:10px; padding:10px; background:#fff;">
+                                <div class="cs-media-picker-item" style="border:1px solid #e5e7eb; border-radius:10px; padding:10px; background:#fff;">
                                     <div style="height:90px; display:flex; align-items:center; justify-content:center; margin-bottom:8px;">
                                         <?php if (!empty($media['path']) && str_starts_with((string)($media['mime_type'] ?? ''), 'image/')): ?>
                                             <img src="<?= e($media['path']) ?>" alt="" style="max-width:100%; max-height:90px; object-fit:contain;">
@@ -238,8 +238,7 @@
                 <div class="card-body">
                     <h3 class="h6 mb-3">Galerie produit</h3>
                     <p class="text-muted">Tu peux toujours saisir les IDs à la main, ou cliquer sur les médias ci-dessus.</p>
-                    <textarea class="form-control" id="gallery_media_ids"
-                    <div id="gallery-media-preview" style="margin-top:10px; display:flex; flex-wrap:wrap; gap:8px;"></div> name="gallery_media_ids" rows="4"><?= e($galleryMediaIdsString ?? '') ?></textarea>
+                    <textarea class="form-control" id="gallery_media_ids" name="gallery_media_ids" rows="4"><?= e($galleryMediaIdsString ?? '') ?></textarea>
                 </div>
             </div>
 
@@ -279,8 +278,7 @@
 
                     <div class="mt-4">
                         <label class="form-label">Image produit (ID média)</label>
-                        <input type="number" class="form-control" id="featured_media_id"
-                        <div id="featured-media-preview" style="margin-top:10px;"></div> name="featured_media_id" value="<?= e((string)($product['featured_media_id'] ?? '')) ?>">
+                        <input type="number" class="form-control" id="featured_media_id" name="featured_media_id" value="<?= e((string)($product['featured_media_id'] ?? '')) ?>">
                         <div class="text-muted mt-1">Clique sur un média à gauche pour remplir ce champ automatiquement.</div>
                     </div>
 
@@ -330,55 +328,4 @@ function addMediaToGallery(mediaId) {
     }
     field.value = ids.join(',');
 }
-</script>
-
-<script>
-function renderFeaturedPreview() {
-    var id = document.getElementById('featured_media_id').value;
-    var container = document.getElementById('featured-media-preview');
-    container.innerHTML = '';
-    if (!id) return;
-
-    var img = document.querySelector('[data-media-id="' + id + '"] img');
-    if (img) {
-        var clone = img.cloneNode();
-        clone.style.maxWidth = '120px';
-        container.appendChild(clone);
-    }
-}
-
-function renderGalleryPreview() {
-    var raw = document.getElementById('gallery_media_ids').value;
-    var container = document.getElementById('gallery-media-preview');
-    container.innerHTML = '';
-    if (!raw) return;
-
-    var ids = raw.split(',').map(v => v.trim()).filter(Boolean);
-
-    ids.forEach(function(id) {
-        var img = document.querySelector('[data-media-id="' + id + '"] img');
-        if (img) {
-            var clone = img.cloneNode();
-            clone.style.maxWidth = '80px';
-            clone.style.borderRadius = '6px';
-            container.appendChild(clone);
-        }
-    });
-}
-
-// Hook boutons média
-document.querySelectorAll('[data-media-id]').forEach(function(el) {
-    el.addEventListener('click', function() {
-        setTimeout(function() {
-            renderFeaturedPreview();
-            renderGalleryPreview();
-        }, 50);
-    });
-});
-
-// Init au chargement
-document.addEventListener('DOMContentLoaded', function() {
-    renderFeaturedPreview();
-    renderGalleryPreview();
-});
 </script>
