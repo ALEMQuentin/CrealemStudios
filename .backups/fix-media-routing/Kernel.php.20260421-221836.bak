@@ -25,18 +25,11 @@ class Kernel
 
     private function handleMedia($action)
     {
-        // 🔴 IMPORTANT : PAS de redirect automatique
         if ($action === 'create') {
             echo "<h1>Créer un média</h1>";
             return;
         }
 
-        if ($action === 'index') {
-            echo "<h1>Liste des médias</h1>";
-            return;
-        }
-
-        // fallback
         echo "<h1>Liste des médias</h1>";
     }
 
