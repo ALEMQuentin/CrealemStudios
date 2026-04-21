@@ -1,0 +1,48 @@
+<div class="card">
+    <div class="card-body d-flex justify-content-between align-items-center flex-wrap gap-2">
+        <div>
+            <h2 class="h5 mb-1">Attributs produit</h2>
+            <div class="text-muted">Base des attributs globaux pour produits variables</div>
+        </div>
+        <a class="btn btn-primary" href="/admin.php?module=products&action=create_attribute">Ajouter un attribut</a>
+    </div>
+</div>
+
+<div class="card mt-4">
+    <div class="card-body">
+        <?php if (empty($attributes)): ?>
+            <div class="text-muted">Aucun attribut.</div>
+        <?php else: ?>
+            <div class="table-responsive">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Nom</th>
+                            <th>Slug</th>
+                            <th>Ordre</th>
+                            <th>Termes</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    <?php foreach ($attributes as $attribute): ?>
+                        <tr>
+                            <td><?= (int)$attribute['id'] ?></td>
+                            <td><?= e($attribute['name'] ?? '') ?></td>
+                            <td><code><?= e($attribute['slug'] ?? '') ?></code></td>
+                            <td><?= e((string)($attribute['sort_order'] ?? '0')) ?></td>
+                            <td><?= e((string)($attribute['terms_count'] ?? '0')) ?></td>
+                            <td class="d-flex gap-2 flex-wrap">
+                                <a class="btn btn-sm btn-outline-secondary" href="/admin.php?module=products&action=edit_attribute&id=<?= (int)$attribute['id'] ?>">Modifier</a>
+                                <a class="btn btn-sm btn-outline-secondary" href="/admin.php?module=products&action=attribute_terms&id=<?= (int)$attribute['id'] ?>">Termes</a>
+                                <a class="btn btn-sm btn-outline-danger" href="/admin.php?module=products&action=delete_attribute&id=<?= (int)$attribute['id'] ?>" onclick="return confirm('Supprimer cet attribut ?')">Supprimer</a>
+                            </td>
+                        </tr>
+                    <?php endforeach; ?>
+                    </tbody>
+                </table>
+            </div>
+        <?php endif; ?>
+    </div>
+</div>

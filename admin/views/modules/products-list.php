@@ -1,0 +1,85 @@
+<div class="card">
+    <div class="card-body d-flex justify-content-between align-items-center flex-wrap gap-2">
+        <div>
+            <h2 class="h5 mb-1">Produits</h2>
+            <div class="text-muted">Catalogue produits</div>
+        </div>
+        <div class="d-flex gap-2 flex-wrap">
+            <a class="btn btn-outline-secondary" href="/admin.php?module=products&action=categories">Catégories</a>
+            <a class="btn btn-outline-secondary" href="/admin.php?module=products&action=attributes">Attributs</a>
+            <a class="btn btn-outline-secondary" href="/admin.php?module=products&action=settings">Paramètres</a>
+            <a class="btn btn-primary" href="/admin.php?module=products&action=create">Ajouter un produit</a>
+        </div>
+    </div>
+</div>
+
+<div class="card mt-4">
+    <div class="card-body">
+        <form method="get" action="/admin.php" class="row">
+            <input type="hidden" name="module" value="products">
+            <div class="col-md-8">
+                <label class="form-label">Recherche</label>
+                <input type="text" class="form-control" name="q" value="<?= e($_GET['q'] ?? '') ?>" placeholder="Nom, slug, SKU">
+            </div>
+            <div class="col-md-4 d-flex align-items-end">
+                <button class="btn btn-outline-secondary w-100" type="submit">Rechercher</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="card mt-4">
+    <div class="card-body">
+        <?php if (empty($products)): ?>
+            <div class="text-muted">Aucun produit.</div>
+        <?php else: ?>
+            <div class="table-responsive">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Nom</th>
+                            <th>SKU</th>
+                            <th>Type</th>
+                            <th>Prix</th>
+                            <th>Stock</th>
+                            <th>Visibilité</th>
+                            <th>Statut</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    <?php foreach ($products as $product): ?>
+                        <tr>
+                            <td><?= (int)$product['id'] ?></td>
+                            <td><?= e($product['title'] ?? '') ?></td>
+                            <td><code><?= e($product['sku'] ?? '') ?></code></td>
+                            <td><?= e($product['product_type'] ?? 'simple') ?></td>
+                            <td>
+                                <?php if (($product['sale_price'] ?? '') !== null && $product['sale_price'] !== ''): ?>
+                                    <strong><?= e((string)$product['sale_price']) ?></strong>
+                                    <br><span class="text-muted" style="text-decoration:line-through;"><?= e((string)($product['regular_price'] ?? '')) ?></span>
+                                <?php else: ?>
+                                    <?= e((string)($product['regular_price'] ?? $product['price'] ?? '')) ?>
+                                <?php endif; ?>
+                            </td>
+                            <td>
+                                <?= e($product['stock_status'] ?? 'instock') ?>
+                                <?php if (($product['manage_stock'] ?? 0) == 1): ?>
+                                    <br><span class="text-muted">Qté: <?= e((string)($product['stock_quantity'] ?? '')) ?></span>
+                                <?php endif; ?>
+                            </td>
+                            <td><?= e($product['catalog_visibility'] ?? 'visible') ?></td>
+                            <td><?= e($product['status'] ?? '') ?></td>
+                            <td class="d-flex gap-2 flex-wrap">
+                                <a class="btn btn-sm btn-outline-secondary" href="/admin.php?module=products&action=edit&id=<?= (int)$product['id'] ?>">Modifier</a>
+                                <a class="btn btn-sm btn-outline-danger" href="/admin.php?module=products&action=delete&id=<?= (int)$product['id'] ?>" onclick="return confirm('Supprimer ce produit ?')">Supprimer</a>
+                            </td>
+                        </tr>
+                    <?php endforeach; ?>
+                    </tbody>
+                </table>
+            </div>
+        <?php endif; ?>
+    </div>
+</div>

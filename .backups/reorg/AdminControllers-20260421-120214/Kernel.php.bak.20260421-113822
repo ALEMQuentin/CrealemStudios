@@ -1,0 +1,1055 @@
+<?php
+
+namespace App\Controllers\Admin;
+
+use App\Models\Content;
+use PDO;
+
+class Kernel
+{
+    private PDO $pdo;
+    private array $config;
+    private array $settings;
+    private string $module;
+    private string $action;
+
+    public function __construct(PDO $pdo, array $config, string $module, string $action)
+    {
+        $this->pdo = $pdo;
+        $this->config = $config;
+        $this->module = $module;
+        $this->action = $action;
+        $this->settings = getSettings($pdo);
+    }
+
+    public function handle(): void
+    {
+        $module = $this->module;
+        $action = $this->action;
+
+        if (!isModuleEnabled($this->settings, $module)) {
+            redirectTo('/admin.php?module=dashboard&error=Module désactivé');
+        }
+
+        switch ($module) {
+            case 'dashboard':
+                $this->handleDashboard();
+                return;
+            case 'pages':
+                $this->handlePages($action);
+                return;
+            case 'blog':
+                $this->handleBlog($action);
+                return;
+            case 'media':
+                $this->handleMedia($action);
+                return;
+            case 'menus':
+                $this->handleMenus($action);
+                return;
+            case 'users':
+                $this->handleUsers($action);
+                return;
+            case 'settings':
+                $this->handleSettings($action);
+                return;
+            case 'products':
+            case 'forms':
+            case 'booking':
+            case 'clients':
+            case 'testimonials':
+            case 'gallery':
+            case 'subscriptions':
+                $this->render(
+                    $this->titleFor($module),
+                    $this->resolveView([
+                        'modules/' . $module . '-list.php',
+                        'admin/module-placeholder.php',
+                    ]),
+                    []
+                );
+                return;
+        }
+
+        http_response_code(404);
+        echo 'Module introuvable';
+    }
+
+    private function handleDashboard(): void
+    {
+        $stats = [
+            'pages' => count(Content::allByType($this->pdo, 'page')),
+            'users' => $this->safeCount('users'),
+            'media' => $this->safeCount('media'),
+            'posts' => count(Content::allByType($this->pdo, 'post')),
+        ];
+
+        $this->render(
+            'Dashboard',
+            $this->resolveView([
+                'modules/dashboard.php',
+                'admin/dashboard.php',
+            ]),
+            compact('stats')
+        );
+    }
+
+    private function handlePages(string $action): void
+    {
+        if ($action === 'index') {
+            $q = trim($_GET['q'] ?? '');
+            $pages = Content::allByType($this->pdo, 'page');
+
+            if ($q !== '') {
+                $pages = array_values(array_filter($pages, function ($page) use ($q) {
+                    return stripos($page['title'] ?? '', $q) !== false || stripos($page['slug'] ?? '', $q) !== false;
+                }));
+            }
+
+            $this->render('Pages', $this->resolveView(['modules/pages-list.php']), compact('pages'));
+            return;
+        }
+
+        if ($action === 'create') {
+            $page = [
+                'title' => '',
+                'slug' => '',
+                'content' => '',
+                'status' => 'draft',
+            ];
+            $pageMeta = [
+                'meta_title' => '',
+                'meta_description' => '',
+                'featured_media_id' => '',
+            ];
+            $mediaLibrary = $this->fetchAllSafe("SELECT id, filename, original_name, path FROM media ORDER BY id DESC");
+            $isEdit = false;
+
+            $this->render('Ajouter une page', $this->resolveView(['modules/pages-form.php']), [
+                'page' => array_merge($page, $pageMeta),
+                'mediaLibrary' => $mediaLibrary,
+                'isEdit' => $isEdit,
+            ]);
+            return;
+        }
+
+        if ($action === 'edit') {
+            $id = (int)($_GET['id'] ?? 0);
+            $page = Content::findById($this->pdo, $id);
+
+            if (!$page || ($page['type'] ?? '') !== 'page') {
+                redirectTo('/admin.php?module=pages&error=Page introuvable');
+            }
+
+            $meta = Content::meta($this->pdo, $id);
+            $page = array_merge($page, [
+                'meta_title' => $meta['meta_title'] ?? '',
+                'meta_description' => $meta['meta_description'] ?? '',
+                'featured_media_id' => $meta['featured_media_id'] ?? '',
+            ]);
+
+            $mediaLibrary = $this->fetchAllSafe("SELECT id, filename, original_name, path FROM media ORDER BY id DESC");
+            $isEdit = true;
+
+            $this->render('Modifier une page', $this->resolveView(['modules/pages-form.php']), compact('page', 'mediaLibrary', 'isEdit'));
+            return;
+        }
+
+        if ($action === 'preview') {
+            $id = (int)($_GET['id'] ?? 0);
+            $page = Content::findById($this->pdo, $id);
+
+            if (!$page || ($page['type'] ?? '') !== 'page') {
+                redirectTo('/admin.php?module=pages&error=Page introuvable');
+            }
+
+            $meta = Content::meta($this->pdo, $id);
+            $page = array_merge($page, [
+                'meta_title' => $meta['meta_title'] ?? '',
+                'meta_description' => $meta['meta_description'] ?? '',
+                'featured_media_id' => $meta['featured_media_id'] ?? '',
+            ]);
+
+            $featuredMedia = null;
+            if (!empty($page['featured_media_id'])) {
+                $featuredMedia = $this->fetchOne("SELECT * FROM media WHERE id = :id", ['id' => (int)$page['featured_media_id']]);
+            }
+
+            $this->render('Aperçu de page', $this->resolveView(['modules/pages-preview.php']), compact('page', 'featuredMedia'));
+            return;
+        }
+
+        if ($action === 'blocks') {
+            $id = (int)($_GET['id'] ?? 0);
+            $page = Content::findById($this->pdo, $id);
+
+            if (!$page || ($page['type'] ?? '') !== 'page') {
+                redirectTo('/admin.php?module=pages&error=Page introuvable');
+            }
+
+            $blocks = $this->fetchBlocks($id);
+            $menus = $this->fetchAllSafe("SELECT * FROM menus ORDER BY name ASC");
+
+            $this->render('Blocs de page', $this->resolveView(['modules/page-blocks.php']), compact('page', 'blocks', 'menus'));
+            return;
+        }
+
+        if ($action === 'add_block' && $_SERVER['REQUEST_METHOD'] === 'POST') {
+            $id = (int)($_GET['id'] ?? 0);
+            $page = Content::findById($this->pdo, $id);
+
+            if (!$page || ($page['type'] ?? '') !== 'page') {
+                redirectTo('/admin.php?module=pages&error=Page introuvable');
+            }
+
+            $blockType = trim($_POST['block_type'] ?? '');
+            $sortOrder = (int)($_POST['sort_order'] ?? 0);
+            $settings = $this->extractBlockSettings($blockType);
+
+            $this->insertRow('content_blocks', [
+                'content_id' => $id,
+                'block_type' => $blockType,
+                'sort_order' => $sortOrder,
+                'settings_json' => json_encode($settings, JSON_UNESCAPED_UNICODE),
+                'created_at' => date('Y-m-d H:i:s'),
+                'updated_at' => date('Y-m-d H:i:s'),
+            ]);
+
+            redirectTo('/admin.php?module=pages&action=blocks&id=' . $id . '&success=Bloc ajouté');
+        }
+
+        if ($action === 'edit_block') {
+            $id = (int)($_GET['id'] ?? 0);
+            $blockId = (int)($_GET['block_id'] ?? 0);
+
+            $page = Content::findById($this->pdo, $id);
+            $block = $this->fetchOne("SELECT * FROM content_blocks WHERE id = :id AND content_id = :content_id", [
+                'id' => $blockId,
+                'content_id' => $id,
+            ]);
+
+            if (!$page || !$block || ($page['type'] ?? '') !== 'page') {
+                redirectTo('/admin.php?module=pages&error=Bloc introuvable');
+            }
+
+            $menus = $this->fetchAllSafe("SELECT * FROM menus ORDER BY name ASC");
+            $blockSettings = json_decode($block['settings_json'] ?? '{}', true) ?: [];
+
+            $this->render('Modifier un bloc', $this->resolveView(['modules/page-block-form.php']), compact('page', 'block', 'blockSettings', 'menus'));
+            return;
+        }
+
+        if ($action === 'save_block' && $_SERVER['REQUEST_METHOD'] === 'POST') {
+            $id = (int)($_GET['id'] ?? 0);
+            $blockId = (int)($_GET['block_id'] ?? 0);
+
+            $block = $this->fetchOne("SELECT * FROM content_blocks WHERE id = :id AND content_id = :content_id", [
+                'id' => $blockId,
+                'content_id' => $id,
+            ]);
+
+            if (!$block) {
+                redirectTo('/admin.php?module=pages&error=Bloc introuvable');
+            }
+
+            $blockType = $block['block_type'];
+            $settings = $this->extractBlockSettings($blockType);
+
+            $this->updateRow('content_blocks', $blockId, [
+                'sort_order' => (int)($_POST['sort_order'] ?? 0),
+                'settings_json' => json_encode($settings, JSON_UNESCAPED_UNICODE),
+                'updated_at' => date('Y-m-d H:i:s'),
+            ]);
+
+            redirectTo('/admin.php?module=pages&action=blocks&id=' . $id . '&success=Bloc modifié');
+        }
+
+        if ($action === 'move_block_up') {
+            $id = (int)($_GET['id'] ?? 0);
+            $blockId = (int)($_GET['block_id'] ?? 0);
+            $this->moveBlock($id, $blockId, 'up');
+            redirectTo('/admin.php?module=pages&action=blocks&id=' . $id . '&success=Bloc réordonné');
+        }
+
+        if ($action === 'move_block_down') {
+            $id = (int)($_GET['id'] ?? 0);
+            $blockId = (int)($_GET['block_id'] ?? 0);
+            $this->moveBlock($id, $blockId, 'down');
+            redirectTo('/admin.php?module=pages&action=blocks&id=' . $id . '&success=Bloc réordonné');
+        }
+
+        if ($action === 'delete_block') {
+            $id = (int)($_GET['id'] ?? 0);
+            $blockId = (int)($_GET['block_id'] ?? 0);
+
+            $this->deleteById('content_blocks', $blockId);
+            redirectTo('/admin.php?module=pages&action=blocks&id=' . $id . '&success=Bloc supprimé');
+        }
+
+        if ($action === 'save' && $_SERVER['REQUEST_METHOD'] === 'POST') {
+            $id = (int)($_GET['id'] ?? 0);
+            $slug = trim($_POST['slug'] ?? '');
+
+            if (Content::slugExists($this->pdo, 'page', $slug, $id)) {
+                redirectTo('/admin.php?module=pages&error=Slug déjà utilisé');
+            }
+
+            $now = date('Y-m-d H:i:s');
+            $data = [
+                'type' => 'page',
+                'title' => trim($_POST['title'] ?? ''),
+                'slug' => $slug,
+                'excerpt' => null,
+                'content' => trim($_POST['content'] ?? ''),
+                'status' => trim($_POST['status'] ?? 'draft'),
+                'author_id' => null,
+                'parent_id' => null,
+                'menu_order' => 0,
+                'updated_at' => $now,
+            ];
+
+            if ($id > 0) {
+                Content::update($this->pdo, $id, $data);
+                $contentId = $id;
+            } else {
+                $data['created_at'] = $now;
+                $contentId = Content::create($this->pdo, $data);
+            }
+
+            $this->syncCommonMeta($contentId);
+
+            redirectTo('/admin.php?module=pages&success=Page enregistrée');
+        }
+
+        if ($action === 'delete') {
+            $id = (int)($_GET['id'] ?? 0);
+            Content::delete($this->pdo, $id);
+            redirectTo('/admin.php?module=pages&success=Page supprimée');
+        }
+
+        redirectTo('/admin.php?module=pages');
+    }
+
+    private function handleBlog(string $action): void
+    {
+        if ($action === 'index') {
+            $posts = Content::allByType($this->pdo, 'post');
+            $this->render('Blog', $this->resolveView(['modules/blog-list.php']), compact('posts'));
+            return;
+        }
+
+        if ($action === 'categories') {
+            $categories = $this->fetchAllSafe("SELECT * FROM post_categories ORDER BY id DESC");
+            $this->render('Catégories du blog', $this->resolveView(['modules/blog-categories-list.php']), compact('categories'));
+            return;
+        }
+
+        if ($action === 'create_category') {
+            $category = ['name' => '', 'slug' => ''];
+            $isEdit = false;
+            $this->render('Ajouter une catégorie', $this->resolveView(['modules/blog-category-form.php']), compact('category', 'isEdit'));
+            return;
+        }
+
+        if ($action === 'edit_category') {
+            $id = (int)($_GET['id'] ?? 0);
+            $category = $this->fetchOne("SELECT * FROM post_categories WHERE id = :id", ['id' => $id]);
+
+            if (!$category) {
+                redirectTo('/admin.php?module=blog&action=categories&error=Catégorie introuvable');
+            }
+
+            $isEdit = true;
+            $this->render('Modifier une catégorie', $this->resolveView(['modules/blog-category-form.php']), compact('category', 'isEdit'));
+            return;
+        }
+
+        if ($action === 'save_category' && $_SERVER['REQUEST_METHOD'] === 'POST') {
+            $id = (int)($_GET['id'] ?? 0);
+            $slug = trim($_POST['slug'] ?? '');
+
+            $check = $this->pdo->prepare("SELECT id FROM post_categories WHERE slug = :slug AND id != :id LIMIT 1");
+            $check->execute([
+                'slug' => $slug,
+                'id' => $id,
+            ]);
+
+            if ($check->fetch()) {
+                redirectTo('/admin.php?module=blog&action=categories&error=Slug déjà utilisé');
+            }
+
+            $now = date('Y-m-d H:i:s');
+            $data = [
+                'name' => trim($_POST['name'] ?? ''),
+                'slug' => $slug,
+                'updated_at' => $now,
+            ];
+
+            if ($id > 0) {
+                $this->updateRow('post_categories', $id, $data);
+                redirectTo('/admin.php?module=blog&action=categories&success=Catégorie modifiée');
+            }
+
+            $data['created_at'] = $now;
+            $this->insertRow('post_categories', $data);
+
+            redirectTo('/admin.php?module=blog&action=categories&success=Catégorie ajoutée');
+        }
+
+        if ($action === 'delete_category') {
+            $id = (int)($_GET['id'] ?? 0);
+
+            if ($this->tableExists('post_category_relations')) {
+                $stmt = $this->pdo->prepare("DELETE FROM post_category_relations WHERE category_id = :category_id");
+                $stmt->execute(['category_id' => $id]);
+            }
+
+            $this->deleteById('post_categories', $id);
+            redirectTo('/admin.php?module=blog&action=categories&success=Catégorie supprimée');
+        }
+
+        if ($action === 'create') {
+            $post = [
+                'title' => '',
+                'slug' => '',
+                'excerpt' => '',
+                'content' => '',
+                'status' => 'draft',
+                'meta_title' => '',
+                'meta_description' => '',
+                'featured_media_id' => '',
+            ];
+            $mediaLibrary = $this->fetchAllSafe("SELECT id, filename, original_name, path FROM media ORDER BY id DESC");
+            $blogCategories = $this->fetchAllSafe("SELECT * FROM post_categories ORDER BY name ASC");
+            $selectedCategoryIds = [];
+            $isEdit = false;
+
+            $this->render('Ajouter un article', $this->resolveView(['modules/blog-form.php']), compact('post', 'mediaLibrary', 'blogCategories', 'selectedCategoryIds', 'isEdit'));
+            return;
+        }
+
+        if ($action === 'edit') {
+            $id = (int)($_GET['id'] ?? 0);
+            $post = Content::findById($this->pdo, $id);
+
+            if (!$post || ($post['type'] ?? '') !== 'post') {
+                redirectTo('/admin.php?module=blog&error=Article introuvable');
+            }
+
+            $meta = Content::meta($this->pdo, $id);
+            $post = array_merge($post, [
+                'meta_title' => $meta['meta_title'] ?? '',
+                'meta_description' => $meta['meta_description'] ?? '',
+                'featured_media_id' => $meta['featured_media_id'] ?? '',
+            ]);
+
+            $mediaLibrary = $this->fetchAllSafe("SELECT id, filename, original_name, path FROM media ORDER BY id DESC");
+            $blogCategories = $this->fetchAllSafe("SELECT * FROM post_categories ORDER BY name ASC");
+
+            $selectedCategoryIds = [];
+            if ($this->tableExists('post_category_relations')) {
+                $stmt = $this->pdo->prepare("SELECT category_id FROM post_category_relations WHERE post_id = :post_id");
+                $stmt->execute(['post_id' => $id]);
+                $selectedCategoryIds = array_map('intval', array_column($stmt->fetchAll(PDO::FETCH_ASSOC), 'category_id'));
+            }
+
+            $isEdit = true;
+            $this->render('Modifier un article', $this->resolveView(['modules/blog-form.php']), compact('post', 'mediaLibrary', 'blogCategories', 'selectedCategoryIds', 'isEdit'));
+            return;
+        }
+
+        if ($action === 'save' && $_SERVER['REQUEST_METHOD'] === 'POST') {
+            $id = (int)($_GET['id'] ?? 0);
+            $slug = trim($_POST['slug'] ?? '');
+
+            if (Content::slugExists($this->pdo, 'post', $slug, $id)) {
+                redirectTo('/admin.php?module=blog&error=Slug déjà utilisé');
+            }
+
+            $now = date('Y-m-d H:i:s');
+            $data = [
+                'type' => 'post',
+                'title' => trim($_POST['title'] ?? ''),
+                'slug' => $slug,
+                'excerpt' => trim($_POST['excerpt'] ?? ''),
+                'content' => trim($_POST['content'] ?? ''),
+                'status' => trim($_POST['status'] ?? 'draft'),
+                'author_id' => null,
+                'parent_id' => null,
+                'menu_order' => 0,
+                'updated_at' => $now,
+            ];
+
+            if ($id > 0) {
+                Content::update($this->pdo, $id, $data);
+                $contentId = $id;
+            } else {
+                $data['created_at'] = $now;
+                $contentId = Content::create($this->pdo, $data);
+            }
+
+            $this->syncCommonMeta($contentId);
+
+            if ($this->tableExists('post_category_relations')) {
+                $this->pdo->prepare("DELETE FROM post_category_relations WHERE post_id = :post_id")->execute(['post_id' => $contentId]);
+
+                $categoryIds = $_POST['category_ids'] ?? [];
+                $stmt = $this->pdo->prepare("INSERT INTO post_category_relations (post_id, category_id) VALUES (:post_id, :category_id)");
+
+                foreach ($categoryIds as $categoryId) {
+                    $categoryId = (int)$categoryId;
+                    if ($categoryId > 0) {
+                        $stmt->execute([
+                            'post_id' => $contentId,
+                            'category_id' => $categoryId,
+                        ]);
+                    }
+                }
+            }
+
+            redirectTo('/admin.php?module=blog&success=Article enregistré');
+        }
+
+        if ($action === 'delete') {
+            $id = (int)($_GET['id'] ?? 0);
+            Content::delete($this->pdo, $id);
+            redirectTo('/admin.php?module=blog&success=Article supprimé');
+        }
+
+        redirectTo('/admin.php?module=blog');
+    }
+
+    private function handleMedia(string $action): void
+    {
+        if ($action === 'index') {
+            $mediaItems = $this->fetchAllSafe("SELECT * FROM media ORDER BY id DESC");
+            $this->render('Médias', $this->resolveView(['modules/media-list.php']), compact('mediaItems'));
+            return;
+        }
+
+        if ($action === 'upload' && $_SERVER['REQUEST_METHOD'] === 'POST') {
+            if (empty($_FILES['media_file']) || $_FILES['media_file']['error'] !== UPLOAD_ERR_OK) {
+                redirectTo('/admin.php?module=media&error=Upload impossible');
+            }
+
+            $allowedMimeTypes = [
+                'image/jpeg',
+                'image/png',
+                'image/webp',
+                'image/gif',
+                'image/svg+xml',
+            ];
+
+            $tmpPath = $_FILES['media_file']['tmp_name'];
+            $originalName = $_FILES['media_file']['name'];
+            $mimeType = mime_content_type($tmpPath) ?: 'application/octet-stream';
+            $size = (int)$_FILES['media_file']['size'];
+
+            if (!in_array($mimeType, $allowedMimeTypes, true)) {
+                redirectTo('/admin.php?module=media&error=Format non autorisé');
+            }
+
+            $uploadsDir = dirname(__DIR__, 3) . '/public/uploads';
+            if (!is_dir($uploadsDir)) {
+                mkdir($uploadsDir, 0775, true);
+            }
+
+            $extension = strtolower(pathinfo($originalName, PATHINFO_EXTENSION));
+            $filename = uniqid('media_', true) . '.' . $extension;
+            $destination = $uploadsDir . '/' . $filename;
+            $publicPath = '/uploads/' . $filename;
+            $now = date('Y-m-d H:i:s');
+
+            if (!move_uploaded_file($tmpPath, $destination)) {
+                redirectTo('/admin.php?module=media&error=Déplacement du fichier impossible');
+            }
+
+            $data = [
+                'filename' => $filename,
+                'original_name' => $originalName,
+                'path' => $publicPath,
+                'mime_type' => $mimeType,
+                'size' => $size,
+                'created_at' => $now,
+                'updated_at' => $now,
+            ];
+
+            $this->insertRow('media', $data);
+            redirectTo('/admin.php?module=media&success=Média ajouté');
+        }
+
+        if ($action === 'delete') {
+            $id = (int)($_GET['id'] ?? 0);
+            $item = $this->fetchOne("SELECT * FROM media WHERE id = :id", ['id' => $id]);
+
+            if ($item && !empty($item['path'])) {
+                $filePath = dirname(__DIR__, 3) . '/public' . $item['path'];
+                if (file_exists($filePath)) {
+                    @unlink($filePath);
+                }
+            }
+
+            $this->deleteById('media', $id);
+            redirectTo('/admin.php?module=media&success=Média supprimé');
+        }
+
+        redirectTo('/admin.php?module=media');
+    }
+
+    private function handleMenus(string $action): void
+    {
+        if ($action === 'index') {
+            $menus = $this->fetchAllSafe("SELECT * FROM menus ORDER BY id DESC");
+            $this->render('Menus', $this->resolveView(['modules/menus-list.php']), compact('menus'));
+            return;
+        }
+
+        if ($action === 'create') {
+            $menu = ['name' => '', 'location_key' => ''];
+            $isEdit = false;
+            $this->render('Ajouter un menu', $this->resolveView(['modules/menus-form.php']), compact('menu', 'isEdit'));
+            return;
+        }
+
+        if ($action === 'edit') {
+            $id = (int)($_GET['id'] ?? 0);
+            $menu = $this->fetchOne("SELECT * FROM menus WHERE id = :id", ['id' => $id]);
+
+            if (!$menu) {
+                redirectTo('/admin.php?module=menus&error=Menu introuvable');
+            }
+
+            $isEdit = true;
+            $this->render('Modifier un menu', $this->resolveView(['modules/menus-form.php']), compact('menu', 'isEdit'));
+            return;
+        }
+
+        if ($action === 'save' && $_SERVER['REQUEST_METHOD'] === 'POST') {
+            $id = (int)($_GET['id'] ?? 0);
+            $now = date('Y-m-d H:i:s');
+
+            $data = [
+                'name' => trim($_POST['name'] ?? ''),
+                'location_key' => trim($_POST['location_key'] ?? ''),
+                'updated_at' => $now,
+            ];
+
+            if ($id > 0) {
+                $this->updateRow('menus', $id, $data);
+                redirectTo('/admin.php?module=menus&success=Menu modifié');
+            }
+
+            $data['created_at'] = $now;
+            $this->insertRow('menus', $data);
+
+            redirectTo('/admin.php?module=menus&success=Menu ajouté');
+        }
+
+        if ($action === 'delete') {
+            $id = (int)($_GET['id'] ?? 0);
+
+            if ($this->tableExists('menu_items')) {
+                $stmt = $this->pdo->prepare("DELETE FROM menu_items WHERE menu_id = :menu_id");
+                $stmt->execute(['menu_id' => $id]);
+            }
+
+            $this->deleteById('menus', $id);
+            redirectTo('/admin.php?module=menus&success=Menu supprimé');
+        }
+
+        if ($action === 'items') {
+            $id = (int)($_GET['id'] ?? 0);
+            $menu = $this->fetchOne("SELECT * FROM menus WHERE id = :id", ['id' => $id]);
+
+            if (!$menu) {
+                redirectTo('/admin.php?module=menus&error=Menu introuvable');
+            }
+
+            $items = [];
+            if ($this->tableExists('menu_items')) {
+                $stmt = $this->pdo->prepare("SELECT * FROM menu_items WHERE menu_id = :menu_id ORDER BY sort_order ASC, id ASC");
+                $stmt->execute(['menu_id' => $id]);
+                $items = $stmt->fetchAll(PDO::FETCH_ASSOC);
+            }
+
+            $pagesForMenu = Content::allByType($this->pdo, 'page');
+            $this->render('Éléments du menu', $this->resolveView(['modules/menu-items.php']), compact('menu', 'items', 'pagesForMenu'));
+            return;
+        }
+
+        if ($action === 'add_item' && $_SERVER['REQUEST_METHOD'] === 'POST') {
+            $menuId = (int)($_GET['id'] ?? 0);
+            $itemType = trim($_POST['item_type'] ?? 'custom');
+            $pageId = (int)($_POST['page_id'] ?? 0);
+            $url = trim($_POST['url'] ?? '');
+
+            if ($itemType === 'page' && $pageId > 0) {
+                $pageData = Content::findById($this->pdo, $pageId);
+                if ($pageData && ($pageData['type'] ?? '') === 'page') {
+                    $url = '/?slug=' . $pageData['slug'];
+                }
+            }
+
+            $data = [
+                'menu_id' => $menuId,
+                'label' => trim($_POST['label'] ?? ''),
+                'item_type' => $itemType,
+                'url' => $url,
+                'page_id' => $pageId ?: null,
+                'sort_order' => (int)($_POST['sort_order'] ?? 0),
+                'created_at' => date('Y-m-d H:i:s'),
+                'updated_at' => date('Y-m-d H:i:s'),
+            ];
+
+            $this->insertRow('menu_items', $data);
+            redirectTo('/admin.php?module=menus&action=items&id=' . $menuId . '&success=Élément ajouté');
+        }
+
+        if ($action === 'delete_item') {
+            $menuId = (int)($_GET['id'] ?? 0);
+            $itemId = (int)($_GET['item_id'] ?? 0);
+
+            $this->deleteById('menu_items', $itemId);
+            redirectTo('/admin.php?module=menus&action=items&id=' . $menuId . '&success=Élément supprimé');
+        }
+
+        redirectTo('/admin.php?module=menus');
+    }
+
+    private function handleUsers(string $action): void
+    {
+        if ($action === 'index') {
+            $users = $this->fetchAllSafe("SELECT * FROM users ORDER BY id DESC");
+            $this->render('Utilisateurs', $this->resolveView(['modules/users-list.php']), compact('users'));
+            return;
+        }
+
+        if ($action === 'create') {
+            $user = ['name' => '', 'email' => '', 'role' => 'editor'];
+            $isEdit = false;
+            $this->render('Ajouter un utilisateur', $this->resolveView(['modules/users-form.php']), compact('user', 'isEdit'));
+            return;
+        }
+
+        if ($action === 'edit') {
+            $id = (int)($_GET['id'] ?? 0);
+            $user = $this->fetchOne("SELECT * FROM users WHERE id = :id", ['id' => $id]);
+
+            if (!$user) {
+                redirectTo('/admin.php?module=users&error=Utilisateur introuvable');
+            }
+
+            $isEdit = true;
+            $this->render('Modifier un utilisateur', $this->resolveView(['modules/users-form.php']), compact('user', 'isEdit'));
+            return;
+        }
+
+        if ($action === 'save' && $_SERVER['REQUEST_METHOD'] === 'POST') {
+            $id = (int)($_GET['id'] ?? 0);
+            $now = date('Y-m-d H:i:s');
+
+            $data = [
+                'name' => trim($_POST['name'] ?? ''),
+                'email' => trim($_POST['email'] ?? ''),
+                'role' => trim($_POST['role'] ?? 'editor'),
+                'updated_at' => $now,
+            ];
+
+            $password = trim($_POST['password'] ?? '');
+
+            if ($id > 0) {
+                if ($password !== '') {
+                    $data['password'] = password_hash($password, PASSWORD_DEFAULT);
+                }
+
+                $this->updateRow('users', $id, $data);
+                redirectTo('/admin.php?module=users&success=Utilisateur modifié');
+            }
+
+            $data['password'] = password_hash($password !== '' ? $password : 'admin1234', PASSWORD_DEFAULT);
+            $data['created_at'] = $now;
+            $this->insertRow('users', $data);
+
+            redirectTo('/admin.php?module=users&success=Utilisateur ajouté');
+        }
+
+        if ($action === 'delete') {
+            $id = (int)($_GET['id'] ?? 0);
+            $this->deleteById('users', $id);
+            redirectTo('/admin.php?module=users&success=Utilisateur supprimé');
+        }
+
+        redirectTo('/admin.php?module=users');
+    }
+
+    private function handleSettings(string $action): void
+    {
+        if ($action === 'index') {
+            $this->render('Paramètres', $this->resolveView(['modules/settings-form.php']), []);
+            return;
+        }
+
+        if ($action === 'save' && $_SERVER['REQUEST_METHOD'] === 'POST') {
+            $moduleKeys = [
+                'module_products',
+                'module_blog',
+                'module_forms',
+                'module_booking',
+                'module_clients',
+                'module_testimonials',
+                'module_gallery',
+                'module_subscriptions',
+            ];
+
+            $trackingKeys = [
+                'tracking_gtm_id',
+                'tracking_meta_pixel_id',
+                'tracking_tiktok_pixel_id',
+                'tracking_head_custom',
+                'tracking_body_custom',
+                'tracking_footer_custom',
+                'site_name',
+                'site_tagline',
+                'theme',
+                'custom_css_global',
+            ];
+
+            foreach ($moduleKeys as $key) {
+                saveSetting($this->pdo, $key, isset($_POST[$key]) ? '1' : '0');
+            }
+
+            foreach ($trackingKeys as $key) {
+                saveSetting($this->pdo, $key, trim($_POST[$key] ?? ''));
+            }
+
+            $this->settings = getSettings($this->pdo);
+            redirectTo('/admin.php?module=settings&success=Paramètres enregistrés');
+        }
+
+        redirectTo('/admin.php?module=settings');
+    }
+
+    private function syncCommonMeta(int $contentId): void
+    {
+        $metaTitle = trim($_POST['meta_title'] ?? '');
+        $metaDescription = trim($_POST['meta_description'] ?? '');
+        $featuredMediaId = trim((string)($_POST['featured_media_id'] ?? ''));
+
+        if ($metaTitle !== '') {
+            Content::setMeta($this->pdo, $contentId, 'meta_title', $metaTitle);
+        } else {
+            Content::deleteMeta($this->pdo, $contentId, 'meta_title');
+        }
+
+        if ($metaDescription !== '') {
+            Content::setMeta($this->pdo, $contentId, 'meta_description', $metaDescription);
+        } else {
+            Content::deleteMeta($this->pdo, $contentId, 'meta_description');
+        }
+
+        if ($featuredMediaId !== '') {
+            Content::setMeta($this->pdo, $contentId, 'featured_media_id', $featuredMediaId);
+        } else {
+            Content::deleteMeta($this->pdo, $contentId, 'featured_media_id');
+        }
+    }
+
+    private function fetchBlocks(int $contentId): array
+    {
+        return $this->fetchAllSafe("SELECT * FROM content_blocks WHERE content_id = " . (int)$contentId . " ORDER BY sort_order ASC, id ASC");
+    }
+
+    private function moveBlock(int $contentId, int $blockId, string $direction): void
+    {
+        $blocks = $this->fetchBlocks($contentId);
+        $index = null;
+
+        foreach ($blocks as $i => $block) {
+            if ((int)$block['id'] === $blockId) {
+                $index = $i;
+                break;
+            }
+        }
+
+        if ($index === null) {
+            return;
+        }
+
+        if ($direction === 'up' && $index > 0) {
+            $other = $blocks[$index - 1];
+            $current = $blocks[$index];
+            $this->swapBlockOrder((int)$current['id'], (int)$other['id'], (int)$current['sort_order'], (int)$other['sort_order']);
+        }
+
+        if ($direction === 'down' && $index < count($blocks) - 1) {
+            $other = $blocks[$index + 1];
+            $current = $blocks[$index];
+            $this->swapBlockOrder((int)$current['id'], (int)$other['id'], (int)$current['sort_order'], (int)$other['sort_order']);
+        }
+    }
+
+    private function swapBlockOrder(int $firstId, int $secondId, int $firstOrder, int $secondOrder): void
+    {
+        $now = date('Y-m-d H:i:s');
+
+        $stmt = $this->pdo->prepare("UPDATE content_blocks SET sort_order = :sort_order, updated_at = :updated_at WHERE id = :id");
+        $stmt->execute([
+            'sort_order' => $secondOrder,
+            'updated_at' => $now,
+            'id' => $firstId,
+        ]);
+
+        $stmt->execute([
+            'sort_order' => $firstOrder,
+            'updated_at' => $now,
+            'id' => $secondId,
+        ]);
+    }
+
+    private function extractBlockSettings(string $blockType): array
+    {
+        return match ($blockType) {
+            'hero' => [
+                'title' => trim($_POST['hero_title'] ?? ''),
+                'subtitle' => trim($_POST['hero_subtitle'] ?? ''),
+                'button_text' => trim($_POST['hero_button_text'] ?? ''),
+                'button_url' => trim($_POST['hero_button_url'] ?? ''),
+            ],
+            'rich-text' => [
+                'title' => trim($_POST['rich_text_title'] ?: ($_POST['hero_title'] ?? '')),
+                'content' => trim($_POST['rich_text_content'] ?? ''),
+            ],
+            'menu' => [
+                'menu_location' => trim($_POST['menu_location'] ?? 'main'),
+            ],
+            'cta' => [
+                'title' => trim($_POST['cta_title'] ?? ''),
+                'text' => trim($_POST['cta_text'] ?? ''),
+                'button_text' => trim($_POST['cta_button_text'] ?? ''),
+                'button_url' => trim($_POST['cta_button_url'] ?? ''),
+            ],
+            'posts-list' => [
+                'title' => trim($_POST['posts_list_title'] ?? ''),
+                'limit' => (int)($_POST['posts_list_limit'] ?? 3),
+            ],
+            default => [],
+        };
+    }
+
+    private function render(string $pageTitle, string $viewPath, array $data = []): void
+    {
+        extract($data);
+        $module = $this->module;
+        $action = $this->action;
+        $config = $this->config;
+        $settings = $this->settings;
+
+        require dirname(__DIR__, 2) . '/Views/layouts/admin.php';
+    }
+
+    private function resolveView(array $candidates): string
+    {
+        $base = dirname(__DIR__, 2) . '/Views/';
+
+        foreach ($candidates as $candidate) {
+            $path = $base . $candidate;
+            if (file_exists($path)) {
+                return $path;
+            }
+        }
+
+        return $base . 'admin/module-placeholder.php';
+    }
+
+    private function titleFor(string $module): string
+    {
+        return match ($module) {
+            'products' => 'Produits',
+            'forms' => 'Formulaires',
+            'booking' => 'Réservations',
+            'clients' => 'Clients',
+            'testimonials' => 'Avis',
+            'gallery' => 'Galerie',
+            'subscriptions' => 'Abonnements',
+            default => ucfirst($module),
+        };
+    }
+
+    private function tableExists(string $table): bool
+    {
+        $stmt = $this->pdo->prepare("SELECT name FROM sqlite_master WHERE type = 'table' AND name = :name LIMIT 1");
+        $stmt->execute(['name' => $table]);
+
+        return (bool) $stmt->fetch(PDO::FETCH_ASSOC);
+    }
+
+    private function insertRow(string $table, array $data): int
+    {
+        $columns = array_keys($data);
+        $placeholders = array_map(fn($col) => ':' . $col, $columns);
+
+        $sql = "INSERT INTO {$table} (" . implode(', ', $columns) . ") VALUES (" . implode(', ', $placeholders) . ")";
+        $stmt = $this->pdo->prepare($sql);
+        $stmt->execute($data);
+
+        return (int)$this->pdo->lastInsertId();
+    }
+
+    private function updateRow(string $table, int $id, array $data): void
+    {
+        $sets = [];
+        foreach (array_keys($data) as $column) {
+            $sets[] = $column . ' = :' . $column;
+        }
+
+        $data['id'] = $id;
+
+        $sql = "UPDATE {$table} SET " . implode(', ', $sets) . " WHERE id = :id";
+        $stmt = $this->pdo->prepare($sql);
+        $stmt->execute($data);
+    }
+
+    private function deleteById(string $table, int $id): void
+    {
+        if (!$this->tableExists($table)) {
+            return;
+        }
+
+        $stmt = $this->pdo->prepare("DELETE FROM {$table} WHERE id = :id");
+        $stmt->execute(['id' => $id]);
+    }
+
+    private function fetchAllSafe(string $sql): array
+    {
+        try {
+            return $this->pdo->query($sql)->fetchAll(PDO::FETCH_ASSOC);
+        } catch (\Throwable $e) {
+            return [];
+        }
+    }
+
+    private function fetchOne(string $sql, array $params = []): ?array
+    {
+        try {
+            $stmt = $this->pdo->prepare($sql);
+            $stmt->execute($params);
+            $row = $stmt->fetch(PDO::FETCH_ASSOC);
+            return $row ?: null;
+        } catch (\Throwable $e) {
+            return null;
+        }
+    }
+
+    private function safeCount(string $table): int
+    {
+        if (!$this->tableExists($table)) {
+            return 0;
+        }
+
+        try {
+            return (int)$this->pdo->query("SELECT COUNT(*) FROM {$table}")->fetchColumn();
+        } catch (\Throwable $e) {
+            return 0;
+        }
+    }
+}
