@@ -1,6 +1,8 @@
 <?php
 declare(strict_types=1);
 
+require_once dirname(__DIR__) . '/admin/security/csrf.php';
+
 /* CREALEM_SECURITY_BOOTSTRAP */
 if (session_status() !== PHP_SESSION_ACTIVE) {
     $isHttps = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off')
@@ -25,6 +27,19 @@ if (!headers_sent()) {
     header("Permissions-Policy: camera=(), microphone=(), geolocation=()");
     header('Cross-Origin-Opener-Policy: same-origin');
 }
+
+/* CREALEM_CSRF_VALIDATE */
+$__csrfModule = (string)($_GET['module'] ?? '');
+$__csrfAction = (string)($_GET['action'] ?? '');
+
+if (
+    $_SERVER['REQUEST_METHOD'] === 'POST'
+    && in_array($__csrfModule, ['products', 'pages', 'blog'], true)
+    && $__csrfAction === 'save'
+) {
+    Csrf::validate();
+}
+
 
 
 if (session_status() === PHP_SESSION_NONE) {
