@@ -138,6 +138,76 @@
         return card;
     }
 
+
+    function getProcessedMediaLibrary() {
+        var allItems = getProcessedMediaLibrary();
+        var items = getPaginatedMediaLibrary();
+
+        if (currentSearch) {
+            items = items.filter(function (item) {
+                var id = String(item.id || '');
+                var name = String(item.original_name || item.filename || '').toLowerCase();
+                return id.includes(currentSearch) || name.includes(currentSearch);
+            });
+        }
+
+        return items;
+    }
+
+    function getPaginatedMediaLibrary() {
+        var items = getProcessedMediaLibrary();
+        var start = (currentPage - 1) * ITEMS_PER_PAGE;
+        return items.slice(start, start + ITEMS_PER_PAGE);
+    }
+
+    function renderPagination(totalItems) {
+        var old = document.getElementById('cs-media-pagination');
+        if (old) old.remove();
+
+        var totalPages = Math.ceil(totalItems / ITEMS_PER_PAGE);
+        if (totalPages <= 1 || !modalGrid || !modalGrid.parentNode) return;
+
+        var wrap = document.createElement('div');
+        wrap.id = 'cs-media-pagination';
+        wrap.style.display = 'flex';
+        wrap.style.alignItems = 'center';
+        wrap.style.gap = '10px';
+        wrap.style.marginTop = '14px';
+
+        var prev = document.createElement('button');
+        prev.type = 'button';
+        prev.className = 'btn btn-outline-secondary btn-sm';
+        prev.textContent = '←';
+        prev.disabled = currentPage === 1;
+        prev.onclick = function () {
+            if (currentPage > 1) {
+                currentPage--;
+                renderLibrary();
+            }
+        };
+
+        var info = document.createElement('span');
+        info.textContent = 'Page ' + currentPage + ' / ' + totalPages;
+
+        var next = document.createElement('button');
+        next.type = 'button';
+        next.className = 'btn btn-outline-secondary btn-sm';
+        next.textContent = '→';
+        next.disabled = currentPage >= totalPages;
+        next.onclick = function () {
+            if (currentPage < totalPages) {
+                currentPage++;
+                renderLibrary();
+            }
+        };
+
+        wrap.appendChild(prev);
+        wrap.appendChild(info);
+        wrap.appendChild(next);
+
+        modalGrid.parentNode.appendChild(wrap);
+    }
+
     function getMediaLibrary() {
         var source = document.getElementById('cs-media-library-data');
         if (!source) return [];
@@ -164,7 +234,8 @@
 
         currentContext = context || 'wysiwyg-content';
 
-        var items = getMediaLibrary();
+        var allItems = getProcessedMediaLibrary();
+        var items = getPaginatedMediaLibrary();
         modalGrid.innerHTML = '';
 
         if (modalTitle) modalTitle.textContent = getContextTitle(currentContext);
