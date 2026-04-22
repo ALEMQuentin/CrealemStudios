@@ -305,6 +305,5 @@ $accordionSystemOpen = in_array($currentModule, ['users', 'settings'], true);
         });
     })();
     </script>
-    <script src="/assets/js/admin-wysiwyg.js"></script>
 </body>
 </html>
