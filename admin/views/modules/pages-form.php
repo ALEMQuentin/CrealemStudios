@@ -2,62 +2,153 @@
     <div class="card-body d-flex justify-content-between align-items-center flex-wrap gap-2">
         <div>
             <h2 class="h5 mb-1"><?= !empty($isEdit) ? 'Modifier une page' : 'Ajouter une page' ?></h2>
-            <div class="text-muted">Contenu, SEO et média principal</div>
+            <div class="text-muted">Éditeur de page</div>
         </div>
-        <a class="btn btn-outline-secondary" href="/admin.php?module=pages">Retour aux pages</a>
+        <a class="btn btn-outline-secondary" href="/admin.php?module=pages">Retour à la liste</a>
     </div>
 </div>
 
-<div class="card mt-4">
-    <div class="card-body">
-        <form method="post" action="/admin.php?module=pages&action=save<?= !empty($isEdit) ? '&id=' . (int)$page['id'] : '' ?>">
-            <div class="row">
-                <div class="col-md-8">
+<form method="post" action="/admin.php?module=pages&action=save<?= !empty($isEdit) ? '&id=' . (int)$page['id'] : '' ?>">
+    <div class="row mt-4">
+        <div class="col-md-8">
+
+            <div class="card">
+                <div class="card-body">
                     <label class="form-label">Titre</label>
                     <input type="text" class="form-control" name="title" value="<?= e($page['title'] ?? '') ?>" required>
-                </div>
 
-                <div class="col-md-4">
+                    <div class="row mt-4">
+                        <div class="col-md-6">
+                            <label class="form-label">Slug</label>
+                            <input type="text" class="form-control" name="slug" value="<?= e($page['slug'] ?? '') ?>" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Ordre</label>
+                            <input type="number" class="form-control" name="sort_order" value="<?= e((string)($page['sort_order'] ?? '0')) ?>">
+                        </div>
+                    </div>
+
+                    <div class="mt-4">
+                        <label class="form-label">Contenu</label>
+                        <textarea class="form-control" name="content" rows="14"><?= e($page['content'] ?? '') ?></textarea>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card mt-4">
+                <div class="card-body">
+                    <h3 class="h6 mb-3">Bibliothèque média</h3>
+
+                    <?php if (empty($mediaLibrary)): ?>
+                        <div class="text-muted">Aucun média disponible.</div>
+                    <?php else: ?>
+                        <div style="display:grid; grid-template-columns:repeat(auto-fill,minmax(120px,1fr)); gap:12px;">
+                            <?php foreach ($mediaLibrary as $media): ?>
+                                <div data-media-id="<?= (int)$media['id'] ?>" style="border:1px solid #e5e7eb; border-radius:10px; padding:10px; background:#fff;">
+                                    <div style="height:90px; display:flex; align-items:center; justify-content:center; margin-bottom:8px;">
+                                        <?php if (!empty($media['path']) && str_starts_with((string)($media['mime_type'] ?? ''), 'image/')): ?>
+                                            <img src="<?= e($media['path']) ?>" alt="" style="max-width:100%; max-height:90px; object-fit:contain;">
+                                        <?php else: ?>
+                                            <span class="text-muted" style="font-size:12px;">Aperçu indisponible</span>
+                                        <?php endif; ?>
+                                    </div>
+
+                                    <div class="text-muted" style="font-size:12px; margin-bottom:8px;">
+                                        ID: <?= (int)$media['id'] ?>
+                                    </div>
+
+                                    <button type="button"
+                                            class="btn btn-outline-secondary btn-sm w-100"
+                                            onclick="selectPageFeaturedMedia('<?= (int)$media['id'] ?>')">
+                                        Utiliser cette image
+                                    </button>
+                                </div>
+                            <?php endforeach; ?>
+                        </div>
+                    <?php endif; ?>
+                </div>
+            </div>
+
+        </div>
+
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-body">
                     <label class="form-label">Statut</label>
                     <select class="form-select" name="status">
                         <option value="draft" <?= (($page['status'] ?? '') === 'draft') ? 'selected' : '' ?>>Brouillon</option>
                         <option value="published" <?= (($page['status'] ?? '') === 'published') ? 'selected' : '' ?>>Publié</option>
                     </select>
-                </div>
 
-                <div class="col-md-6">
-                    <label class="form-label">Slug</label>
-                    <input type="text" class="form-control" name="slug" value="<?= e($page['slug'] ?? '') ?>" required>
-                </div>
+                    <div class="mt-4">
+                        <label class="form-label">Image mise en avant (ID média)</label>
+                        <input type="number" class="form-control" id="page_featured_media_id" name="featured_media_id" value="<?= e((string)($page['featured_media_id'] ?? '')) ?>">
 
-                <div class="col-md-6">
-                    <label class="form-label">ID média principal</label>
-                    <input type="number" class="form-control" name="featured_media_id" value="<?= e((string)($page['featured_media_id'] ?? '')) ?>">
-                </div>
+                        <div class="mt-3 d-flex gap-2 flex-wrap">
+                            <button type="button" class="btn btn-outline-secondary btn-sm" onclick="clearPageFeaturedMedia()">Retirer l’image</button>
+                        </div>
 
-                <div class="col-12">
-                    <label class="form-label">Contenu</label>
-                    <textarea class="form-control" name="content" rows="14"><?= e($page['content'] ?? '') ?></textarea>
-                </div>
+                        <div id="page-featured-media-preview" style="margin-top:10px;"></div>
+                    </div>
 
-                <div class="col-md-6">
-                    <label class="form-label">Meta title</label>
-                    <input type="text" class="form-control" name="meta_title" value="<?= e($page['meta_title'] ?? '') ?>">
-                </div>
+                    <div class="mt-4">
+                        <label class="form-label">Titre SEO</label>
+                        <input type="text" class="form-control" name="seo_title" value="<?= e($page['seo_title'] ?? '') ?>">
+                    </div>
 
-                <div class="col-md-6">
-                    <label class="form-label">Meta description</label>
-                    <input type="text" class="form-control" name="meta_description" value="<?= e($page['meta_description'] ?? '') ?>">
-                </div>
+                    <div class="mt-4">
+                        <label class="form-label">Meta description</label>
+                        <textarea class="form-control" name="seo_description" rows="4"><?= e($page['seo_description'] ?? '') ?></textarea>
+                    </div>
 
-                <div class="col-12 d-flex gap-2 flex-wrap mt-4">
-                    <button class="btn btn-primary" type="submit">Enregistrer la page</button>
-                    <?php if (!empty($isEdit)): ?>
-                        <a class="btn btn-outline-secondary" href="/admin.php?module=pages&action=blocks&id=<?= (int)$page['id'] ?>">Gérer les blocs</a>
-                        <a class="btn btn-outline-secondary" href="/admin.php?module=pages&action=preview&id=<?= (int)$page['id'] ?>">Aperçu</a>
-                    <?php endif; ?>
+                    <div class="mt-4">
+                        <button class="btn btn-primary" type="submit">Enregistrer</button>
+                    </div>
                 </div>
             </div>
-        </form>
+        </div>
     </div>
-</div>
+</form>
+
+<script>
+function getPageMediaImgById(id) {
+    return document.querySelector('[data-media-id="' + id + '"] img');
+}
+
+function selectPageFeaturedMedia(mediaId) {
+    var field = document.getElementById('page_featured_media_id');
+    if (!field) return;
+    field.value = mediaId;
+    renderPageFeaturedPreview();
+}
+
+function clearPageFeaturedMedia() {
+    var field = document.getElementById('page_featured_media_id');
+    if (!field) return;
+    field.value = '';
+    renderPageFeaturedPreview();
+}
+
+function renderPageFeaturedPreview() {
+    var id = document.getElementById('page_featured_media_id').value;
+    var container = document.getElementById('page-featured-media-preview');
+    if (!container) return;
+    container.innerHTML = '';
+
+    if (!id) return;
+
+    var img = getPageMediaImgById(id);
+    if (img) {
+        var clone = img.cloneNode();
+        clone.style.maxWidth = '140px';
+        clone.style.maxHeight = '140px';
+        clone.style.objectFit = 'contain';
+        clone.style.borderRadius = '8px';
+        container.appendChild(clone);
+    }
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    renderPageFeaturedPreview();
+});
+</script>
