@@ -3,39 +3,18 @@
     var modalGrid = null;
     var modalTitle = null;
     var closeBtn = null;
-    var uploadInput = null;
-    var uploadBtn = null;
     var currentContext = null;
 
     function ensureModal() {
         modal = document.getElementById('cs-media-modal');
         if (!modal) return false;
-
         modalGrid = document.getElementById('cs-media-modal-grid');
         modalTitle = document.getElementById('cs-media-modal-title');
         closeBtn = document.getElementById('cs-media-modal-close');
-        uploadInput = document.getElementById('cs-media-modal-upload-input');
-        uploadBtn = document.getElementById('cs-media-modal-upload-btn');
 
         if (closeBtn && !closeBtn.dataset.bound) {
             closeBtn.dataset.bound = '1';
             closeBtn.addEventListener('click', closeModal);
-        }
-
-        if (uploadBtn && !uploadBtn.dataset.bound) {
-            uploadBtn.dataset.bound = '1';
-            uploadBtn.addEventListener('click', function () {
-                if (uploadInput) uploadInput.click();
-            });
-        }
-
-        if (uploadInput && !uploadInput.dataset.bound) {
-            uploadInput.dataset.bound = '1';
-            uploadInput.addEventListener('change', function () {
-                if (uploadInput.files && uploadInput.files[0]) {
-                    uploadMediaFile(uploadInput.files[0]);
-                }
-            });
         }
 
         modal.addEventListener('click', function (e) {
@@ -57,7 +36,6 @@
         modal.style.display = 'none';
         currentContext = null;
         if (modalGrid) modalGrid.innerHTML = '';
-        if (uploadInput) uploadInput.value = '';
     }
 
     function createMediaCard(item) {
@@ -180,45 +158,6 @@
             default: return 'Bibliothèque média';
         }
     }
-
-    async function uploadMediaFile(file) {
-        if (!file) return;
-
-        var formData = new FormData();
-        formData.append('media_file', file);
-
-        try {
-            if (uploadBtn) {
-                uploadBtn.disabled = true;
-                uploadBtn.textContent = 'Upload en cours...';
-            }
-
-            var response = await fetch('/admin.php?module=media&action=upload', {
-                method: 'POST',
-                body: formData,
-                credentials: 'same-origin'
-            });
-
-            if (!response.ok) {
-                throw new Error('Upload impossible');
-            }
-
-            window.location.reload();
-        } catch (e) {
-            window.alert("L'upload du média a échoué.");
-        } finally {
-            if (uploadBtn) {
-                uploadBtn.disabled = false;
-                uploadBtn.textContent = 'Uploader un média';
-            }
-            if (uploadInput) uploadInput.value = '';
-        }
-    }
-
-    window.triggerDirectMediaUpload = function () {
-        if (!ensureModal()) return;
-        if (uploadInput) uploadInput.click();
-    };
 
     window.openMediaModal = function (context) {
         if (!ensureModal()) return;
