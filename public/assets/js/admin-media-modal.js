@@ -1,10 +1,11 @@
 (function () {
-    var modal = null;
-    var modalGrid = null;
-    var modalTitle = null;
-    var closeBtn = null;
-    var uploadInput = null;
-    var uploadBtn = null;
+
+    var modal, modalGrid, modalTitle, closeBtn;
+    var uploadInput, uploadBtn;
+    var infoPreview, infoName, infoUrl, infoMime, infoSize;
+    var infoAltInput, infoNameInput, saveBtn, copyBtn;
+
+    var currentItem = null;
     var currentContext = null;
 
     function ensureModal() {
@@ -14,236 +15,153 @@
         modalGrid = document.getElementById('cs-media-modal-grid');
         modalTitle = document.getElementById('cs-media-modal-title');
         closeBtn = document.getElementById('cs-media-modal-close');
+
         uploadInput = document.getElementById('cs-media-modal-upload-input');
         uploadBtn = document.getElementById('cs-media-modal-upload-btn');
 
+        infoPreview = document.getElementById('cs-media-info-preview');
+        infoName = document.getElementById('cs-media-info-name');
+        infoUrl = document.getElementById('cs-media-info-url');
+        infoMime = document.getElementById('cs-media-info-mime');
+        infoSize = document.getElementById('cs-media-info-size');
+
+        infoAltInput = document.getElementById('cs-media-edit-alt');
+        infoNameInput = document.getElementById('cs-media-edit-name');
+        saveBtn = document.getElementById('cs-media-save-btn');
+        copyBtn = document.getElementById('cs-media-copy-url-btn');
+
         if (closeBtn && !closeBtn.dataset.bound) {
             closeBtn.dataset.bound = '1';
-            closeBtn.addEventListener('click', closeModal);
+            closeBtn.onclick = closeModal;
         }
 
         if (uploadBtn && !uploadBtn.dataset.bound) {
             uploadBtn.dataset.bound = '1';
-            uploadBtn.addEventListener('click', function () {
-                if (uploadInput) uploadInput.click();
-            });
+            uploadBtn.onclick = () => uploadInput.click();
         }
 
         if (uploadInput && !uploadInput.dataset.bound) {
             uploadInput.dataset.bound = '1';
-            uploadInput.addEventListener('change', function () {
-                if (uploadInput.files && uploadInput.files[0]) {
-                    uploadMediaFile(uploadInput.files[0]);
-                }
-            });
+            uploadInput.onchange = () => {
+                if (uploadInput.files[0]) upload(uploadInput.files[0]);
+            };
         }
 
-        modal.addEventListener('click', function (e) {
-            if (e.target === modal) closeModal();
-        });
+        if (copyBtn && !copyBtn.dataset.bound) {
+            copyBtn.dataset.bound = '1';
+            copyBtn.onclick = () => {
+                if (!currentItem) return;
+                navigator.clipboard.writeText(currentItem.path);
+            };
+        }
 
-        document.addEventListener('keydown', function (e) {
-            if (e.key === 'Escape' && modal.classList.contains('is-open')) {
-                closeModal();
-            }
-        });
+        if (saveBtn && !saveBtn.dataset.bound) {
+            saveBtn.dataset.bound = '1';
+            saveBtn.onclick = saveMedia;
+        }
 
         return true;
     }
 
     function closeModal() {
-        if (!modal) return;
-        modal.classList.remove('is-open');
         modal.style.display = 'none';
-        currentContext = null;
-        if (modalGrid) modalGrid.innerHTML = '';
-        if (uploadInput) uploadInput.value = '';
+        modal.classList.remove('is-open');
     }
 
-    function createMediaCard(item) {
-        var card = document.createElement('div');
-        card.className = 'cs-media-modal-card';
-        card.style.border = '1px solid #e5e7eb';
-        card.style.borderRadius = '10px';
-        card.style.padding = '10px';
-        card.style.background = '#fff';
+    function upload(file) {
+        var fd = new FormData();
+        fd.append('media_file', file);
 
-        var preview = document.createElement('div');
-        preview.style.height = '120px';
-        preview.style.display = 'flex';
-        preview.style.alignItems = 'center';
-        preview.style.justifyContent = 'center';
-        preview.style.marginBottom = '10px';
-        preview.style.background = '#f8fafc';
-        preview.style.borderRadius = '8px';
-
-        if (item.path && item.mime_type && item.mime_type.indexOf('image/') === 0) {
-            var img = document.createElement('img');
-            img.src = item.path;
-            img.alt = item.original_name || item.filename || '';
-            img.style.maxWidth = '100%';
-            img.style.maxHeight = '120px';
-            img.style.objectFit = 'contain';
-            preview.appendChild(img);
-        } else {
-            var span = document.createElement('span');
-            span.className = 'text-muted';
-            span.style.fontSize = '12px';
-            span.textContent = 'Aperçu indisponible';
-            preview.appendChild(span);
-        }
-
-        var meta = document.createElement('div');
-        meta.className = 'text-muted';
-        meta.style.fontSize = '12px';
-        meta.style.marginBottom = '10px';
-        meta.textContent = 'ID: ' + item.id + (item.original_name ? ' • ' + item.original_name : '');
-
-        var actions = document.createElement('div');
-        actions.style.display = 'grid';
-        actions.style.gap = '6px';
-
-        function makeButton(label, handler) {
-            var btn = document.createElement('button');
-            btn.type = 'button';
-            btn.className = 'btn btn-outline-secondary btn-sm';
-            btn.textContent = label;
-            btn.addEventListener('click', handler);
-            return btn;
-        }
-
-        if (currentContext === 'product-featured') {
-            actions.appendChild(makeButton('Utiliser comme image principale', function () {
-                if (window.selectFeaturedMedia) window.selectFeaturedMedia(String(item.id));
-                closeModal();
-            }));
-        }
-
-        if (currentContext === 'product-gallery') {
-            actions.appendChild(makeButton('Ajouter à la galerie', function () {
-                if (window.addMediaToGallery) window.addMediaToGallery(String(item.id));
-                closeModal();
-            }));
-        }
-
-        if (currentContext === 'page-featured') {
-            actions.appendChild(makeButton('Utiliser pour la page', function () {
-                if (window.selectPageFeaturedMedia) window.selectPageFeaturedMedia(String(item.id));
-                closeModal();
-            }));
-        }
-
-        if (currentContext === 'blog-featured') {
-            actions.appendChild(makeButton('Utiliser pour l’article', function () {
-                if (window.selectBlogFeaturedMedia) window.selectBlogFeaturedMedia(String(item.id));
-                closeModal();
-            }));
-        }
-
-        if (currentContext === 'wysiwyg-content') {
-            actions.appendChild(makeButton('Insérer dans le contenu', function () {
-                if (window.adminInsertMediaIntoActiveEditor) {
-                    window.adminInsertMediaIntoActiveEditor({
-                        id: String(item.id),
-                        path: item.path || '',
-                        original_name: item.original_name || item.filename || ''
-                    });
-                }
-                closeModal();
-            }));
-        }
-
-        card.appendChild(preview);
-        card.appendChild(meta);
-        card.appendChild(actions);
-
-        return card;
+        fetch('/admin.php?module=media&action=upload', {
+            method: 'POST',
+            body: fd
+        }).then(() => location.reload());
     }
 
-    function getMediaLibrary() {
-        var source = document.getElementById('cs-media-library-data');
-        if (!source) return [];
+    function loadLibrary() {
         try {
-            return JSON.parse(source.textContent || '[]');
-        } catch (e) {
+            return JSON.parse(document.getElementById('cs-media-library-data').textContent || '[]');
+        } catch {
             return [];
         }
     }
 
-    function getContextTitle(context) {
-        switch (context) {
-            case 'product-featured': return 'Choisir l’image principale du produit';
-            case 'product-gallery': return 'Choisir des images pour la galerie produit';
-            case 'page-featured': return 'Choisir l’image mise en avant de la page';
-            case 'blog-featured': return 'Choisir l’image mise en avant de l’article';
-            case 'wysiwyg-content': return 'Insérer un média dans le contenu';
-            default: return 'Bibliothèque média';
+    function updatePanel(item) {
+        currentItem = item;
+
+        infoName.textContent = item.original_name || item.filename;
+        infoUrl.textContent = item.path;
+        infoMime.textContent = item.mime_type;
+        infoSize.textContent = item.size || '-';
+
+        infoAltInput.value = item.alt_text || '';
+        infoNameInput.value = item.original_name || '';
+
+        infoPreview.innerHTML = '';
+        if (item.path) {
+            var img = document.createElement('img');
+            img.src = item.path;
+            img.style.maxWidth = '100%';
+            img.style.maxHeight = '180px';
+            infoPreview.appendChild(img);
         }
     }
 
-    async function uploadMediaFile(file) {
-        if (!file) return;
+    function saveMedia() {
+        if (!currentItem) return;
 
-        var formData = new FormData();
-        formData.append('media_file', file);
+        const payload = {
+            id: currentItem.id,
+            alt_text: infoAltInput.value,
+            original_name: infoNameInput.value
+        };
 
-        try {
-            if (uploadBtn) {
-                uploadBtn.disabled = true;
-                uploadBtn.textContent = 'Upload en cours...';
+        fetch('/admin.php?module=media&action=update', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify(payload)
+        }).then(res => {
+            if (res.ok) {
+                saveBtn.textContent = "Enregistré";
+                setTimeout(()=> saveBtn.textContent = "Enregistrer", 1500);
+            } else {
+                // fallback localStorage
+                localStorage.setItem('media_'+currentItem.id, JSON.stringify(payload));
             }
-
-            var response = await fetch('/admin.php?module=media&action=upload', {
-                method: 'POST',
-                body: formData,
-                credentials: 'same-origin'
-            });
-
-            if (!response.ok) {
-                throw new Error('Upload impossible');
-            }
-
-            window.location.reload();
-        } catch (e) {
-            window.alert("L'upload du média a échoué.");
-        } finally {
-            if (uploadBtn) {
-                uploadBtn.disabled = false;
-                uploadBtn.textContent = 'Uploader un média';
-            }
-            if (uploadInput) uploadInput.value = '';
-        }
+        });
     }
 
-    window.triggerDirectMediaUpload = function () {
-        if (!ensureModal()) return;
-        if (uploadInput) uploadInput.click();
-    };
+    function createCard(item) {
+        var div = document.createElement('div');
+        div.style.border = '1px solid #ddd';
+        div.style.padding = '10px';
+        div.style.cursor = 'pointer';
 
-    window.openMediaModal = function (context) {
-        if (!ensureModal()) return;
+        div.onclick = () => updatePanel(item);
 
-        currentContext = context || 'wysiwyg-content';
+        var img = document.createElement('img');
+        img.src = item.path;
+        img.style.maxWidth = '100%';
 
-        var items = getMediaLibrary();
+        div.appendChild(img);
+        return div;
+    }
+
+    window.openMediaModal = function(context) {
+        ensureModal();
+        currentContext = context;
+
+        const items = loadLibrary();
         modalGrid.innerHTML = '';
 
-        if (modalTitle) modalTitle.textContent = getContextTitle(currentContext);
+        items.forEach(i => modalGrid.appendChild(createCard(i)));
 
-        if (!items.length) {
-            var empty = document.createElement('div');
-            empty.className = 'text-muted';
-            empty.textContent = 'Aucun média disponible.';
-            modalGrid.appendChild(empty);
-        } else {
-            items.forEach(function (item) {
-                modalGrid.appendChild(createMediaCard(item));
-            });
-        }
+        if (items[0]) updatePanel(items[0]);
 
         modal.style.display = 'flex';
         modal.classList.add('is-open');
     };
 
     document.addEventListener('DOMContentLoaded', ensureModal);
+
 })();
