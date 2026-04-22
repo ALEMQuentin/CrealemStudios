@@ -1,4 +1,6 @@
 <?php
+declare(strict_types=1);
+
 /* CREALEM_SECURITY_BOOTSTRAP */
 if (session_status() !== PHP_SESSION_ACTIVE) {
     $isHttps = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off')
@@ -24,8 +26,6 @@ if (!headers_sent()) {
     header('Cross-Origin-Opener-Policy: same-origin');
 }
 
-
-declare(strict_types=1);
 
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
