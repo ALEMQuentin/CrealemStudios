@@ -1,205 +1,188 @@
 (function () {
-
-    var modal, modalGrid, modalTitle, closeBtn;
-    var uploadInput, uploadBtn;
-    var infoPreview, infoName, infoUrl, infoMime, infoSize;
-    var infoAltInput, infoNameInput, saveBtn, copyBtn;
-
-    var currentItem = null;
+    var modal = null;
+    var modalGrid = null;
+    var modalTitle = null;
+    var closeBtn = null;
     var currentContext = null;
 
     function ensureModal() {
         modal = document.getElementById('cs-media-modal');
         if (!modal) return false;
-
         modalGrid = document.getElementById('cs-media-modal-grid');
         modalTitle = document.getElementById('cs-media-modal-title');
         closeBtn = document.getElementById('cs-media-modal-close');
 
-        uploadInput = document.getElementById('cs-media-modal-upload-input');
-        uploadBtn = document.getElementById('cs-media-modal-upload-btn');
-
-        infoPreview = document.getElementById('cs-media-info-preview');
-        infoName = document.getElementById('cs-media-info-name');
-        infoUrl = document.getElementById('cs-media-info-url');
-        infoMime = document.getElementById('cs-media-info-mime');
-        infoSize = document.getElementById('cs-media-info-size');
-
-        infoAltInput = document.getElementById('cs-media-edit-alt');
-        infoNameInput = document.getElementById('cs-media-edit-name');
-        saveBtn = document.getElementById('cs-media-save-btn');
-        copyBtn = document.getElementById('cs-media-copy-url-btn');
-
         if (closeBtn && !closeBtn.dataset.bound) {
             closeBtn.dataset.bound = '1';
-            closeBtn.onclick = closeModal;
+            closeBtn.addEventListener('click', closeModal);
         }
 
-        if (uploadBtn && !uploadBtn.dataset.bound) {
-            uploadBtn.dataset.bound = '1';
-            uploadBtn.onclick = () => uploadInput.click();
-        }
+        modal.addEventListener('click', function (e) {
+            if (e.target === modal) closeModal();
+        });
 
-        if (uploadInput && !uploadInput.dataset.bound) {
-            uploadInput.dataset.bound = '1';
-            uploadInput.onchange = () => {
-                if (uploadInput.files[0]) upload(uploadInput.files[0]);
-            };
-        }
-
-        if (copyBtn && !copyBtn.dataset.bound) {
-            copyBtn.dataset.bound = '1';
-            copyBtn.onclick = () => {
-                if (!currentItem) return;
-                navigator.clipboard.writeText(currentItem.path);
-            };
-        }
-
-        if (saveBtn && !saveBtn.dataset.bound) {
-            saveBtn.dataset.bound = '1';
-            saveBtn.onclick = saveMedia;
-        }
+        document.addEventListener('keydown', function (e) {
+            if (e.key === 'Escape' && modal.classList.contains('is-open')) {
+                closeModal();
+            }
+        });
 
         return true;
     }
 
     function closeModal() {
-        modal.style.display = 'none';
+        if (!modal) return;
         modal.classList.remove('is-open');
+        modal.style.display = 'none';
+        currentContext = null;
+        if (modalGrid) modalGrid.innerHTML = '';
     }
 
-    function upload(file) {
-        var fd = new FormData();
-        fd.append('media_file', file);
+    function createMediaCard(item) {
+        var card = document.createElement('div');
+        card.className = 'cs-media-modal-card';
+        card.style.border = '1px solid #e5e7eb';
+        card.style.borderRadius = '10px';
+        card.style.padding = '10px';
+        card.style.background = '#fff';
 
-        fetch('/admin.php?module=media&action=upload', {
-            method: 'POST',
-            body: fd
-        }).then(() => location.reload());
+        var preview = document.createElement('div');
+        preview.style.height = '120px';
+        preview.style.display = 'flex';
+        preview.style.alignItems = 'center';
+        preview.style.justifyContent = 'center';
+        preview.style.marginBottom = '10px';
+        preview.style.background = '#f8fafc';
+        preview.style.borderRadius = '8px';
+
+        if (item.path && item.mime_type && item.mime_type.indexOf('image/') === 0) {
+            var img = document.createElement('img');
+            img.src = item.path;
+            img.alt = item.original_name || item.filename || '';
+            img.style.maxWidth = '100%';
+            img.style.maxHeight = '120px';
+            img.style.objectFit = 'contain';
+            preview.appendChild(img);
+        } else {
+            var span = document.createElement('span');
+            span.className = 'text-muted';
+            span.style.fontSize = '12px';
+            span.textContent = 'Aperçu indisponible';
+            preview.appendChild(span);
+        }
+
+        var meta = document.createElement('div');
+        meta.className = 'text-muted';
+        meta.style.fontSize = '12px';
+        meta.style.marginBottom = '10px';
+        meta.textContent = 'ID: ' + item.id + (item.original_name ? ' • ' + item.original_name : '');
+
+        var actions = document.createElement('div');
+        actions.style.display = 'grid';
+        actions.style.gap = '6px';
+
+        function makeButton(label, handler) {
+            var btn = document.createElement('button');
+            btn.type = 'button';
+            btn.className = 'btn btn-outline-secondary btn-sm';
+            btn.textContent = label;
+            btn.addEventListener('click', handler);
+            return btn;
+        }
+
+        if (currentContext === 'product-featured') {
+            actions.appendChild(makeButton('Utiliser comme image principale', function () {
+                if (window.selectFeaturedMedia) window.selectFeaturedMedia(String(item.id));
+                closeModal();
+            }));
+        }
+
+        if (currentContext === 'product-gallery') {
+            actions.appendChild(makeButton('Ajouter à la galerie', function () {
+                if (window.addMediaToGallery) window.addMediaToGallery(String(item.id));
+                closeModal();
+            }));
+        }
+
+        if (currentContext === 'page-featured') {
+            actions.appendChild(makeButton('Utiliser pour la page', function () {
+                if (window.selectPageFeaturedMedia) window.selectPageFeaturedMedia(String(item.id));
+                closeModal();
+            }));
+        }
+
+        if (currentContext === 'blog-featured') {
+            actions.appendChild(makeButton('Utiliser pour l’article', function () {
+                if (window.selectBlogFeaturedMedia) window.selectBlogFeaturedMedia(String(item.id));
+                closeModal();
+            }));
+        }
+
+        if (currentContext === 'wysiwyg-content') {
+            actions.appendChild(makeButton('Insérer dans le contenu', function () {
+                if (window.adminInsertMediaIntoActiveEditor) {
+                    window.adminInsertMediaIntoActiveEditor({
+                        id: String(item.id),
+                        path: item.path || '',
+                        original_name: item.original_name || item.filename || ''
+                    });
+                }
+                closeModal();
+            }));
+        }
+
+        card.appendChild(preview);
+        card.appendChild(meta);
+        card.appendChild(actions);
+
+        return card;
     }
 
-    function loadLibrary() {
+    function getMediaLibrary() {
+        var source = document.getElementById('cs-media-library-data');
+        if (!source) return [];
         try {
-            return JSON.parse(document.getElementById('cs-media-library-data').textContent || '[]');
-        } catch {
+            return JSON.parse(source.textContent || '[]');
+        } catch (e) {
             return [];
         }
     }
 
-    function updatePanel(item) {
-        currentItem = item;
-
-        infoName.textContent = item.original_name || item.filename;
-        infoUrl.textContent = item.path;
-        infoMime.textContent = item.mime_type;
-        infoSize.textContent = item.size || '-';
-
-        infoAltInput.value = item.alt_text || '';
-        infoNameInput.value = item.original_name || '';
-
-        infoPreview.innerHTML = '';
-        if (item.path) {
-            var img = document.createElement('img');
-            img.src = item.path;
-            img.style.maxWidth = '100%';
-            img.style.maxHeight = '180px';
-            infoPreview.appendChild(img);
+    function getContextTitle(context) {
+        switch (context) {
+            case 'product-featured': return 'Choisir l’image principale du produit';
+            case 'product-gallery': return 'Choisir des images pour la galerie produit';
+            case 'page-featured': return 'Choisir l’image mise en avant de la page';
+            case 'blog-featured': return 'Choisir l’image mise en avant de l’article';
+            case 'wysiwyg-content': return 'Insérer un média dans le contenu';
+            default: return 'Bibliothèque média';
         }
     }
 
-    function saveMedia() {
-        if (!currentItem) return;
+    window.openMediaModal = function (context) {
+        if (!ensureModal()) return;
 
-        const payload = {
-            id: currentItem.id,
-            alt_text: infoAltInput.value,
-            original_name: infoNameInput.value
-        };
+        currentContext = context || 'wysiwyg-content';
 
-        fetch('/admin.php?module=media&action=update', {
-            method: 'POST',
-            headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify(payload)
-        }).then(res => {
-            if (res.ok) {
-                saveBtn.textContent = "Enregistré";
-                setTimeout(()=> saveBtn.textContent = "Enregistrer", 1500);
-            } else {
-                // fallback localStorage
-                localStorage.setItem('media_'+currentItem.id, JSON.stringify(payload));
-            }
-        });
-    }
-
-    function createCard(item) {
-        var div = document.createElement('div');
-        div.style.border = '1px solid #ddd';
-        div.style.padding = '10px';
-        div.style.cursor = 'pointer';
-
-        div.onclick = () => updatePanel(item);
-
-        var img = document.createElement('img');
-        img.src = item.path;
-        img.style.maxWidth = '100%';
-
-        div.appendChild(img);
-        return div;
-    }
-
-    window.openMediaModal = function(context) {
-        ensureModal();
-        currentContext = context;
-
-        const items = loadLibrary();
+        var items = getMediaLibrary();
         modalGrid.innerHTML = '';
 
-        items.forEach(i => modalGrid.appendChild(createCard(i)));
+        if (modalTitle) modalTitle.textContent = getContextTitle(currentContext);
 
-        if (items[0]) updatePanel(items[0]);
+        if (!items.length) {
+            var empty = document.createElement('div');
+            empty.className = 'text-muted';
+            empty.textContent = 'Aucun média disponible.';
+            modalGrid.appendChild(empty);
+        } else {
+            items.forEach(function (item) {
+                modalGrid.appendChild(createMediaCard(item));
+            });
+        }
 
         modal.style.display = 'flex';
         modal.classList.add('is-open');
     };
 
     document.addEventListener('DOMContentLoaded', ensureModal);
-
 })();
-
-// ===== PATCH SEARCH =====
-
-(function () {
-    var originalRenderLibrary = renderLibrary;
-
-    var currentSearch = '';
-
-    function filterItems(items) {
-        if (!currentSearch) return items;
-        return items.filter(function (item) {
-            var id = String(item.id || '');
-            var name = String(item.original_name || item.filename || '').toLowerCase();
-            return id.includes(currentSearch) || name.includes(currentSearch);
-        });
-    }
-
-    var oldGetMediaLibrary = getMediaLibrary;
-    getMediaLibrary = function () {
-        return filterItems(oldGetMediaLibrary());
-    };
-
-    document.addEventListener('DOMContentLoaded', function () {
-        var input = document.getElementById('cs-media-search-input');
-        if (!input) return;
-
-        input.addEventListener('input', function () {
-            currentSearch = (input.value || '').toLowerCase();
-            if (typeof originalRenderLibrary === 'function') {
-                originalRenderLibrary();
-            }
-        });
-    });
-
-})();
-
-// ===== END PATCH SEARCH =====
-
