@@ -122,14 +122,6 @@
                                                 onclick="addMediaToGallery('<?= (int)$media['id'] ?>')">
                                             Ajouter à la galerie
                                         </button>
-
-                                        <button type="button"
-                                                class="btn btn-outline-secondary btn-sm"
-                                                data-insert-media="1"
-                                                data-media-path="<?= e($media['path'] ?? '') ?>"
-                                                data-media-name="<?= e($media['original_name'] ?? $media['filename'] ?? '') ?>">
-                                            Insérer dans le contenu
-                                        </button>
                                     </div>
                                 </div>
                             <?php endforeach; ?>

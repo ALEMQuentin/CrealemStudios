@@ -57,21 +57,11 @@
                                         ID: <?= (int)$media['id'] ?>
                                     </div>
 
-                                    <div style="display:grid; gap:6px;">
-                                        <button type="button"
-                                                class="btn btn-outline-secondary btn-sm w-100"
-                                                onclick="selectPageFeaturedMedia('<?= (int)$media['id'] ?>')">
-                                            Utiliser cette image
-                                        </button>
-
-                                        <button type="button"
-                                                class="btn btn-outline-secondary btn-sm w-100"
-                                                data-insert-media="1"
-                                                data-media-path="<?= e($media['path'] ?? '') ?>"
-                                                data-media-name="<?= e($media['original_name'] ?? $media['filename'] ?? '') ?>">
-                                            Insérer dans le contenu
-                                        </button>
-                                    </div>
+                                    <button type="button"
+                                            class="btn btn-outline-secondary btn-sm w-100"
+                                            onclick="selectPageFeaturedMedia('<?= (int)$media['id'] ?>')">
+                                        Utiliser cette image
+                                    </button>
                                 </div>
                             <?php endforeach; ?>
                         </div>

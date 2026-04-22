@@ -1,6 +1,4 @@
 (function () {
-    var activeTextarea = null;
-
     function wrapSelection(tag, textarea) {
         var start = textarea.selectionStart || 0;
         var end = textarea.selectionEnd || 0;
@@ -32,12 +30,12 @@
                 closeTag = '</p>';
                 break;
             case 'ul':
-                openTag = '<ul>\n  <li>';
-                closeTag = '</li>\n</ul>';
+                openTag = '<ul>\\n  <li>';
+                closeTag = '</li>\\n</ul>';
                 break;
             case 'ol':
-                openTag = '<ol>\n  <li>';
-                closeTag = '</li>\n</ol>';
+                openTag = '<ol>\\n  <li>';
+                closeTag = '</li>\\n</ol>';
                 break;
             case 'link':
                 var url = window.prompt('URL du lien :', 'https://');
@@ -54,18 +52,6 @@
         textarea.focus();
         textarea.selectionStart = start;
         textarea.selectionEnd = start + replacement.length;
-        activeTextarea = textarea;
-    }
-
-    function insertAtCursor(textarea, content) {
-        var start = textarea.selectionStart || 0;
-        var end = textarea.selectionEnd || 0;
-        var value = textarea.value || '';
-
-        textarea.value = value.substring(0, start) + content + value.substring(end);
-        textarea.focus();
-        textarea.selectionStart = textarea.selectionEnd = start + content.length;
-        activeTextarea = textarea;
     }
 
     function createToolbar(textarea) {
@@ -111,18 +97,6 @@
         wrapper.appendChild(toolbar);
         wrapper.appendChild(help);
         wrapper.appendChild(textarea);
-
-        textarea.addEventListener('focus', function () {
-            activeTextarea = textarea;
-        });
-
-        textarea.addEventListener('click', function () {
-            activeTextarea = textarea;
-        });
-
-        textarea.addEventListener('keyup', function () {
-            activeTextarea = textarea;
-        });
     }
 
     document.addEventListener('DOMContentLoaded', function () {
@@ -137,23 +111,6 @@
             if (textarea.dataset.wysiwygReady === '1') return;
             textarea.dataset.wysiwygReady = '1';
             createToolbar(textarea);
-        });
-
-        document.querySelectorAll('[data-insert-media]').forEach(function (button) {
-            button.addEventListener('click', function () {
-                if (!activeTextarea) {
-                    window.alert("Clique d'abord dans un champ de contenu.");
-                    return;
-                }
-
-                var src = button.getAttribute('data-media-path') || '';
-                if (!src) return;
-
-                var alt = button.getAttribute('data-media-name') || '';
-                var html = '<img src="' + src + '" alt="' + alt.replace(/"/g, '&quot;') + '">';
-
-                insertAtCursor(activeTextarea, html);
-            });
         });
     });
 })();
