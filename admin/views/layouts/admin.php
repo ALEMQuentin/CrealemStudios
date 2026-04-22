@@ -312,11 +312,7 @@ $accordionSystemOpen = in_array($currentModule, ['users', 'settings'], true);
     <div style="width:min(1100px, 96vw); max-height:90vh; overflow:hidden; background:#fff; border-radius:14px; box-shadow:0 20px 60px rgba(0,0,0,.18); display:flex; flex-direction:column;">
         <div style="display:flex; align-items:center; justify-content:space-between; padding:16px 18px; border-bottom:1px solid #e5e7eb;">
             <strong id="cs-media-modal-title">Bibliothèque média</strong>
-            <div style="display:flex; gap:8px; align-items:center;">
-                <button type="button" id="cs-media-modal-upload-btn" class="btn btn-outline-secondary btn-sm">Uploader un média</button>
-                <input type="file" id="cs-media-modal-upload-input" hidden accept=".jpg,.jpeg,.png,.webp,.gif,.svg">
-                <button type="button" id="cs-media-modal-close" class="btn btn-outline-secondary btn-sm">Fermer</button>
-            </div>
+            <button type="button" id="cs-media-modal-close" class="btn btn-outline-secondary btn-sm">Fermer</button>
         </div>
         <div style="padding:16px 18px; overflow:auto;">
             <div id="cs-media-modal-grid" style="display:grid; grid-template-columns:repeat(auto-fill,minmax(180px,1fr)); gap:14px;"></div>
