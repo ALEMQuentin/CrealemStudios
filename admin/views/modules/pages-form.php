@@ -11,7 +11,7 @@
 <script type="application/json" id="cs-media-library-data"><?= json_encode($mediaLibrary ?? [], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) ?></script>
 
 <form method="post" action="/admin.php?module=pages&action=save<?= !empty($isEdit) ? '&id=' . (int)$page['id'] : '' ?>
-    <?= Csrf::input() ?>">
+    <?= \Csrf::input() ?>">
     <div class="row mt-4">
         <div class="col-md-8">
 
