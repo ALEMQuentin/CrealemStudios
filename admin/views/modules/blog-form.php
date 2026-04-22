@@ -71,15 +71,10 @@
                         <input type="number" class="form-control" id="blog_featured_media_id" name="featured_media_id" value="<?= e((string)($post['featured_media_id'] ?? '')) ?>">
 
                         <div class="mt-3 d-flex gap-2 flex-wrap">
-                            <button type="button" class="btn btn-outline-secondary btn-sm" onclick="openMediaModal('blog-featured')">Choisir dans la bibliothèque</button>
-                            <label class="btn btn-outline-secondary btn-sm mb-0">
-                                Uploader un fichier
-                            </label>
-                            <button type="button" class="btn btn-outline-secondary btn-sm" onclick="triggerDirectMediaUpload()">Uploader un fichier</button>
+                            <button type="button" class="btn btn-outline-secondary btn-sm" onclick="openMediaModal('blog-featured')">Choisir une image</button>
                             <button type="button" class="btn btn-outline-secondary btn-sm" onclick="clearBlogFeaturedMedia()">Retirer l’image</button>
                         </div>
 
-                        <div class="text-muted mt-2" style="font-size:12px;">L’upload direct passe maintenant par le même endpoint que le module média. Après upload, la page se recharge.</div>
                         <div id="blog-featured-media-preview" style="margin-top:10px;"></div>
                     </div>
 

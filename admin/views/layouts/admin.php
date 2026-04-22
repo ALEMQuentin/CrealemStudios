@@ -314,9 +314,6 @@ $accordionSystemOpen = in_array($currentModule, ['users', 'settings'], true);
             <strong id="cs-media-modal-title">Bibliothèque média</strong>
             <button type="button" id="cs-media-modal-close" class="btn btn-outline-secondary btn-sm">Fermer</button>
         </div>
-        <div style="padding:16px 18px 0 18px;">
-            <input type="text" id="cs-media-search-input" class="form-control" placeholder="Rechercher un média par nom ou ID">
-        </div>
         <div style="padding:16px 18px; overflow:auto;">
             <div id="cs-media-modal-grid" style="display:grid; grid-template-columns:repeat(auto-fill,minmax(180px,1fr)); gap:14px;"></div>
         </div>

@@ -159,26 +159,12 @@
         }
     }
 
-    
-    function getFilteredMediaLibrary() {
-        var items = getFilteredMediaLibrary();
-        var input = document.getElementById('cs-media-search-input');
-        var q = input ? (input.value || '').trim().toLowerCase() : '';
-        if (!q) return items;
-
-        return items.filter(function (item) {
-            var id = String(item.id || '');
-            var name = String(item.original_name || item.filename || '').toLowerCase();
-            return id.includes(q) || name.includes(q);
-        });
-    }
-
-window.openMediaModal = function (context) {
+    window.openMediaModal = function (context) {
         if (!ensureModal()) return;
 
         currentContext = context || 'wysiwyg-content';
 
-        var items = getFilteredMediaLibrary();
+        var items = getMediaLibrary();
         modalGrid.innerHTML = '';
 
         if (modalTitle) modalTitle.textContent = getContextTitle(currentContext);
