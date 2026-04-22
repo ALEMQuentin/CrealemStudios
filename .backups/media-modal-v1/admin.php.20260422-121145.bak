@@ -305,20 +305,6 @@ $accordionSystemOpen = in_array($currentModule, ['users', 'settings'], true);
         });
     })();
     </script>
-    <script src="/assets/js/admin-media-modal.js"></script>
     <script src="/assets/js/admin-wysiwyg.js"></script>
-
-<div id="cs-media-modal" style="display:none; position:fixed; inset:0; background:rgba(15,23,42,.55); z-index:9999; align-items:center; justify-content:center; padding:24px;">
-    <div style="width:min(1100px, 96vw); max-height:90vh; overflow:hidden; background:#fff; border-radius:14px; box-shadow:0 20px 60px rgba(0,0,0,.18); display:flex; flex-direction:column;">
-        <div style="display:flex; align-items:center; justify-content:space-between; padding:16px 18px; border-bottom:1px solid #e5e7eb;">
-            <strong id="cs-media-modal-title">Bibliothèque média</strong>
-            <button type="button" id="cs-media-modal-close" class="btn btn-outline-secondary btn-sm">Fermer</button>
-        </div>
-        <div style="padding:16px 18px; overflow:auto;">
-            <div id="cs-media-modal-grid" style="display:grid; grid-template-columns:repeat(auto-fill,minmax(180px,1fr)); gap:14px;"></div>
-        </div>
-    </div>
-</div>
-
 </body>
 </html>

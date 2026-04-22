@@ -45,12 +45,6 @@
                 openTag = '<a href="' + url + '">';
                 closeTag = '</a>';
                 break;
-            case 'image':
-                if (window.openMediaModal) {
-                    activeTextarea = textarea;
-                    window.openMediaModal('wysiwyg-content');
-                }
-                return;
             default:
                 return;
         }
@@ -74,17 +68,6 @@
         activeTextarea = textarea;
     }
 
-    window.adminInsertMediaIntoActiveEditor = function (media) {
-        if (!activeTextarea || !media || !media.path) {
-            window.alert("Clique d'abord dans un champ de contenu.");
-            return;
-        }
-
-        var alt = (media.original_name || '').replace(/"/g, '&quot;');
-        var html = '<img src="' + media.path + '" alt="' + alt + '">';
-        insertAtCursor(activeTextarea, html);
-    };
-
     function createToolbar(textarea) {
         var wrapper = document.createElement('div');
         wrapper.className = 'cs-wysiwyg-wrapper';
@@ -104,8 +87,7 @@
             { action: 'p', label: 'Paragraphe' },
             { action: 'ul', label: 'Liste puces' },
             { action: 'ol', label: 'Liste numérotée' },
-            { action: 'link', label: 'Lien' },
-            { action: 'image', label: 'Image' }
+            { action: 'link', label: 'Lien' }
         ];
 
         buttons.forEach(function (btn) {
@@ -155,6 +137,23 @@
             if (textarea.dataset.wysiwygReady === '1') return;
             textarea.dataset.wysiwygReady = '1';
             createToolbar(textarea);
+        });
+
+        document.querySelectorAll('[data-insert-media]').forEach(function (button) {
+            button.addEventListener('click', function () {
+                if (!activeTextarea) {
+                    window.alert("Clique d'abord dans un champ de contenu.");
+                    return;
+                }
+
+                var src = button.getAttribute('data-media-path') || '';
+                if (!src) return;
+
+                var alt = button.getAttribute('data-media-name') || '';
+                var html = '<img src="' + src + '" alt="' + alt.replace(/"/g, '&quot;') + '">';
+
+                insertAtCursor(activeTextarea, html);
+            });
         });
     });
 })();
