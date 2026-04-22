@@ -133,14 +133,14 @@
             <div class="card mt-4">
                 <div class="card-body">
                     <h3 class="h6 mb-3">Galerie produit</h3>
-                    <p class="text-muted">Le champ reste là pour compatibilité, mais la gestion se fait visuellement ci-dessous.</p>
-                    <textarea class="form-control" id="gallery_media_ids" name="gallery_media_ids" rows="3"><?= e($galleryMediaIdsString ?? '') ?></textarea>
+                    <p class="text-muted">Tu peux cliquer sur les médias ci-dessus pour remplir automatiquement la galerie.</p>
+                    <textarea class="form-control" id="gallery_media_ids" name="gallery_media_ids" rows="4"><?= e($galleryMediaIdsString ?? '') ?></textarea>
 
                     <div class="mt-3 d-flex gap-2 flex-wrap">
                         <button type="button" class="btn btn-outline-secondary btn-sm" onclick="clearGalleryMedia()">Vider la galerie</button>
                     </div>
 
-                    <div id="gallery-media-preview" style="margin-top:12px; display:flex; flex-wrap:wrap; gap:10px;"></div>
+                    <div id="gallery-media-preview" style="margin-top:10px; display:flex; flex-wrap:wrap; gap:8px;"></div>
                 </div>
             </div>
 
@@ -205,18 +205,6 @@ function getMediaImgById(id) {
     return document.querySelector('[data-media-id="' + id + '"] img');
 }
 
-function getGalleryIds() {
-    var field = document.getElementById('gallery_media_ids');
-    if (!field) return [];
-    return field.value.split(',').map(function(v) { return v.trim(); }).filter(Boolean);
-}
-
-function saveGalleryIds(ids) {
-    var field = document.getElementById('gallery_media_ids');
-    if (!field) return;
-    field.value = ids.join(',');
-}
-
 function selectFeaturedMedia(mediaId) {
     var field = document.getElementById('featured_media_id');
     if (!field) return;
@@ -232,38 +220,28 @@ function clearFeaturedMedia() {
 }
 
 function addMediaToGallery(mediaId) {
-    var ids = getGalleryIds();
+    var field = document.getElementById('gallery_media_ids');
+    if (!field) return;
+
+    var raw = field.value.trim();
+    if (raw === '') {
+        field.value = mediaId;
+        renderGalleryPreview();
+        return;
+    }
+
+    var ids = raw.split(',').map(function (v) { return v.trim(); }).filter(Boolean);
     if (!ids.includes(String(mediaId))) {
         ids.push(String(mediaId));
     }
-    saveGalleryIds(ids);
-    renderGalleryPreview();
-}
-
-function removeMediaFromGallery(mediaId) {
-    var ids = getGalleryIds().filter(function(id) { return id !== String(mediaId); });
-    saveGalleryIds(ids);
-    renderGalleryPreview();
-}
-
-function moveGalleryMedia(mediaId, direction) {
-    var ids = getGalleryIds();
-    var index = ids.indexOf(String(mediaId));
-    if (index === -1) return;
-
-    var newIndex = direction === 'up' ? index - 1 : index + 1;
-    if (newIndex < 0 || newIndex >= ids.length) return;
-
-    var temp = ids[index];
-    ids[index] = ids[newIndex];
-    ids[newIndex] = temp;
-
-    saveGalleryIds(ids);
+    field.value = ids.join(',');
     renderGalleryPreview();
 }
 
 function clearGalleryMedia() {
-    saveGalleryIds([]);
+    var field = document.getElementById('gallery_media_ids');
+    if (!field) return;
+    field.value = '';
     renderGalleryPreview();
 }
 
@@ -287,65 +265,25 @@ function renderFeaturedPreview() {
 }
 
 function renderGalleryPreview() {
-    var ids = getGalleryIds();
+    var raw = document.getElementById('gallery_media_ids').value;
     var container = document.getElementById('gallery-media-preview');
     if (!container) return;
     container.innerHTML = '';
 
-    ids.forEach(function(id, index) {
+    if (!raw) return;
+
+    var ids = raw.split(',').map(function (v) { return v.trim(); }).filter(Boolean);
+
+    ids.forEach(function(id) {
         var img = getMediaImgById(id);
-        if (!img) return;
-
-        var wrapper = document.createElement('div');
-        wrapper.style.border = '1px solid #e5e7eb';
-        wrapper.style.borderRadius = '8px';
-        wrapper.style.padding = '8px';
-        wrapper.style.background = '#fff';
-        wrapper.style.width = '110px';
-
-        var clone = img.cloneNode();
-        clone.style.width = '100%';
-        clone.style.height = '80px';
-        clone.style.objectFit = 'cover';
-        clone.style.borderRadius = '6px';
-        wrapper.appendChild(clone);
-
-        var meta = document.createElement('div');
-        meta.style.fontSize = '12px';
-        meta.style.marginTop = '6px';
-        meta.textContent = 'ID: ' + id;
-        wrapper.appendChild(meta);
-
-        var actions = document.createElement('div');
-        actions.style.display = 'grid';
-        actions.style.gap = '4px';
-        actions.style.marginTop = '8px';
-
-        var upBtn = document.createElement('button');
-        upBtn.type = 'button';
-        upBtn.className = 'btn btn-outline-secondary btn-sm';
-        upBtn.textContent = 'Monter';
-        upBtn.disabled = index === 0;
-        upBtn.onclick = function() { moveGalleryMedia(id, 'up'); };
-        actions.appendChild(upBtn);
-
-        var downBtn = document.createElement('button');
-        downBtn.type = 'button';
-        downBtn.className = 'btn btn-outline-secondary btn-sm';
-        downBtn.textContent = 'Descendre';
-        downBtn.disabled = index === ids.length - 1;
-        downBtn.onclick = function() { moveGalleryMedia(id, 'down'); };
-        actions.appendChild(downBtn);
-
-        var removeBtn = document.createElement('button');
-        removeBtn.type = 'button';
-        removeBtn.className = 'btn btn-outline-danger btn-sm';
-        removeBtn.textContent = 'Retirer';
-        removeBtn.onclick = function() { removeMediaFromGallery(id); };
-        actions.appendChild(removeBtn);
-
-        wrapper.appendChild(actions);
-        container.appendChild(wrapper);
+        if (img) {
+            var clone = img.cloneNode();
+            clone.style.maxWidth = '80px';
+            clone.style.maxHeight = '80px';
+            clone.style.objectFit = 'cover';
+            clone.style.borderRadius = '6px';
+            container.appendChild(clone);
+        }
     });
 }
 
