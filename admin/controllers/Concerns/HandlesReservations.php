@@ -9,7 +9,7 @@ trait HandlesReservations
 {
     private function handleReservations(string $action): void
     {
-        $controller = new ReservationsController($this->pdo);
+        $controller = new ReservationsController($this->pdo, $this->settings);
         $id = (int)($_GET['id'] ?? 0);
 
         match ($action) {

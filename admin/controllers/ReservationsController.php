@@ -8,6 +8,7 @@ use PDO;
 final class ReservationsController
 {
     private PDO $pdo;
+    private array $settings;
 
     private array $allowedStatuses = [
         'a_confirmer',
@@ -17,9 +18,21 @@ final class ReservationsController
         'annulee',
     ];
 
-    public function __construct(PDO $pdo)
+    public function __construct(PDO $pdo, array $settings = [])
     {
         $this->pdo = $pdo;
+        $this->settings = $settings;
+    }
+
+    private function render(string $title, string $view, array $data = []): void
+    {
+        $currentModule = 'reservations';
+        $currentAction = (string)($_GET['action'] ?? 'index');
+        $settings = $this->settings;
+
+        extract($data, EXTR_SKIP);
+
+        require dirname(__DIR__) . '/views/layouts/admin.php';
     }
 
     public function index(): void
@@ -37,13 +50,13 @@ final class ReservationsController
 
         $reservations = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-        require __DIR__ . '/../views/reservations/index.php';
+        $this->render('Réservations', 'reservations/index', ['reservations' => $reservations]);
     }
 
     public function create(): void
     {
         $reservation = $this->emptyReservation();
-        require __DIR__ . '/../views/reservations/create.php';
+        $this->render('Nouvelle réservation', 'reservations/create', ['reservation' => $reservation]);
     }
 
     public function store(): void
@@ -104,7 +117,7 @@ final class ReservationsController
     public function edit(int $id): void
     {
         $reservation = $this->findOrFail($id);
-        require __DIR__ . '/../views/reservations/edit.php';
+        $this->render('Modifier réservation', 'reservations/edit', ['reservation' => $reservation]);
     }
 
     public function update(int $id): void
