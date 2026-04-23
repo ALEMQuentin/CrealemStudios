@@ -84,6 +84,10 @@ class Kernel
             case 'forms':
                 $this->handleForms($action);
                 break;
+
+            case 'gallery':
+                $this->handleGallery($action);
+                break;
 }
 
         http_response_code(404);
