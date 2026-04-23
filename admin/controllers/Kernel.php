@@ -2,6 +2,8 @@
 
 namespace App\Controllers\Admin;
 
+use App\Controllers\Admin\Concerns\HandlesDashboard;
+
 use App\Controllers\Admin\Concerns\HandlesSubscriptions;
 
 use App\Controllers\Admin\Concerns\HandlesBooking;
@@ -27,6 +29,8 @@ use PDO;
 
 class Kernel
 {
+    use HandlesDashboard;
+
     use HandlesSubscriptions;
 
     use HandlesBooking;
@@ -120,6 +124,10 @@ class Kernel
             case 'subscriptions':
                 $this->handleSubscriptions($action);
                 break;
+            case 'dashboard':
+                $this->handleDashboard();
+                break;
+
 
             default:
                 http_response_code(404);
@@ -128,24 +136,7 @@ class Kernel
 }
     }
 
-    private function handleDashboard(): void
-    {
-        $stats = [
-            'pages' => count(Content::allByType($this->pdo, 'page')),
-            'users' => $this->safeCount('users'),
-            'media' => $this->safeCount('media'),
-            'posts' => count(Content::allByType($this->pdo, 'post')),
-        ];
 
-        $this->render(
-            'Dashboard',
-            $this->resolveView([
-                'modules/dashboard.php',
-                'admin/dashboard.php',
-            ]),
-            compact('stats')
-        );
-    }
 
     private function syncCommonMeta(int $contentId): void
     {
