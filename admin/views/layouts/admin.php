@@ -99,7 +99,6 @@ $accordionSystemOpen = in_array($currentModule, ['users', 'settings'], true);
                     <a class="cs-admin-subnav-link <?= ($currentModule === 'products' && $currentAction === 'settings') ? 'is-active' : '' ?>" href="/admin.php?module=products&action=settings">
                         Paramètres
                     </a>
-                    </a>
                 </div>
                 <?php endif; ?>
 
