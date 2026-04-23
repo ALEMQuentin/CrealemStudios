@@ -24,17 +24,7 @@ final class ReservationsController
         $this->settings = $settings;
     }
 
-    private function render(string $title, string $view, array $data = []): void
-    {
-        $currentModule = 'reservations';
-        $currentAction = (string)($_GET['action'] ?? 'index');
-        $settings = $this->settings;
-
-        extract($data, EXTR_SKIP);
-
-        require dirname(__DIR__) . '/views/layouts/admin.php';
-    }
-
+    
     public function index(): void
     {
         $status = trim((string)($_GET['status'] ?? 'active'));
@@ -50,13 +40,13 @@ final class ReservationsController
 
         $reservations = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-        $this->render('Réservations', 'reservations/index', ['reservations' => $reservations]);
+        $this->render('Réservations', $this->resolveView(['reservations/index.php']), compact('reservations'));
     }
 
     public function create(): void
     {
         $reservation = $this->emptyReservation();
-        $this->render('Nouvelle réservation', 'reservations/create', ['reservation' => $reservation]);
+        $this->render('Nouvelle réservation', $this->resolveView(['reservations/create.php']), compact('reservation'));
     }
 
     public function store(): void
@@ -117,7 +107,7 @@ final class ReservationsController
     public function edit(int $id): void
     {
         $reservation = $this->findOrFail($id);
-        $this->render('Modifier réservation', 'reservations/edit', ['reservation' => $reservation]);
+        $this->render('Modifier réservation', $this->resolveView(['reservations/edit.php']), compact('reservation'));
     }
 
     public function update(int $id): void
