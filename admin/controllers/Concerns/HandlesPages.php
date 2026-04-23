@@ -10,7 +10,7 @@ trait HandlesPages
     {
         if ($action === 'index') {
             $q = trim($_GET['q'] ?? '');
-            $pages = Content::allByType($this->pdo, 'page');
+            $pages = \Content::allByType($this->pdo, 'page');
 
             if ($q !== '') {
                 $pages = array_values(array_filter($pages, function ($page) use ($q) {
@@ -47,13 +47,13 @@ trait HandlesPages
 
         if ($action === 'edit') {
             $id = (int)($_GET['id'] ?? 0);
-            $page = Content::findById($this->pdo, $id);
+            $page = \Content::findById($this->pdo, $id);
 
             if (!$page || ($page['type'] ?? '') !== 'page') {
                 redirectTo('/admin.php?module=pages&error=Page introuvable');
             }
 
-            $meta = Content::meta($this->pdo, $id);
+            $meta = \Content::meta($this->pdo, $id);
             $page = array_merge($page, [
                 'meta_title' => $meta['meta_title'] ?? '',
                 'meta_description' => $meta['meta_description'] ?? '',
@@ -69,13 +69,13 @@ trait HandlesPages
 
         if ($action === 'preview') {
             $id = (int)($_GET['id'] ?? 0);
-            $page = Content::findById($this->pdo, $id);
+            $page = \Content::findById($this->pdo, $id);
 
             if (!$page || ($page['type'] ?? '') !== 'page') {
                 redirectTo('/admin.php?module=pages&error=Page introuvable');
             }
 
-            $meta = Content::meta($this->pdo, $id);
+            $meta = \Content::meta($this->pdo, $id);
             $page = array_merge($page, [
                 'meta_title' => $meta['meta_title'] ?? '',
                 'meta_description' => $meta['meta_description'] ?? '',
@@ -93,7 +93,7 @@ trait HandlesPages
 
         if ($action === 'blocks') {
             $id = (int)($_GET['id'] ?? 0);
-            $page = Content::findById($this->pdo, $id);
+            $page = \Content::findById($this->pdo, $id);
 
             if (!$page || ($page['type'] ?? '') !== 'page') {
                 redirectTo('/admin.php?module=pages&error=Page introuvable');
@@ -108,7 +108,7 @@ trait HandlesPages
 
         if ($action === 'add_block' && $_SERVER['REQUEST_METHOD'] === 'POST') {
             $id = (int)($_GET['id'] ?? 0);
-            $page = Content::findById($this->pdo, $id);
+            $page = \Content::findById($this->pdo, $id);
 
             if (!$page || ($page['type'] ?? '') !== 'page') {
                 redirectTo('/admin.php?module=pages&error=Page introuvable');
@@ -134,7 +134,7 @@ trait HandlesPages
             $id = (int)($_GET['id'] ?? 0);
             $blockId = (int)($_GET['block_id'] ?? 0);
 
-            $page = Content::findById($this->pdo, $id);
+            $page = \Content::findById($this->pdo, $id);
             $block = $this->fetchOne("SELECT * FROM content_blocks WHERE id = :id AND content_id = :content_id", [
                 'id' => $blockId,
                 'content_id' => $id,
@@ -202,7 +202,7 @@ trait HandlesPages
             $id = (int)($_GET['id'] ?? 0);
             $slug = trim($_POST['slug'] ?? '');
 
-            if (Content::slugExists($this->pdo, 'page', $slug, $id)) {
+            if (\Content::slugExists($this->pdo, 'page', $slug, $id)) {
                 redirectTo('/admin.php?module=pages&error=Slug déjà utilisé');
             }
 
@@ -221,11 +221,11 @@ trait HandlesPages
             ];
 
             if ($id > 0) {
-                Content::update($this->pdo, $id, $data);
+                \Content::update($this->pdo, $id, $data);
                 $contentId = $id;
             } else {
                 $data['created_at'] = $now;
-                $contentId = Content::create($this->pdo, $data);
+                $contentId = \Content::create($this->pdo, $data);
             }
 
             $this->syncCommonMeta($contentId);
