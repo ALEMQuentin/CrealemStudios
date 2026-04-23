@@ -214,7 +214,7 @@
     function renderLibrary() {
         if (!modalGrid) return;
 
-        var items = getMediaLibrary();
+        var items = getFilteredMediaLibrary();
         modalGrid.innerHTML = '';
 
         if (!items.length) {
