@@ -76,7 +76,11 @@ class Kernel
             case 'products':
                 $this->handleProducts($action);
                 return;
-        }
+        
+            case 'forms':
+                $this->handleForms($action);
+                break;
+}
 
         http_response_code(404);
         echo 'Module introuvable';
@@ -405,11 +409,7 @@ class Kernel
             if ((int)$block['id'] === $blockId) {
                 $index = $i;
                 break;
-            case 'forms':
-                $this->handleForms($action);
-                break;
-
-            }
+}
         }
 
         if ($index === null) {
