@@ -304,8 +304,12 @@ $accordionSystemOpen = in_array($currentModule, ['users', 'settings'], true);
         });
     })();
     </script>
-    <script src="/assets/js/admin-media-modal.js"></script>
-    <script src="/assets/js/admin-wysiwyg.js"></script>
+    <?php if (in_array($currentModule, ['pages', 'blog', 'products', 'media', 'gallery', 'testimonials'], true)): ?>
+<script src="/assets/js/admin-media-modal.js"></script>
+<?php endif; ?>
+    <?php if (in_array($currentModule, ['pages', 'blog', 'products', 'testimonials'], true)): ?>
+<script src="/assets/js/admin-wysiwyg.js"></script>
+<?php endif; ?>
 
 <div id="cs-media-modal" style="display:none; position:fixed; inset:0; background:rgba(15,23,42,.55); z-index:9999; align-items:center; justify-content:center; padding:24px;">
     <div style="width:min(1100px, 96vw); max-height:90vh; overflow:hidden; background:#fff; border-radius:14px; box-shadow:0 20px 60px rgba(0,0,0,.18); display:flex; flex-direction:column;">
