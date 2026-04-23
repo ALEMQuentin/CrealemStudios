@@ -79,64 +79,67 @@ class Kernel
             case 'dashboard':
                 $this->handleDashboard();
                 return;
+
             case 'pages':
                 $this->handlePages($action);
                 return;
+
             case 'blog':
                 $this->handleBlog($action);
                 return;
+
             case 'media':
                 $this->handleMedia($action);
                 return;
+
             case 'menus':
                 $this->handleMenus($action);
                 return;
+
             case 'users':
                 $this->handleUsers($action);
                 return;
+
             case 'settings':
                 $this->handleSettings($action);
                 return;
+
             case 'products':
                 $this->handleProducts($action);
                 return;
-        
+
             case 'forms':
                 $this->handleForms($action);
-                break;
+                return;
 
             case 'gallery':
                 $this->handleGallery($action);
-                break;
+                return;
 
             case 'testimonials':
                 $this->handleTestimonials($action);
-                break;
+                return;
 
             case 'clients':
                 $this->handleClients($action);
-                break;
+                return;
 
             case 'booking':
                 $this->handleBooking($action);
-                break;
+                return;
 
             case 'subscriptions':
                 $this->handleSubscriptions($action);
-                break;
-            case 'dashboard':
-                $this->handleDashboard();
-                break;
-
+                return;
 
             default:
-                http_response_code(404);
+                if (!headers_sent()) {
+                    http_response_code(404);
+                }
                 echo 'Module introuvable';
-                break;
-}
+                return;
+        }
     }
-
-
 
     private function syncCommonMeta(int $contentId): void
     {
