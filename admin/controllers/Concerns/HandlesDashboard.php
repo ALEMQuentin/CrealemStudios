@@ -3,6 +3,8 @@ declare(strict_types=1);
 
 namespace App\Controllers\Admin\Concerns;
 
+
+use App\Models\Content;
 trait HandlesDashboard
 {
     private function handleDashboard(): void
