@@ -130,7 +130,7 @@ trait HandlesBlog
             if ($this->tableExists('post_category_relations')) {
                 $stmt = $this->pdo->prepare("SELECT category_id FROM post_category_relations WHERE post_id = :post_id");
                 $stmt->execute(['post_id' => $id]);
-                $selectedCategoryIds = array_map('intval', array_column($stmt->fetchAll(PDO::FETCH_ASSOC), 'category_id'));
+                $selectedCategoryIds = array_map('intval', array_column($stmt->fetchAll(\PDO::FETCH_ASSOC), 'category_id'));
             }
 
             $isEdit = true;
@@ -355,7 +355,7 @@ trait HandlesBlog
             if ($this->tableExists('menu_items')) {
                 $stmt = $this->pdo->prepare("SELECT * FROM menu_items WHERE menu_id = :menu_id ORDER BY sort_order ASC, id ASC");
                 $stmt->execute(['menu_id' => $id]);
-                $items = $stmt->fetchAll(PDO::FETCH_ASSOC);
+                $items = $stmt->fetchAll(\PDO::FETCH_ASSOC);
             }
 
             $pagesForMenu = Content::allByType($this->pdo, 'page');
