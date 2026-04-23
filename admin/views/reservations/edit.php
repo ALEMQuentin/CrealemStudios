@@ -1,17 +1,8 @@
-<h1>Modifier réservation</h1>
+<div class="cs-admin-page-header">
+    <div>
+        <h1>Modifier la réservation</h1>
+        <p>Gestion des informations client, trajet, statut et estimation.</p>
+    </div>
+</div>
 
-<form method="POST" action="/admin.php?module=reservations&action=update&id=<?= $reservation['id'] ?>">
-    <input name="client_name" value="<?= $reservation['client_name'] ?>"><br>
-    <input name="client_phone" value="<?= $reservation['client_phone'] ?>"><br>
-    <input name="pickup_address" value="<?= $reservation['pickup_address'] ?>"><br>
-    <input name="dropoff_address" value="<?= $reservation['dropoff_address'] ?>"><br>
-    <input type="datetime-local" name="datetime" value="<?= $reservation['datetime'] ?>"><br>
-
-    <select name="status">
-        <option value="pending">Pending</option>
-        <option value="confirmed">Confirmé</option>
-        <option value="done">Terminé</option>
-    </select>
-
-    <button type="submit">Mettre à jour</button>
-</form>
+<?php require __DIR__ . '/_form.php'; ?>
