@@ -1,1 +1,6 @@
 *.bak
+
+*.bak
+database/*.sqlite
+public/uploads/
+.trash/
