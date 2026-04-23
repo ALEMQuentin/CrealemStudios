@@ -4,3 +4,19 @@
 database/*.sqlite
 public/uploads/
 .trash/
+
+# Runtime / local
+*.bak
+*.log
+.DS_Store
+
+# Database locale
+database/*.sqlite
+
+# Uploads runtime
+public/uploads/
+
+# Fichiers temporaires
+.trash/
+tmp/
+cache/
