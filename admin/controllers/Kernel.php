@@ -120,10 +120,12 @@ class Kernel
             case 'subscriptions':
                 $this->handleSubscriptions($action);
                 break;
-}
 
-        http_response_code(404);
-        echo 'Module introuvable';
+            default:
+                http_response_code(404);
+                echo 'Module introuvable';
+                break;
+}
     }
 
     private function handleDashboard(): void
