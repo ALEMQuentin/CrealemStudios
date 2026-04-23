@@ -165,7 +165,7 @@ trait HandlesContentHelpers
         $stmt = $this->pdo->prepare("SELECT name FROM sqlite_master WHERE type = 'table' AND name = :name LIMIT 1");
         $stmt->execute(['name' => $table]);
 
-        return (bool) $stmt->fetch(PDO::FETCH_ASSOC);
+        return (bool) $stmt->fetch(\PDO::FETCH_ASSOC);
     }
 
 
@@ -211,7 +211,7 @@ trait HandlesContentHelpers
     private function fetchAllSafe(string $sql): array
     {
         try {
-            return $this->pdo->query($sql)->fetchAll(PDO::FETCH_ASSOC);
+            return $this->pdo->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
         } catch (\Throwable $e) {
             return [];
         }
@@ -223,7 +223,7 @@ trait HandlesContentHelpers
         try {
             $stmt = $this->pdo->prepare($sql);
             $stmt->execute($params);
-            $row = $stmt->fetch(PDO::FETCH_ASSOC);
+            $row = $stmt->fetch(\PDO::FETCH_ASSOC);
             return $row ?: null;
         } catch (\Throwable $e) {
             return null;
