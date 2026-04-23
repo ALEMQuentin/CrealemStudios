@@ -147,19 +147,6 @@ class Kernel
         );
     }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
     private function syncCommonMeta(int $contentId): void
     {
         $metaTitle = trim($_POST['meta_title'] ?? '');
