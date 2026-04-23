@@ -42,7 +42,7 @@ trait HandlesMedia
                 redirectTo('/admin.php?module=media&error=Format non autorisé');
             }
 
-            $uploadsDir = dirname(__DIR__, 2) . '/public/uploads';
+            $uploadsDir = dirname(__DIR__, 3) . '/public/uploads';
             if (!is_dir($uploadsDir)) {
                 mkdir($uploadsDir, 0775, true);
             }
