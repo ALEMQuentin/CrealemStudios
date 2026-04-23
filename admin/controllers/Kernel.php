@@ -2,6 +2,8 @@
 
 namespace App\Controllers\Admin;
 
+use App\Controllers\Admin\Concerns\HandlesMedia;
+
 use App\Controllers\Admin\Concerns\HandlesProducts;
 
 use App\Controllers\Admin\Concerns\HandlesBlog;
@@ -13,6 +15,8 @@ use PDO;
 
 class Kernel
 {
+    use HandlesMedia;
+
     use HandlesProducts;
 
     use HandlesBlog;
