@@ -2,6 +2,8 @@
 
 namespace App\Controllers\Admin;
 
+use App\Controllers\Admin\Concerns\HandlesReservations;
+
 use App\Controllers\Admin\Concerns\HandlesContentHelpers;
 
 use App\Controllers\Admin\Concerns\HandlesDashboard;
@@ -31,6 +33,8 @@ use PDO;
 
 class Kernel
 {
+    use HandlesReservations;
+
     use HandlesContentHelpers;
 
     use HandlesDashboard;
@@ -135,6 +139,10 @@ class Kernel
             case 'subscriptions':
                 $this->handleSubscriptions($action);
                 return;
+            case 'reservations':
+                $this->handleReservations($action);
+                return;
+
 
             default:
                 if (!headers_sent()) {
