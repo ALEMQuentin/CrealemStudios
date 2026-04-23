@@ -242,26 +242,29 @@ trait HandlesPages
                 redirectTo('/admin.php?module=pages&error=Page introuvable');
             }
 
-            $this->pdo->prepare("DELETE FROM content_blocks WHERE content_id = :content_id")->execute([
-                'content_id' => $id,
-            ]);
+            if (method_exists($this, 'tableExists') && $this->tableExists('content_blocks')) {
+                $this->pdo->prepare("DELETE FROM content_blocks WHERE content_id = :content_id")->execute([
+                    'content_id' => $id,
+                ]);
+            }
 
-            $this->pdo->prepare("DELETE FROM content_meta WHERE content_id = :content_id")->execute([
-                'content_id' => $id,
-            ]);
+            if (method_exists($this, 'tableExists') && $this->tableExists('content_meta')) {
+                $this->pdo->prepare("DELETE FROM content_meta WHERE content_id = :content_id")->execute([
+                    'content_id' => $id,
+                ]);
+            }
 
-            try {
+            if (method_exists($this, 'tableExists') && $this->tableExists('content_category_relations')) {
                 $this->pdo->prepare("DELETE FROM content_category_relations WHERE content_id = :content_id")->execute([
                     'content_id' => $id,
                 ]);
-            } catch (Throwable $e) {
             }
 
-            try {
+            if (method_exists($this, 'tableExists') && $this->tableExists('contents')) {
                 $this->pdo->prepare("DELETE FROM contents WHERE id = :id")->execute([
                     'id' => $id,
                 ]);
-            } catch (Throwable $e) {
+            } elseif (method_exists($this, 'tableExists') && $this->tableExists('content')) {
                 $this->pdo->prepare("DELETE FROM content WHERE id = :id")->execute([
                     'id' => $id,
                 ]);
