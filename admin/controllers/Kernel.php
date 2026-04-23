@@ -131,20 +131,15 @@ class Kernel
             case 'clients':
                 $this->handleClients($action);
                 return;
-
-            case 'booking':
-                $this->handleBooking($action);
-                return;
-
-            case 'subscriptions':
+case 'subscriptions':
                 $this->handleSubscriptions($action);
                 return;
+            case 'booking':
             case 'reservations':
                 $this->handleReservations($action);
                 return;
 
-
-            default:
+default:
                 if (!headers_sent()) {
                     http_response_code(404);
                 }
