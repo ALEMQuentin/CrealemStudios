@@ -59,6 +59,17 @@
             });
         }
 
+        var searchInput = qs('cs-media-search-input');
+        if (searchInput && !searchInput.dataset.bound) {
+            searchInput.dataset.bound = '1';
+            searchInput.addEventListener('input', function () {
+                currentSearch = (searchInput.value || '').trim().toLowerCase();
+                if (modal && modal.classList.contains('is-open')) {
+                    renderLibrary();
+                }
+            });
+        }
+
         return true;
     }
 
@@ -70,19 +81,6 @@
         if (modalGrid) modalGrid.innerHTML = '';
     }
 
-
-    function getFilteredMediaLibrary() {
-        var items = getFilteredMediaLibrary();
-
-        if (!currentSearch) return items;
-
-        return items.filter(function (item) {
-            var id = String(item.id || '');
-            var name = String(item.original_name || item.filename || '').toLowerCase();
-            return id.includes(currentSearch) || name.includes(currentSearch);
-        });
-    }
-
     function getMediaLibrary() {
         var source = qs('cs-media-library-data');
         if (!source) return [];
@@ -91,6 +89,18 @@
         } catch (e) {
             return [];
         }
+    }
+
+    function getFilteredMediaLibrary() {
+        var items = getMediaLibrary();
+
+        if (!currentSearch) return items;
+
+        return items.filter(function (item) {
+            var id = String(item.id || '');
+            var name = String(item.original_name || item.filename || '').toLowerCase();
+            return id.includes(currentSearch) || name.includes(currentSearch);
+        });
     }
 
     function getContextTitle(context) {
@@ -269,6 +279,7 @@
 
         currentContext = context || 'wysiwyg-content';
         currentSearch = '';
+
         var searchInput = qs('cs-media-search-input');
         if (searchInput) searchInput.value = '';
 
@@ -284,17 +295,5 @@
 
     window.closeMediaModal = closeModal;
 
-    document.addEventListener('DOMContentLoaded', function () {
-        ensureModal();
-
-        var searchInput = qs('cs-media-search-input');
-        if (searchInput) {
-            searchInput.addEventListener('input', function () {
-                currentSearch = (searchInput.value || '').trim().toLowerCase();
-                if (modal && modal.classList.contains('is-open')) {
-                    renderLibrary();
-                }
-            });
-        }
-    });
+    document.addEventListener('DOMContentLoaded', ensureModal);
 })();
