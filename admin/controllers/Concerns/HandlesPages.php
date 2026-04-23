@@ -236,25 +236,38 @@ trait HandlesPages
 
         if ($action === 'delete') {
             $id = (int)($_GET['id'] ?? 0);
-            if ($id <= 0) {
-                redirectTo('/admin.php?module=media&error=Média introuvable');
+            $page = Content::findById($this->pdo, $id);
+
+            if (!$page || ($page['type'] ?? '') !== 'page') {
+                redirectTo('/admin.php?module=pages&error=Page introuvable');
             }
 
-            $mediaItem = $this->fetchOne("SELECT * FROM media WHERE id = :id", ['id' => $id]);
-            if (!$mediaItem) {
-                redirectTo('/admin.php?module=media&error=Média introuvable');
+            $this->pdo->prepare("DELETE FROM content_blocks WHERE content_id = :content_id")->execute([
+                'content_id' => $id,
+            ]);
+
+            $this->pdo->prepare("DELETE FROM content_meta WHERE content_id = :content_id")->execute([
+                'content_id' => $id,
+            ]);
+
+            try {
+                $this->pdo->prepare("DELETE FROM content_category_relations WHERE content_id = :content_id")->execute([
+                    'content_id' => $id,
+                ]);
+            } catch (Throwable $e) {
             }
 
-            $projectRoot = dirname(__DIR__, 2);
-            $relativePath = $mediaItem['path'] ?? '';
-            $filePath = $projectRoot . '/public' . $relativePath;
-
-            if ($relativePath !== '' && is_file($filePath)) {
-                @unlink($filePath);
+            try {
+                $this->pdo->prepare("DELETE FROM contents WHERE id = :id")->execute([
+                    'id' => $id,
+                ]);
+            } catch (Throwable $e) {
+                $this->pdo->prepare("DELETE FROM content WHERE id = :id")->execute([
+                    'id' => $id,
+                ]);
             }
 
-            $this->deleteById('media', $id);
-            redirectTo('/admin.php?module=media&success=Média supprimé');
+            redirectTo('/admin.php?module=pages&success=Page supprimée');
         }
 
         redirectTo('/admin.php?module=pages');
