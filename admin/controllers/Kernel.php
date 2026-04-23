@@ -405,6 +405,10 @@ class Kernel
             if ((int)$block['id'] === $blockId) {
                 $index = $i;
                 break;
+            case 'forms':
+                $this->handleForms($action);
+                break;
+
             }
         }
 
