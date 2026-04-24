@@ -70,7 +70,7 @@
                             <br><small><?= htmlspecialchars((string)$document['rejection_reason'], ENT_QUOTES, 'UTF-8') ?></small>
                         <?php endif; ?>
                     </td>
-                    <td><?= htmlspecialchars((string)$document['uploaded_at'], ENT_QUOTES, 'UTF-8') ?></td>
+                    <td><?= htmlspecialchars((string)($document['uploaded_at'] ?? $document['created_at'] ?? ''), ENT_QUOTES, 'UTF-8') ?></td>
                     <td>
                         <div style="display:flex; gap:6px; flex-wrap:wrap;">
                             <a class="btn btn-sm btn-outline-secondary" href="/admin.php?module=booking&action=chauffeur_document_validate&id=<?= (int)$document['id'] ?>">
