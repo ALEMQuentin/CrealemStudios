@@ -101,9 +101,9 @@ $googleMapsKey = file_exists($googleConfigPath) ? (string)((require $googleConfi
 
         <div id="new-client-block" style="display:none;">
             <div class="booking-grid">
-                <div class="booking-field"><label>Prénom</label><input class="booking-input" name="client_first_name" id="client_first_name"></div>
-                <div class="booking-field"><label>Nom</label><input class="booking-input" name="client_last_name" id="client_last_name"></div>
-                <div class="booking-field"><label>Téléphone</label><input class="booking-input" name="client_phone" id="client_phone" value="<?= booking_field($booking, 'client_phone') ?>"></div>
+                <div class="booking-field"><label>Prénom</label><input class="booking-input" name="client_first_name" id="client_first_name" data-conditional-required="1"></div>
+                <div class="booking-field"><label>Nom</label><input class="booking-input" name="client_last_name" id="client_last_name" data-conditional-required="1"></div>
+                <div class="booking-field"><label>Téléphone</label><input class="booking-input" name="client_phone" id="client_phone" data-conditional-required="1" value="<?= booking_field($booking, 'client_phone') ?>"></div>
                 <div class="booking-field"><label>Email</label><input class="booking-input" type="email" name="client_email" id="client_email" value="<?= booking_field($booking, 'client_email') ?>"></div>
                 <div class="booking-field"><label>Entreprise</label><input class="booking-input" name="client_company" id="client_company"></div>
                 <div class="booking-field"><label>Adresse domicile</label><input class="booking-input google-address-input" name="client_home_address" id="client_home_address" autocomplete="off"></div>
@@ -120,7 +120,7 @@ $googleMapsKey = file_exists($googleConfigPath) ? (string)((require $googleConfi
         <p class="booking-muted">Choisir le mode de paiement avant les informations de course.</p>
         <div class="booking-field">
             <label>Mode de paiement</label>
-            <select class="booking-select" name="payment_method" id="payment_method">
+            <select class="booking-select" name="payment_method" id="payment_method" data-conditional-required="1">
                 <option value="">Choisir</option>
                 <option value="card" <?= $payment === 'card' ? 'selected' : '' ?>>Carte bancaire</option>
                 <option value="cash" <?= $payment === 'cash' ? 'selected' : '' ?>>Espèces</option>
@@ -138,11 +138,11 @@ $googleMapsKey = file_exists($googleConfigPath) ? (string)((require $googleConfi
         <h2>Étape 3 · Réservation</h2>
         <p class="booking-muted">Saisir les informations de course.</p>
         <div class="booking-grid">
-            <div class="booking-field"><label>Adresse de prise en charge</label><input class="booking-input google-address-input" name="pickup_address" id="pickup_address" placeholder="Indiquez un lieu" autocomplete="off" value="<?= booking_field($booking, 'pickup_address') ?>"></div>
-            <div class="booking-field"><label>Adresse de destination</label><input class="booking-input google-address-input" name="dropoff_address" id="dropoff_address" placeholder="Indiquez un lieu" autocomplete="off" value="<?= booking_field($booking, 'dropoff_address') ?>"></div>
-            <div class="booking-field"><label>Date et heure de prise en charge</label><input class="booking-input" type="datetime-local" name="pickup_datetime" id="pickup_datetime" value="<?= booking_field($booking, 'pickup_datetime') ?>"></div>
+            <div class="booking-field"><label>Adresse de prise en charge</label><input class="booking-input google-address-input" name="pickup_address" id="pickup_address" data-conditional-required="1" placeholder="Indiquez un lieu" autocomplete="off" value="<?= booking_field($booking, 'pickup_address') ?>"></div>
+            <div class="booking-field"><label>Adresse de destination</label><input class="booking-input google-address-input" name="dropoff_address" id="dropoff_address" data-conditional-required="1" placeholder="Indiquez un lieu" autocomplete="off" value="<?= booking_field($booking, 'dropoff_address') ?>"></div>
+            <div class="booking-field"><label>Date et heure de prise en charge</label><input class="booking-input" type="datetime-local" name="pickup_datetime" id="pickup_datetime" data-conditional-required="1" value="<?= booking_field($booking, 'pickup_datetime') ?>"></div>
             <div class="booking-field"><label>Nombre de passagers</label><input class="booking-input" type="number" min="1" name="passengers" id="passengers" value="<?= (int)($booking['passengers'] ?? 1) ?>"></div>
-            <div class="booking-field"><label>Véhicule</label><select class="booking-select" name="vehicle_type" id="vehicle_type"><option value="">Choisir</option><option value="berline" <?= $vehicle === 'berline' ? 'selected' : '' ?>>Berline</option><option value="van" <?= $vehicle === 'van' ? 'selected' : '' ?>>Van</option><option value="business" <?= $vehicle === 'business' ? 'selected' : '' ?>>Business</option></select></div>
+            <div class="booking-field"><label>Véhicule</label><select class="booking-select" name="vehicle_type" id="vehicle_type" data-conditional-required="1"><option value="">Choisir</option><option value="berline" <?= $vehicle === 'berline' ? 'selected' : '' ?>>Berline</option><option value="van" <?= $vehicle === 'van' ? 'selected' : '' ?>>Van</option><option value="business" <?= $vehicle === 'business' ? 'selected' : '' ?>>Business</option></select></div>
             <div class="booking-field"><label>Prix (€)</label><input class="booking-input" type="number" min="0" step="0.01" name="price" id="price" value="<?= booking_field($booking, 'price') ?>" readonly></div>
         </div>
 
@@ -208,7 +208,51 @@ function syncClientName(){
         document.getElementById('client_name').value = full;
     }
 }
-function toggleClientMode(){const mode=document.querySelector('input[name="client_mode"]:checked')?.value||'existing';document.getElementById('existing-client-block').style.display=mode==='existing'?'block':'none';document.getElementById('new-client-block').style.display=mode==='new'?'block':'none';if(mode==='new'){document.getElementById('client_id').value='';}}
+function setRequired(id, active){
+    const field = document.getElementById(id);
+    if (!field) return;
+    if (active) {
+        field.setAttribute('required', 'required');
+    } else {
+        field.removeAttribute('required');
+    }
+}
+
+function refreshRequiredFields(){
+    const mode = document.querySelector('input[name="client_mode"]:checked')?.value || 'existing';
+    const activePanel = document.querySelector('.booking-panel.is-active')?.dataset.stepPanel || '1';
+
+    document.querySelectorAll('[data-conditional-required]').forEach(field => {
+        field.removeAttribute('required');
+    });
+
+    if (activePanel === '1') {
+        if (mode === 'new') {
+            setRequired('client_first_name', true);
+            setRequired('client_last_name', true);
+            setRequired('client_phone', true);
+        }
+    }
+
+    if (activePanel === '2') {
+        setRequired('payment_method', true);
+    }
+
+    if (activePanel === '3') {
+        setRequired('pickup_address', true);
+        setRequired('dropoff_address', true);
+        setRequired('pickup_datetime', true);
+        setRequired('vehicle_type', true);
+    }
+}
+
+function toggleClientMode(){
+    const mode=document.querySelector('input[name="client_mode"]:checked')?.value||'existing';
+    document.getElementById('existing-client-block').style.display=mode==='existing'?'block':'none';
+    document.getElementById('new-client-block').style.display=mode==='new'?'block':'none';
+    if(mode==='new'){document.getElementById('client_id').value='';}
+    refreshRequiredFields();
+}
 document.querySelectorAll('input[name="client_mode"]').forEach(i=>i.addEventListener('change',toggleClientMode));
 ['client_first_name','client_last_name'].forEach(id=>document.getElementById(id)?.addEventListener('input',syncClientName));
 document.querySelectorAll('[data-next-step]').forEach(b=>b.addEventListener('click',function(){const next=this.dataset.nextStep;if(next==='2'){const mode=document.querySelector('input[name="client_mode"]:checked')?.value||'existing';if(mode==='existing'&&!value('client_id')){alert('Sélectionne un client existant ou choisis nouveau client.');return;}if(mode==='new'){syncClientName();if(!requireValue('client_first_name','Renseigne le prénom.'))return;if(!requireValue('client_last_name','Renseigne le nom.'))return;if(!requireValue('client_phone','Renseigne le téléphone.'))return;}}if(next==='3'&&!requireValue('payment_method','Choisis un mode de paiement.'))return;showStep(next);}));
