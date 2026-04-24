@@ -388,11 +388,11 @@ trait HandlesBlog
     private function handleSettings(string $action): void
     {
         if ($action === 'company') {
-            $rows = $this->pdo->query("SELECT `key`, `value` FROM settings")->fetchAll(\PDO::FETCH_ASSOC);
+            $rows = $this->pdo->query("SELECT setting_key, setting_value FROM settings")->fetchAll(\PDO::FETCH_ASSOC);
             $companySettings = [];
 
             foreach ($rows as $row) {
-                $companySettings[(string)$row['key']] = (string)$row['value'];
+                $companySettings[(string)$row['setting_key']] = (string)$row['setting_value'];
             }
 
             $this->render('Paramètres entreprise', $this->resolveView(['modules/settings-company.php']), compact('companySettings'));
@@ -467,15 +467,15 @@ trait HandlesBlog
         foreach ($allowed as $key) {
             $value = trim((string)($_POST[$key] ?? ''));
 
-            $existing = $this->pdo->prepare("SELECT id FROM settings WHERE `key` = :key LIMIT 1");
+            $existing = $this->pdo->prepare("SELECT id FROM settings WHERE setting_key = :key LIMIT 1");
             $existing->execute(['key' => $key]);
             $id = (int)($existing->fetchColumn() ?: 0);
 
             if ($id > 0) {
-                $stmt = $this->pdo->prepare("UPDATE settings SET `value` = :value WHERE id = :id");
+                $stmt = $this->pdo->prepare("UPDATE settings SET setting_value = :value, updated_at = CURRENT_TIMESTAMP WHERE id = :id");
                 $stmt->execute(['value' => $value, 'id' => $id]);
             } else {
-                $stmt = $this->pdo->prepare("INSERT INTO settings (`key`, `value`) VALUES (:key, :value)");
+                $stmt = $this->pdo->prepare("INSERT INTO settings (setting_key, setting_value, created_at, updated_at) VALUES (:key, :value, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)");
                 $stmt->execute(['key' => $key, 'value' => $value]);
             }
         }

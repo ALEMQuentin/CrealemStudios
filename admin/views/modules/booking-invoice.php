@@ -1,9 +1,9 @@
 <?php
 $company = [];
 
-$stmt = $this->pdo->query("SELECT `key`, `value` FROM settings");
+$stmt = $this->pdo->query("SELECT setting_key, setting_value FROM settings");
 foreach ($stmt->fetchAll(\PDO::FETCH_ASSOC) as $row) {
-    $company[$row['key']] = $row['value'];
+    $company[$row['setting_key']] = $row['setting_value'];
 }
 
 $bookingId = (int)($booking['id'] ?? 0);
