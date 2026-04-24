@@ -1488,3 +1488,63 @@ textarea:focus {
         margin-left: 0.8rem;
     }
 }
+
+/* ===== Booking module hardening ===== */
+
+.cs-admin-main,
+.cs-admin-content,
+.cs-admin-page,
+.cs-admin-card,
+.booking-flow,
+.booking-panel,
+.booking-steps,
+.cs-admin-table {
+    position: relative;
+    z-index: 2;
+}
+
+.booking-flow,
+.booking-panel,
+.booking-steps,
+.cs-admin-card {
+    background: #ffffff;
+}
+
+.booking-panel {
+    pointer-events: auto;
+}
+
+.booking-panel:not(.is-active) {
+    display: none !important;
+}
+
+.booking-panel.is-active {
+    display: grid !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+}
+
+.booking-step-pill {
+    pointer-events: auto;
+    opacity: 1 !important;
+    visibility: visible !important;
+}
+
+.cs-admin-table,
+.cs-admin-table tbody,
+.cs-admin-table tr,
+.cs-admin-table td,
+.cs-admin-table th {
+    opacity: 1 !important;
+    visibility: visible !important;
+}
+
+.cs-admin-card::before,
+.cs-admin-card::after,
+.cs-admin-main::before,
+.cs-admin-main::after,
+.cs-admin-content::before,
+.cs-admin-content::after {
+    pointer-events: none;
+}
+
