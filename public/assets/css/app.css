@@ -2118,3 +2118,19 @@ form.cs-admin-card textarea.form-control::placeholder {
     font-weight: 800;
 }
 
+
+.voucher {
+    background: #fff;
+    padding: 30px;
+    border-radius: 12px;
+    border: 1px solid #ddd;
+}
+
+@media print {
+    .no-print,
+    .cs-sidebar,
+    .cs-topbar {
+        display: none !important;
+    }
+}
+

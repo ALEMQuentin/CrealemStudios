@@ -124,7 +124,21 @@ trait HandlesBooking
             return;
         }
 
-        if ($action === 'create') {
+        
+        if ($action === 'voucher') {
+            $id = (int)($_GET['id'] ?? 0);
+            $booking = $this->findReservation($id);
+
+            if (!$booking) {
+                echo "Réservation introuvable";
+                exit;
+            }
+
+            require __DIR__ . '/../../views/modules/booking-voucher.php';
+            return;
+        }
+
+if ($action === 'create') {
             $booking = $this->emptyBooking();
             $isEdit = false;
 
