@@ -1569,3 +1569,13 @@ textarea:required:focus {
     border-left-color: var(--cs-primary);
 }
 
+
+/* ===== Booking required indicator ===== */
+.booking-label.required::after,
+.booking-field label.required::after {
+    content: " *";
+    color: #dc3545;
+    font-weight: 700;
+    margin-left: 3px;
+}
+

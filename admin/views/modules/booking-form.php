@@ -72,7 +72,7 @@ $googleMapsKey = file_exists($googleConfigPath) ? (string)((require $googleConfi
         <p class="booking-muted">Choisir un client existant ou créer un nouveau client.</p>
 
         <div class="booking-field">
-            <span class="booking-label">Type de client</span>
+            <span class="booking-label required">Type de client</span>
             <div class="booking-radio-line">
                 <label><input type="radio" name="client_mode" value="existing" checked> Client existant</label>
                 <label><input type="radio" name="client_mode" value="new"> Nouveau client</label>
@@ -101,9 +101,9 @@ $googleMapsKey = file_exists($googleConfigPath) ? (string)((require $googleConfi
 
         <div id="new-client-block" style="display:none;">
             <div class="booking-grid">
-                <div class="booking-field"><label>Prénom</label><input class="booking-input" name="client_first_name" id="client_first_name"></div>
-                <div class="booking-field"><label>Nom</label><input class="booking-input" name="client_last_name" id="client_last_name"></div>
-                <div class="booking-field"><label>Téléphone</label><input class="booking-input" name="client_phone" id="client_phone"></div>
+                <div class="booking-field"><label class="required">Prénom</label><input class="booking-input" name="client_first_name" id="client_first_name" required></div>
+                <div class="booking-field"><label class="required">Nom</label><input class="booking-input" name="client_last_name" id="client_last_name" required></div>
+                <div class="booking-field"><label class="required">Téléphone</label><input class="booking-input" name="client_phone" id="client_phone" required></div>
                 <div class="booking-field"><label>Email</label><input class="booking-input" type="email" name="client_email" id="client_email"></div>
                 <div class="booking-field"><label>Entreprise</label><input class="booking-input" name="client_company" id="client_company"></div>
                 <div class="booking-field"><label>Adresse domicile</label><input class="booking-input google-address-input" name="client_home_address" id="client_home_address" autocomplete="off"></div>
@@ -119,8 +119,8 @@ $googleMapsKey = file_exists($googleConfigPath) ? (string)((require $googleConfi
         <h2>Étape 2 · Paiement</h2>
         <p class="booking-muted">Choisir le mode de paiement avant les informations de course.</p>
         <div class="booking-field">
-            <label>Mode de paiement</label>
-            <select class="booking-select" name="payment_method" id="payment_method">
+            <label class="required">Mode de paiement</label>
+            <select class="booking-select" name="payment_method" id="payment_method" required>
                 <option value="">Choisir</option>
                 <option value="card" <?= $payment === 'card' ? 'selected' : '' ?>>Carte bancaire</option>
                 <option value="cash" <?= $payment === 'cash' ? 'selected' : '' ?>>Espèces</option>
@@ -138,11 +138,11 @@ $googleMapsKey = file_exists($googleConfigPath) ? (string)((require $googleConfi
         <h2>Étape 3 · Réservation</h2>
         <p class="booking-muted">Saisir les informations de course.</p>
         <div class="booking-grid">
-            <div class="booking-field"><label>Adresse de prise en charge</label><input class="booking-input google-address-input" name="pickup_address" id="pickup_address" placeholder="Indiquez un lieu" autocomplete="off" value="<?= booking_field($booking, 'pickup_address') ?>"></div>
-            <div class="booking-field"><label>Adresse de destination</label><input class="booking-input google-address-input" name="dropoff_address" id="dropoff_address" placeholder="Indiquez un lieu" autocomplete="off" value="<?= booking_field($booking, 'dropoff_address') ?>"></div>
-            <div class="booking-field"><label>Date et heure de prise en charge</label><input class="booking-input" type="datetime-local" name="pickup_datetime" id="pickup_datetime" value="<?= booking_field($booking, 'pickup_datetime') ?>"></div>
-            <div class="booking-field"><label>Nombre de passagers</label><input class="booking-input" type="number" min="1" name="passengers" id="passengers" value="<?= (int)($booking['passengers'] ?? 1) ?>"></div>
-            <div class="booking-field"><label>Véhicule</label><select class="booking-select" name="vehicle_type" id="vehicle_type"><option value="">Choisir</option><option value="berline" <?= $vehicle === 'berline' ? 'selected' : '' ?>>Berline</option><option value="van" <?= $vehicle === 'van' ? 'selected' : '' ?>>Van</option><option value="business" <?= $vehicle === 'business' ? 'selected' : '' ?>>Business</option></select></div>
+            <div class="booking-field"><label class="required">Adresse de prise en charge</label><input class="booking-input google-address-input" name="pickup_address" id="pickup_address" placeholder="Indiquez un lieu" autocomplete="off" value="<?= booking_field($booking, 'pickup_address') ? required>"></div>
+            <div class="booking-field"><label class="required">Adresse de destination</label><input class="booking-input google-address-input" name="dropoff_address" id="dropoff_address" placeholder="Indiquez un lieu" autocomplete="off" value="<?= booking_field($booking, 'dropoff_address') ? required>"></div>
+            <div class="booking-field"><label class="required">Date et heure de prise en charge</label><input class="booking-input" type="datetime-local" name="pickup_datetime" id="pickup_datetime" value="<?= booking_field($booking, 'pickup_datetime') ? required>"></div>
+            <div class="booking-field"><label class="required">Nombre de passagers</label><input class="booking-input" type="number" min="1" name="passengers" id="passengers" value="<?= (int)($booking['passengers'] ?? 1) ? required>"></div>
+            <div class="booking-field"><label class="required">Véhicule</label><select class="booking-select" name="vehicle_type" id="vehicle_type" required><option value="">Choisir</option><option value="berline" <?= $vehicle === 'berline' ? 'selected' : '' ?>>Berline</option><option value="van" <?= $vehicle === 'van' ? 'selected' : '' ?>>Van</option><option value="business" <?= $vehicle === 'business' ? 'selected' : '' ?>>Business</option></select></div>
             <div class="booking-field"><label>Prix (€)</label><input class="booking-input" type="number" min="0" step="0.01" name="price" id="price" value="<?= booking_field($booking, 'price') ?>" readonly></div>
         </div>
 
