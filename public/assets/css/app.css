@@ -1893,3 +1893,43 @@ form.cs-admin-card textarea.form-control::placeholder {
     color: #94a3b8;
 }
 
+
+/* ===== Fix booking form grid overflow ===== */
+.booking-card {
+    overflow: hidden;
+}
+
+.booking-grid {
+    display: grid !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 24px 28px !important;
+    width: 100%;
+}
+
+.booking-field {
+    min-width: 0;
+    margin-bottom: 0 !important;
+}
+
+.booking-input,
+.booking-select,
+.booking-textarea {
+    box-sizing: border-box !important;
+    width: 100% !important;
+    max-width: 100% !important;
+}
+
+.booking-textarea {
+    margin-top: 4px;
+}
+
+.booking-actions {
+    margin-top: 28px !important;
+}
+
+@media (max-width: 900px) {
+    .booking-grid {
+        grid-template-columns: 1fr !important;
+    }
+}
+
