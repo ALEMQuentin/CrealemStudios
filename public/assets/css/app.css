@@ -1548,3 +1548,24 @@ textarea:focus {
     pointer-events: none;
 }
 
+
+/* ===== Required fields indicator ===== */
+label.required::after {
+    content: " *";
+    color: #dc3545;
+    font-weight: 600;
+    margin-left: 2px;
+}
+
+input:required,
+select:required,
+textarea:required {
+    border-left: 3px solid #dc3545;
+}
+
+input:required:focus,
+select:required:focus,
+textarea:required:focus {
+    border-left-color: var(--cs-primary);
+}
+
