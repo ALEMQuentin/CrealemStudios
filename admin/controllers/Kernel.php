@@ -132,6 +132,10 @@ case 'subscriptions':
                 $this->handleSubscriptions($action);
                 return;
             case 'booking':
+            case 'booking':
+                $this->handleBooking($action);
+                return;
+
 default:
                 if (!headers_sent()) {
                     http_response_code(404);
