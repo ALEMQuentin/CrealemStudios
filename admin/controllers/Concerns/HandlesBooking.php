@@ -406,7 +406,7 @@ trait HandlesBooking
             return;
         }
 
-        $tariffStmt = $this->pdo->prepare("
+        $stmt = $this->pdo->prepare("
             SELECT *
             FROM booking_tariffs
             WHERE vehicle_type = :vehicle_type
@@ -414,11 +414,11 @@ trait HandlesBooking
             LIMIT 1
         ");
 
-        $tariffStmt->execute([
+        $stmt->execute([
             'vehicle_type' => $vehicle !== '' ? $vehicle : 'berline',
         ]);
 
-        $tariff = $tariffStmt->fetch(\PDO::FETCH_ASSOC);
+        $tariff = $stmt->fetch(\PDO::FETCH_ASSOC);
 
         if (!$tariff) {
             http_response_code(422);
@@ -426,20 +426,14 @@ trait HandlesBooking
             return;
         }
 
-        /*
-         * Calcul provisoire basé sur les tarifs DB.
-         * Étape suivante : remplacer distance/durée par Google Distance Matrix.
-         */
         $estimatedKm = max(5, min(80, (int)ceil((mb_strlen($pickup) + mb_strlen($dropoff)) / 12)));
         $estimatedMinutes = max(10, (int)ceil($estimatedKm * 2.2));
 
-        $baseFare = (float)$tariff['base_fare'];
-        $pricePerKm = (float)$tariff['price_per_km'];
-        $pricePerMinute = (float)$tariff['price_per_minute'];
-        $minimumFare = (float)$tariff['minimum_fare'];
+        $price = (float)$tariff['base_fare']
+            + ($estimatedKm * (float)$tariff['price_per_km'])
+            + ($estimatedMinutes * (float)$tariff['price_per_minute']);
 
-        $price = $baseFare + ($estimatedKm * $pricePerKm) + ($estimatedMinutes * $pricePerMinute);
-        $price = max($price, $minimumFare);
+        $price = max($price, (float)$tariff['minimum_fare']);
         $price = round($price, 2);
 
         echo json_encode([
@@ -452,29 +446,11 @@ trait HandlesBooking
 
 
 
+
         /*
          * Devis local provisoire.
          * Sans API cartographique branchée dans CrealemStudios, on ne peut pas calculer une vraie distance routière.
          * On produit donc une estimation structurée, remplaçable ensuite par Google Maps / OSRM / autre provider.
          */
-        $base = 12.00;
-        $vehicleMultiplier = match ($vehicle) {
-            'van' => 1.35,
-            'business' => 1.20,
-            default => 1.00,
-        };
-
-        $addressComplexity = max(1, (int)ceil((mb_strlen($pickup) + mb_strlen($dropoff)) / 35));
-        $estimatedKm = max(5, min(80, $addressComplexity * 4));
-        $price = round(($base + ($estimatedKm * 1.80) + ($luggage * 1.50)) * $vehicleMultiplier, 2);
-
-        echo json_encode([
-            'price' => $price,
-            'distance_meters' => $estimatedKm * 1000,
-            'duration_seconds' => max(900, $estimatedKm * 120),
-            'routing_provider' => 'local_estimate',
-            'note' => 'Estimation provisoire sans API cartographique',
-        ], JSON_UNESCAPED_UNICODE);
-    }
 
 }
