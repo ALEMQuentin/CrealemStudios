@@ -15,6 +15,16 @@ trait HandlesBooking
 
     private function handleBooking(string $action): void
     {
+        if ($action === 'client_search') {
+            $this->bookingClientSearch();
+            return;
+        }
+
+        if ($action === 'quote') {
+            $this->bookingQuote();
+            return;
+        }
+
         if ($action === 'create') {
             $booking = $this->emptyBooking();
             $isEdit = false;
@@ -256,4 +266,95 @@ trait HandlesBooking
 
         return (float)str_replace(',', '.', (string)$value);
     }
+
+    private function bookingClientSearch(): void
+    {
+        header('Content-Type: application/json; charset=utf-8');
+
+        $q = trim((string)($_GET['q'] ?? ''));
+        if ($q === '' || mb_strlen($q) < 2) {
+            echo json_encode([]);
+            return;
+        }
+
+        $tables = ['clients', 'customers'];
+        $rows = [];
+
+        foreach ($tables as $table) {
+            if (!method_exists($this, 'tableExists') || !$this->tableExists($table)) {
+                continue;
+            }
+
+            try {
+                $stmt = $this->pdo->prepare("
+                    SELECT *
+                    FROM {$table}
+                    WHERE name LIKE :q
+                       OR phone LIKE :q
+                       OR email LIKE :q
+                    ORDER BY id DESC
+                    LIMIT 10
+                ");
+
+                $stmt->execute(['q' => '%' . $q . '%']);
+                $rows = $stmt->fetchAll(\PDO::FETCH_ASSOC);
+                break;
+            } catch (\Throwable $e) {
+                $rows = [];
+            }
+        }
+
+        $clients = array_map(static function (array $row): array {
+            return [
+                'id' => (int)($row['id'] ?? 0),
+                'name' => (string)($row['name'] ?? $row['client_name'] ?? ''),
+                'phone' => (string)($row['phone'] ?? $row['client_phone'] ?? ''),
+                'email' => (string)($row['email'] ?? $row['client_email'] ?? ''),
+            ];
+        }, $rows);
+
+        echo json_encode($clients, JSON_UNESCAPED_UNICODE);
+    }
+
+    private function bookingQuote(): void
+    {
+        header('Content-Type: application/json; charset=utf-8');
+
+        $pickup = trim((string)($_POST['pickup_address'] ?? ''));
+        $dropoff = trim((string)($_POST['dropoff_address'] ?? ''));
+        $vehicle = trim((string)($_POST['vehicle_type'] ?? 'berline'));
+        $passengers = max(1, (int)($_POST['passengers'] ?? 1));
+        $luggage = max(0, (int)($_POST['luggage'] ?? 0));
+
+        if ($pickup === '' || $dropoff === '') {
+            http_response_code(422);
+            echo json_encode(['error' => 'Adresses manquantes'], JSON_UNESCAPED_UNICODE);
+            return;
+        }
+
+        /*
+         * Devis local provisoire.
+         * Sans API cartographique branchée dans CrealemStudios, on ne peut pas calculer une vraie distance routière.
+         * On produit donc une estimation structurée, remplaçable ensuite par Google Maps / OSRM / autre provider.
+         */
+        $base = 12.00;
+        $vehicleMultiplier = match ($vehicle) {
+            'van' => 1.35,
+            'business' => 1.20,
+            default => 1.00,
+        };
+
+        $addressComplexity = max(1, (int)ceil((mb_strlen($pickup) + mb_strlen($dropoff)) / 35));
+        $estimatedKm = max(5, min(80, $addressComplexity * 4));
+        $price = round(($base + ($estimatedKm * 1.80) + ($luggage * 1.50)) * $vehicleMultiplier, 2);
+
+        echo json_encode([
+            'price' => $price,
+            'distance_meters' => $estimatedKm * 1000,
+            'duration_seconds' => max(900, $estimatedKm * 120),
+            'routing_provider' => 'local_estimate',
+            'note' => 'Estimation provisoire sans API cartographique',
+        ], JSON_UNESCAPED_UNICODE);
+    }
+
 }
