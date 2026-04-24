@@ -47,6 +47,7 @@
                     <td>
                         <div style="display:flex; gap:6px; flex-wrap:wrap;">
                             <a class="btn btn-sm btn-outline-secondary" href="/admin.php?module=booking&action=chauffeur_edit&id=<?= (int)$chauffeur['id'] ?>">Modifier</a>
+                            <a class="btn btn-sm btn-outline-secondary" href="/admin.php?module=booking&action=chauffeur_documents&id=<?= (int)$chauffeur['id'] ?>">Documents</a>
                             <a class="btn btn-sm btn-outline-danger" href="/admin.php?module=booking&action=chauffeur_delete&id=<?= (int)$chauffeur['id'] ?>" onclick="return confirm('Supprimer ce chauffeur ?')">Supprimer</a>
                         </div>
                     </td>
