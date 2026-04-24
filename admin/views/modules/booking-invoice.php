@@ -45,9 +45,15 @@ $distanceKm = !empty($booking['distance_meters'])
         </div>
 
         <div>
-            <strong><?= htmlspecialchars($company['company_name'] ?? '') ?></strong><br>
-<?= nl2br(htmlspecialchars($company['company_address'] ?? '')) ?><br>
-SIRET : <?= htmlspecialchars($company['company_siret'] ?? '') ?>
+            <strong><?= htmlspecialchars($company['company_name'] ?? 'Entreprise non renseignée') ?></strong><br>
+<?= nl2br(htmlspecialchars($company['company_address'] ?? 'Adresse non renseignée')) ?><br>
+SIRET : <?= htmlspecialchars($company['company_siret'] ?? '') ?><br>
+<?php if (!empty($company['company_vat_number'])): ?>
+TVA : <?= htmlspecialchars($company['company_vat_number']) ?><br>
+<?php endif; ?>
+<?php if (!empty($company['company_vtc_register'])): ?>
+Registre VTC : <?= htmlspecialchars($company['company_vtc_register']) ?>
+<?php endif; ?>
         </div>
     </header>
 
@@ -113,7 +119,7 @@ SIRET : <?= htmlspecialchars($company['company_siret'] ?? '') ?>
 
     <footer class="booking-invoice-footer">
         <p>
-            Facture générée depuis CréAlemStudios. Paiement selon le mode convenu lors de la réservation.
+            <?= htmlspecialchars($company['company_invoice_legal'] ?? 'Facture générée depuis CréAlemStudios. Paiement selon le mode convenu lors de la réservation.', ENT_QUOTES, 'UTF-8') ?>
         </p>
     </footer>
 </div>

@@ -387,6 +387,24 @@ trait HandlesBlog
 
     private function handleSettings(string $action): void
     {
+        if ($action === 'company') {
+            $rows = $this->pdo->query("SELECT `key`, `value` FROM settings")->fetchAll(\PDO::FETCH_ASSOC);
+            $companySettings = [];
+
+            foreach ($rows as $row) {
+                $companySettings[(string)$row['key']] = (string)$row['value'];
+            }
+
+            $this->render('Paramètres entreprise', $this->resolveView(['modules/settings-company.php']), compact('companySettings'));
+            return;
+        }
+
+        if ($action === 'save_company' && $_SERVER['REQUEST_METHOD'] === 'POST') {
+            $this->saveCompanySettings();
+            redirectTo('/admin.php?module=settings&action=company&success=Paramètres entreprise enregistrés');
+        }
+
+
         if ($action === 'index') {
             $this->render('Paramètres', $this->resolveView(['modules/settings-form.php']), []);
             return;
@@ -431,4 +449,37 @@ trait HandlesBlog
 
         redirectTo('/admin.php?module=settings');
     }
+    private function saveCompanySettings(): void
+    {
+        $allowed = [
+            'company_name',
+            'company_trade_name',
+            'company_siret',
+            'company_vat_number',
+            'company_vtc_register',
+            'company_phone',
+            'company_email',
+            'company_website',
+            'company_address',
+            'company_invoice_legal',
+        ];
+
+        foreach ($allowed as $key) {
+            $value = trim((string)($_POST[$key] ?? ''));
+
+            $existing = $this->pdo->prepare("SELECT id FROM settings WHERE `key` = :key LIMIT 1");
+            $existing->execute(['key' => $key]);
+            $id = (int)($existing->fetchColumn() ?: 0);
+
+            if ($id > 0) {
+                $stmt = $this->pdo->prepare("UPDATE settings SET `value` = :value WHERE id = :id");
+                $stmt->execute(['value' => $value, 'id' => $id]);
+            } else {
+                $stmt = $this->pdo->prepare("INSERT INTO settings (`key`, `value`) VALUES (:key, :value)");
+                $stmt->execute(['key' => $key, 'value' => $value]);
+            }
+        }
+    }
+
+
 }
