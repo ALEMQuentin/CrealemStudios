@@ -6,6 +6,7 @@
 
     <div style="display:flex; gap:8px; flex-wrap:wrap;">
         <a class="btn btn-outline-secondary" href="/admin.php?module=booking&action=tariffs">Tarifs</a>
+        <a class="btn btn-outline-secondary" href="/admin.php?module=booking&action=chauffeurs">Chauffeurs</a>
         <a class="btn btn-primary" href="/admin.php?module=booking&action=create">Nouvelle réservation</a>
     </div>
 </div>
