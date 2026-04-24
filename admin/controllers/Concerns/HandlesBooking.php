@@ -406,35 +406,50 @@ trait HandlesBooking
             return;
         }
 
-        // simulation distance (en attendant Google réel)
-        $km = max(5, min(50, strlen($pickup + $dropoff) % 30 + 5));
-        $minutes = $km * 2;
+        $tariffStmt = $this->pdo->prepare("
+            SELECT *
+            FROM booking_tariffs
+            WHERE vehicle_type = :vehicle_type
+              AND is_active = 1
+            LIMIT 1
+        ");
 
-        // récupération tarif DB
-        $stmt = $this->pdo->prepare("SELECT * FROM booking_tariffs WHERE vehicle_type = :v LIMIT 1");
-        $stmt->execute(['v' => $vehicle]);
-        $tariff = $stmt->fetch(\PDO::FETCH_ASSOC);
+        $tariffStmt->execute([
+            'vehicle_type' => $vehicle !== '' ? $vehicle : 'berline',
+        ]);
+
+        $tariff = $tariffStmt->fetch(\PDO::FETCH_ASSOC);
 
         if (!$tariff) {
-            http_response_code(500);
-            echo json_encode(['error' => 'Tarif introuvable'], JSON_UNESCAPED_UNICODE);
+            http_response_code(422);
+            echo json_encode(['error' => 'Aucun tarif actif trouvé pour ce véhicule'], JSON_UNESCAPED_UNICODE);
             return;
         }
 
-        $price = $tariff['base_fare']
-            + ($km * $tariff['price_per_km'])
-            + ($minutes * $tariff['price_per_minute']);
+        /*
+         * Calcul provisoire basé sur les tarifs DB.
+         * Étape suivante : remplacer distance/durée par Google Distance Matrix.
+         */
+        $estimatedKm = max(5, min(80, (int)ceil((mb_strlen($pickup) + mb_strlen($dropoff)) / 12)));
+        $estimatedMinutes = max(10, (int)ceil($estimatedKm * 2.2));
 
-        $price = max($price, $tariff['minimum_fare']);
+        $baseFare = (float)$tariff['base_fare'];
+        $pricePerKm = (float)$tariff['price_per_km'];
+        $pricePerMinute = (float)$tariff['price_per_minute'];
+        $minimumFare = (float)$tariff['minimum_fare'];
+
+        $price = $baseFare + ($estimatedKm * $pricePerKm) + ($estimatedMinutes * $pricePerMinute);
+        $price = max($price, $minimumFare);
         $price = round($price, 2);
 
         echo json_encode([
             'price' => $price,
-            'distance_meters' => $km * 1000,
-            'duration_seconds' => $minutes * 60,
-            'routing_provider' => 'tariff_engine',
+            'distance_meters' => $estimatedKm * 1000,
+            'duration_seconds' => $estimatedMinutes * 60,
+            'routing_provider' => 'booking_tariffs_local',
         ], JSON_UNESCAPED_UNICODE);
     }
+
 
 
         /*
