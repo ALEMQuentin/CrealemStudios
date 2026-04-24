@@ -134,7 +134,14 @@ trait HandlesBooking
                 exit;
             }
 
-            $this->render('Bon de réservation VTC', $this->resolveView(['modules/booking-voucher.php']), compact('booking'));
+            $chauffeur = [];
+
+            if (!empty($booking['chauffeur_id'])) {
+                $foundChauffeur = $this->findChauffeur((int)$booking['chauffeur_id']);
+                $chauffeur = $foundChauffeur ?: [];
+            }
+
+            $this->render('Bon de réservation VTC', $this->resolveView(['modules/booking-voucher.php']), compact('booking', 'chauffeur'));
             return;
         }
 

@@ -2200,3 +2200,122 @@ form.cs-admin-card textarea.form-control::placeholder {
     }
 }
 
+
+/* ===== Regulatory VTC voucher ===== */
+.vtc-voucher {
+    max-width: 860px;
+    margin: 0 auto;
+    background: #ffffff;
+    border: 2px solid #a3a3a3;
+    color: #1f2937;
+    font-size: 16px;
+}
+
+.vtc-voucher-header {
+    padding: 24px 28px;
+    border-bottom: 2px solid #a3a3a3;
+}
+
+.vtc-voucher-header h1 {
+    margin: 0 0 8px;
+    font-size: 30px;
+    color: #111827;
+    text-transform: uppercase;
+}
+
+.vtc-voucher-header p {
+    margin: 0;
+    color: #4b5563;
+    font-weight: 600;
+}
+
+.vtc-voucher-section {
+    padding: 22px 28px;
+    border-bottom: 2px solid #a3a3a3;
+}
+
+.vtc-voucher-section:last-child {
+    border-bottom: 0;
+}
+
+.vtc-voucher-section h2 {
+    margin: 0 0 18px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid #d4d4d4;
+    color: #000;
+    font-size: 24px;
+    font-weight: 900;
+}
+
+.vtc-voucher-row {
+    display: grid;
+    grid-template-columns: 260px 1fr;
+    gap: 20px;
+    padding: 10px 0;
+    border-bottom: 2px dashed #d4d4d4;
+}
+
+.vtc-voucher-row:last-child {
+    border-bottom: 0;
+}
+
+.vtc-voucher-row strong {
+    color: #525252;
+    font-size: 18px;
+    font-weight: 900;
+}
+
+.vtc-voucher-row span {
+    color: #525252;
+    font-size: 18px;
+}
+
+.vtc-voucher-list {
+    display: grid;
+    gap: 10px;
+    color: #525252;
+    font-size: 18px;
+}
+
+.vtc-voucher-list div {
+    padding-bottom: 8px;
+    border-bottom: 2px dashed #d4d4d4;
+}
+
+.vtc-voucher-section p {
+    line-height: 1.6;
+    color: #525252;
+    font-size: 16px;
+}
+
+@media print {
+    .no-print,
+    .cs-sidebar,
+    .cs-topbar,
+    .admin-sidebar,
+    .admin-topbar {
+        display: none !important;
+    }
+
+    body {
+        background: #ffffff !important;
+    }
+
+    .vtc-voucher {
+        max-width: none;
+        margin: 0;
+        border: 2px solid #000;
+    }
+
+    .vtc-voucher-section {
+        break-inside: avoid;
+    }
+}
+
+@media (max-width: 760px) {
+    .vtc-voucher-row {
+        grid-template-columns: 1fr;
+        gap: 6px;
+    }
+}
+
