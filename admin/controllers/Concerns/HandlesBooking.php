@@ -162,7 +162,8 @@ if ($action === 'create') {
             }
 
             $isEdit = true;
-            $this->render('Modifier une réservation', $this->resolveView(['modules/booking-form.php']), compact('booking', 'isEdit'));
+            $chauffeurs = $this->pdo->query("SELECT * FROM chauffeurs WHERE status = 'active' ORDER BY last_name ASC, first_name ASC")->fetchAll(\PDO::FETCH_ASSOC);
+            $this->render('Modifier une réservation', $this->resolveView(['modules/booking-form.php']), compact('booking', 'isEdit', 'chauffeurs'));
             return;
         }
 

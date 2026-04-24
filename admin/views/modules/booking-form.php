@@ -12,6 +12,7 @@ function booking_field(array $booking, string $key, mixed $default = ''): string
 $status = (string)($booking['status'] ?? 'a_confirmer');
 $payment = (string)($booking['payment_method'] ?? '');
 $vehicle = (string)($booking['vehicle_type'] ?? '');
+$chauffeurs = $chauffeurs ?? [];
 $googleConfigPath = dirname(__DIR__, 3) . '/config/google.local.php';
 $googleMapsKey = file_exists($googleConfigPath) ? (string)((require $googleConfigPath)['maps_api_key'] ?? '') : '';
 ?>
@@ -154,6 +155,26 @@ $googleMapsKey = file_exists($googleConfigPath) ? (string)((require $googleConfi
             <div class="booking-field"><label>Date et heure de prise en charge</label><input class="booking-input" type="datetime-local" name="pickup_datetime" id="pickup_datetime" data-conditional-required="1" value="<?= booking_field($booking, 'pickup_datetime') ?>"></div>
             <div class="booking-field"><label>Nombre de passagers</label><input class="booking-input" type="number" min="1" name="passengers" id="passengers" value="<?= (int)($booking['passengers'] ?? 1) ?>"></div>
             <div class="booking-field"><label>Véhicule</label><select class="booking-select" name="vehicle_type" id="vehicle_type" data-conditional-required="1"><option value="">Choisir</option><option value="berline" <?= $vehicle === 'berline' ? 'selected' : '' ?>>Berline</option><option value="van" <?= $vehicle === 'van' ? 'selected' : '' ?>>Van</option><option value="business" <?= $vehicle === 'business' ? 'selected' : '' ?>>Business</option></select></div>
+
+            <div class="booking-field">
+                <label>Chauffeur assigné</label>
+                <select class="booking-select" name="chauffeur_id" id="chauffeur_id">
+                    <option value="">Non assigné</option>
+                    <?php foreach ($chauffeurs as $chauffeur): ?>
+                        <?php $chauffeurLabel = trim((string)($chauffeur['first_name'] ?? '') . ' ' . (string)($chauffeur['last_name'] ?? '')); ?>
+                        <option value="<?= (int)$chauffeur['id'] ?>" <?= (int)($booking['chauffeur_id'] ?? 0) === (int)$chauffeur['id'] ? 'selected' : '' ?>>
+                            <?= htmlspecialchars($chauffeurLabel, ENT_QUOTES, 'UTF-8') ?>
+                            <?php if (!empty($chauffeur['vehicle_label'])): ?>
+                                · <?= htmlspecialchars((string)$chauffeur['vehicle_label'], ENT_QUOTES, 'UTF-8') ?>
+                            <?php endif; ?>
+                            <?php if (!empty($chauffeur['vehicle_plate'])): ?>
+                                · <?= htmlspecialchars((string)$chauffeur['vehicle_plate'], ENT_QUOTES, 'UTF-8') ?>
+                            <?php endif; ?>
+                        </option>
+                    <?php endforeach; ?>
+                </select>
+            </div>
+
             <div class="booking-field"><label>Prix (€)</label><input class="booking-input" type="number" min="0" step="0.01" name="price" id="price" value="<?= booking_field($booking, 'price') ?>" readonly></div>
         </div>
 
