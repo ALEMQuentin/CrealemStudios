@@ -1933,3 +1933,28 @@ form.cs-admin-card textarea.form-control::placeholder {
     }
 }
 
+
+.booking-stop {
+    margin-bottom: 12px;
+}
+
+.booking-stop-row {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+
+.booking-stop-row input {
+    flex: 1;
+}
+
+.booking-stop-row button {
+    border: none;
+    background: #ef4444;
+    color: white;
+    border-radius: 10px;
+    width: 36px;
+    height: 36px;
+    cursor: pointer;
+}
+
