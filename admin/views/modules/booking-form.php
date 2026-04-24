@@ -199,7 +199,15 @@ const tabs=[...document.querySelectorAll('[data-step-button]')];
 function showStep(step){panels.forEach(p=>p.classList.toggle('is-active',p.dataset.stepPanel===String(step)));tabs.forEach(t=>t.classList.toggle('is-active',t.dataset.stepButton===String(step)));}
 function value(id){return document.getElementById(id)?.value?.trim()||'';}
 function requireValue(id,msg){const f=document.getElementById(id);if(!f||!f.value.trim()){alert(msg);if(f)f.focus();return false;}return true;}
-function syncClientName(){document.getElementById('client_name').value=(value('client_first_name')+' '+value('client_last_name')).trim();}
+function syncClientName(){
+    const first = value('client_first_name');
+    const last = value('client_last_name');
+    const full = (first + ' ' + last).trim();
+
+    if (full !== '') {
+        document.getElementById('client_name').value = full;
+    }
+}
 function toggleClientMode(){const mode=document.querySelector('input[name="client_mode"]:checked')?.value||'existing';document.getElementById('existing-client-block').style.display=mode==='existing'?'block':'none';document.getElementById('new-client-block').style.display=mode==='new'?'block':'none';if(mode==='new'){document.getElementById('client_id').value='';}}
 document.querySelectorAll('input[name="client_mode"]').forEach(i=>i.addEventListener('change',toggleClientMode));
 ['client_first_name','client_last_name'].forEach(id=>document.getElementById(id)?.addEventListener('input',syncClientName));
