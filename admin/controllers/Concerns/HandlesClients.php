@@ -23,7 +23,7 @@ trait HandlesClients
 
             $stmt = $this->pdo->prepare("SELECT * FROM reservations WHERE client_id = :id ORDER BY id DESC");
             $stmt->execute(['id' => $id]);
-            $reservations = $stmt->fetchAll(PDO::FETCH_ASSOC);
+            $reservations = $stmt->fetchAll(\PDO::FETCH_ASSOC);
 
             $this->render('Fiche client', $this->resolveView(['modules/clients-show.php']), compact('client','reservations'));
             return;

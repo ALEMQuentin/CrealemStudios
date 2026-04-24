@@ -16,7 +16,7 @@ trait HandlesBooking
     private function handleBooking(string $action): void
     {
         if ($action === 'tariffs') {
-            $tariffs = $this->pdo->query("SELECT * FROM booking_tariffs ORDER BY id ASC")->fetchAll(\PDO::FETCH_ASSOC);
+            $tariffs = $this->pdo->query("SELECT * FROM booking_tariffs ORDER BY id ASC")->fetchAll(\\PDO::FETCH_ASSOC);
             $this->render('Tarifs de réservation', $this->resolveView(['modules/booking-tariffs.php']), compact('tariffs'));
             return;
         }
@@ -27,7 +27,7 @@ trait HandlesBooking
         }
 
         if ($action === 'chauffeurs') {
-            $chauffeurs = $this->pdo->query("SELECT * FROM chauffeurs ORDER BY last_name ASC, first_name ASC")->fetchAll(\PDO::FETCH_ASSOC);
+            $chauffeurs = $this->pdo->query("SELECT * FROM chauffeurs ORDER BY last_name ASC, first_name ASC")->fetchAll(\\PDO::FETCH_ASSOC);
             $this->render('Chauffeurs', $this->resolveView(['modules/booking-chauffeurs-list.php']), compact('chauffeurs'));
             return;
         }
@@ -42,7 +42,7 @@ trait HandlesBooking
 
             $stmt = $this->pdo->prepare("SELECT * FROM reservations WHERE chauffeur_id = :id ORDER BY id DESC");
             $stmt->execute(['id' => $id]);
-            $reservations = $stmt->fetchAll(PDO::FETCH_ASSOC);
+            $reservations = $stmt->fetchAll(\PDO::FETCH_ASSOC);
 
             $this->render('Historique chauffeur', $this->resolveView(['modules/booking-chauffeur-history.php']), compact('chauffeur','reservations'));
             return;
@@ -59,7 +59,7 @@ if ($action === 'chauffeur_documents') {
 
             $stmt = $this->pdo->prepare("SELECT * FROM chauffeur_documents WHERE chauffeur_id = :chauffeur_id ORDER BY created_at DESC, id DESC");
             $stmt->execute(['chauffeur_id' => $id]);
-            $documents = $stmt->fetchAll(\PDO::FETCH_ASSOC);
+            $documents = $stmt->fetchAll(\\PDO::FETCH_ASSOC);
 
             $this->render('Documents chauffeur', $this->resolveView(['modules/booking-chauffeur-documents.php']), compact('chauffeur', 'documents'));
             return;
@@ -195,7 +195,7 @@ if ($action === 'create') {
             }
 
             $isEdit = true;
-            $chauffeurs = $this->pdo->query("SELECT * FROM chauffeurs WHERE status = 'active' ORDER BY last_name ASC, first_name ASC")->fetchAll(\PDO::FETCH_ASSOC);
+            $chauffeurs = $this->pdo->query("SELECT * FROM chauffeurs WHERE status = 'active' ORDER BY last_name ASC, first_name ASC")->fetchAll(\\PDO::FETCH_ASSOC);
             $this->render('Modifier une réservation', $this->resolveView(['modules/booking-form.php']), compact('booking', 'isEdit', 'chauffeurs'));
             return;
         }
@@ -326,7 +326,7 @@ if ($action === 'create') {
             $stmt = $this->pdo->query("SELECT * FROM reservations WHERE is_archived = 0 ORDER BY pickup_datetime DESC, id DESC");
         }
 
-        $bookings = $stmt->fetchAll(\PDO::FETCH_ASSOC);
+        $bookings = $stmt->fetchAll(\\PDO::FETCH_ASSOC);
 
         $this->render('Réservations', $this->resolveView(['modules/booking-list.php']), compact('bookings'));
     }
@@ -420,7 +420,7 @@ if ($action === 'create') {
         $stmt = $this->pdo->prepare("SELECT * FROM reservations WHERE id = :id");
         $stmt->execute(['id' => $id]);
 
-        $booking = $stmt->fetch(\PDO::FETCH_ASSOC);
+        $booking = $stmt->fetch(\\PDO::FETCH_ASSOC);
 
         return $booking ?: null;
     }
@@ -454,7 +454,7 @@ if ($action === 'create') {
 
         $existing = $this->pdo->prepare("SELECT id FROM clients WHERE phone = :phone LIMIT 1");
         $existing->execute(['phone' => $phone]);
-        $row = $existing->fetch(\PDO::FETCH_ASSOC);
+        $row = $existing->fetch(\\PDO::FETCH_ASSOC);
 
         if ($row) {
             return (int)$row['id'];
@@ -549,7 +549,7 @@ if ($action === 'create') {
             'q' => '%' . $q . '%',
         ]);
 
-        $rows = $stmt->fetchAll(\PDO::FETCH_ASSOC);
+        $rows = $stmt->fetchAll(\\PDO::FETCH_ASSOC);
 
         $clients = array_map(static function (array $row): array {
             $name = trim((string)($row['first_name'] ?? '') . ' ' . (string)($row['last_name'] ?? ''));
@@ -646,7 +646,7 @@ if ($action === 'create') {
             'vehicle_type' => $vehicle !== '' ? $vehicle : 'berline',
         ]);
 
-        $tariff = $stmt->fetch(\PDO::FETCH_ASSOC);
+        $tariff = $stmt->fetch(\\PDO::FETCH_ASSOC);
 
         if (!$tariff) {
             http_response_code(422);
@@ -794,7 +794,7 @@ if ($action === 'create') {
     {
         $stmt = $this->pdo->prepare("SELECT * FROM chauffeur_documents WHERE id = :id");
         $stmt->execute(['id' => $documentId]);
-        $document = $stmt->fetch(\PDO::FETCH_ASSOC);
+        $document = $stmt->fetch(\\PDO::FETCH_ASSOC);
 
         if (!$document) {
             return;
@@ -831,7 +831,7 @@ if ($action === 'create') {
         $stmt = $this->pdo->prepare("SELECT * FROM chauffeurs WHERE id = :id");
         $stmt->execute(['id' => $id]);
 
-        $chauffeur = $stmt->fetch(\PDO::FETCH_ASSOC);
+        $chauffeur = $stmt->fetch(\\PDO::FETCH_ASSOC);
 
         return $chauffeur ?: null;
     }
