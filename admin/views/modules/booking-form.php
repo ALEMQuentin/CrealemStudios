@@ -103,8 +103,8 @@ $googleMapsKey = file_exists($googleConfigPath) ? (string)((require $googleConfi
             <div class="booking-grid">
                 <div class="booking-field"><label>Prénom</label><input class="booking-input" name="client_first_name" id="client_first_name"></div>
                 <div class="booking-field"><label>Nom</label><input class="booking-input" name="client_last_name" id="client_last_name"></div>
-                <div class="booking-field"><label>Téléphone</label><input class="booking-input" name="client_phone" id="client_phone"></div>
-                <div class="booking-field"><label>Email</label><input class="booking-input" type="email" name="client_email" id="client_email"></div>
+                <div class="booking-field"><label>Téléphone</label><input class="booking-input" name="client_phone" id="client_phone" value="<?= booking_field($booking, 'client_phone') ?>"></div>
+                <div class="booking-field"><label>Email</label><input class="booking-input" type="email" name="client_email" id="client_email" value="<?= booking_field($booking, 'client_email') ?>"></div>
                 <div class="booking-field"><label>Entreprise</label><input class="booking-input" name="client_company" id="client_company"></div>
                 <div class="booking-field"><label>Adresse domicile</label><input class="booking-input google-address-input" name="client_home_address" id="client_home_address" autocomplete="off"></div>
             </div>

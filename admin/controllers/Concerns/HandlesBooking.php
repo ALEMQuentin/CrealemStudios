@@ -192,6 +192,22 @@ trait HandlesBooking
         $dropoffAddress = trim((string)($_POST['dropoff_address'] ?? ''));
         $pickupDatetime = trim((string)($_POST['pickup_datetime'] ?? ''));
 
+        $editId = (int)($_GET['id'] ?? 0);
+
+        if ($editId > 0 && ($clientName === '' || $clientPhone === '')) {
+            $existingReservation = $this->findReservation($editId);
+
+            if ($existingReservation) {
+                if ($clientName === '') {
+                    $clientName = trim((string)($existingReservation['client_name'] ?? ''));
+                }
+
+                if ($clientPhone === '') {
+                    $clientPhone = trim((string)($existingReservation['client_phone'] ?? ''));
+                }
+            }
+        }
+
         if ($clientName === '' || $clientPhone === '' || $pickupAddress === '' || $dropoffAddress === '' || $pickupDatetime === '') {
             redirectTo('/admin.php?module=booking&error=Champs obligatoires manquants');
         }
