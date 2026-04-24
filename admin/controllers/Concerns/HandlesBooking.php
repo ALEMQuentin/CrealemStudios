@@ -125,6 +125,22 @@ trait HandlesBooking
         }
 
         
+        if ($action === 'invoice') {
+            $id = (int)($_GET['id'] ?? 0);
+            $booking = $this->findReservation($id);
+
+            if (!$booking) {
+                redirectTo('/admin.php?module=booking&error=Réservation introuvable');
+            }
+
+            if (($booking['status'] ?? '') !== 'terminee') {
+                redirectTo('/admin.php?module=booking&error=La facture est disponible uniquement pour une course terminée');
+            }
+
+            $this->render('Facture', $this->resolveView(['modules/booking-invoice.php']), compact('booking'));
+            return;
+        }
+
         if ($action === 'voucher') {
             $id = (int)($_GET['id'] ?? 0);
             $booking = $this->findReservation($id);

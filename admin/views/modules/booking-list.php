@@ -96,6 +96,12 @@
                                 Bon VTC
                             </a>
 
+                            <?php if (($booking['status'] ?? '') === 'terminee'): ?>
+                                <a class="btn btn-sm btn-outline-secondary" href="/admin.php?module=booking&action=invoice&id=<?= (int)$booking['id'] ?>">
+                                    Facture
+                                </a>
+                            <?php endif; ?>
+
                             <a class="btn btn-sm btn-outline-secondary" href="/admin.php?module=booking&action=edit&id=<?= (int)$booking['id'] ?>">
                                 Modifier
                             </a>
