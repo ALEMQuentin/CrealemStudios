@@ -4,9 +4,10 @@
         <p>Gestion des demandes clients, paiements et informations de course.</p>
     </div>
 
-    <a class="btn btn-primary" href="/admin.php?module=booking&action=create">
-        Nouvelle réservation
-    </a>
+    <div style="display:flex; gap:8px; flex-wrap:wrap;">
+        <a class="btn btn-outline-secondary" href="/admin.php?module=booking&action=tariffs">Tarifs</a>
+        <a class="btn btn-primary" href="/admin.php?module=booking&action=create">Nouvelle réservation</a>
+    </div>
 </div>
 
 <div class="cs-admin-card">

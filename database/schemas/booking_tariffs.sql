@@ -12,8 +12,16 @@ CREATE TABLE IF NOT EXISTS booking_tariffs (
     updated_at TEXT DEFAULT NULL
 );
 
-INSERT OR IGNORE INTO booking_tariffs (vehicle_type, label, base_fare, price_per_km, price_per_minute, minimum_fare, night_multiplier)
-VALUES
-('berline', 'Berline', 12, 1.80, 0.30, 12, 1.30),
-('van', 'Van', 18, 2.20, 0.40, 18, 1.30),
-('business', 'Business', 15, 2.00, 0.35, 15, 1.30);
+INSERT OR IGNORE INTO booking_tariffs (
+    vehicle_type,
+    label,
+    base_fare,
+    price_per_km,
+    price_per_minute,
+    minimum_fare,
+    night_multiplier,
+    is_active
+) VALUES
+('berline', 'Berline', 12, 1.80, 0.30, 12, 1.30, 1),
+('van', 'Van', 18, 2.20, 0.40, 18, 1.30, 1),
+('business', 'Business', 15, 2.00, 0.35, 15, 1.30, 1);

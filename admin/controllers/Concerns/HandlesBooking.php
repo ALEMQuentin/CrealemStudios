@@ -15,6 +15,17 @@ trait HandlesBooking
 
     private function handleBooking(string $action): void
     {
+        if ($action === 'tariffs') {
+            $tariffs = $this->pdo->query("SELECT * FROM booking_tariffs ORDER BY id ASC")->fetchAll(\PDO::FETCH_ASSOC);
+            $this->render('Tarifs de réservation', $this->resolveView(['modules/booking-tariffs.php']), compact('tariffs'));
+            return;
+        }
+
+        if ($action === 'save_tariffs' && $_SERVER['REQUEST_METHOD'] === 'POST') {
+            $this->saveBookingTariffs();
+            redirectTo('/admin.php?module=booking&action=tariffs&success=Tarifs enregistrés');
+        }
+
         if ($action === 'client_search') {
             $this->bookingClientSearch();
             return;
@@ -452,5 +463,41 @@ trait HandlesBooking
          * Sans API cartographique branchée dans CrealemStudios, on ne peut pas calculer une vraie distance routière.
          * On produit donc une estimation structurée, remplaçable ensuite par Google Maps / OSRM / autre provider.
          */
+
+    private function saveBookingTariffs(): void
+    {
+        $tariffs = $_POST['tariffs'] ?? [];
+
+        foreach ($tariffs as $row) {
+            $id = (int)($row['id'] ?? 0);
+
+            if ($id <= 0) {
+                continue;
+            }
+
+            $stmt = $this->pdo->prepare("
+                UPDATE booking_tariffs SET
+                    base_fare = :base_fare,
+                    price_per_km = :price_per_km,
+                    price_per_minute = :price_per_minute,
+                    minimum_fare = :minimum_fare,
+                    night_multiplier = :night_multiplier,
+                    is_active = :is_active,
+                    updated_at = CURRENT_TIMESTAMP
+                WHERE id = :id
+            ");
+
+            $stmt->execute([
+                'base_fare' => (float)str_replace(',', '.', (string)($row['base_fare'] ?? 0)),
+                'price_per_km' => (float)str_replace(',', '.', (string)($row['price_per_km'] ?? 0)),
+                'price_per_minute' => (float)str_replace(',', '.', (string)($row['price_per_minute'] ?? 0)),
+                'minimum_fare' => (float)str_replace(',', '.', (string)($row['minimum_fare'] ?? 0)),
+                'night_multiplier' => (float)str_replace(',', '.', (string)($row['night_multiplier'] ?? 1)),
+                'is_active' => (int)($row['is_active'] ?? 0),
+                'id' => $id,
+            ]);
+        }
+    }
+
 
 }
