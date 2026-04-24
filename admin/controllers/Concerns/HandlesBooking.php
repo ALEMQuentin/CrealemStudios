@@ -32,6 +32,59 @@ trait HandlesBooking
             return;
         }
 
+        if ($action === 'chauffeur_documents') {
+            $id = (int)($_GET['id'] ?? 0);
+            $chauffeur = $this->findChauffeur($id);
+
+            if (!$chauffeur) {
+                redirectTo('/admin.php?module=booking&action=chauffeurs&error=Chauffeur introuvable');
+            }
+
+            $stmt = $this->pdo->prepare("SELECT * FROM chauffeur_documents WHERE chauffeur_id = :chauffeur_id ORDER BY created_at DESC, id DESC");
+            $stmt->execute(['chauffeur_id' => $id]);
+            $documents = $stmt->fetchAll(\PDO::FETCH_ASSOC);
+
+            $this->render('Documents chauffeur', $this->resolveView(['modules/booking-chauffeur-documents.php']), compact('chauffeur', 'documents'));
+            return;
+        }
+
+        if ($action === 'chauffeur_document_upload' && $_SERVER['REQUEST_METHOD'] === 'POST') {
+            $this->uploadChauffeurDocument((int)($_GET['id'] ?? 0));
+            redirectTo('/admin.php?module=booking&action=chauffeur_documents&id=' . (int)($_GET['id'] ?? 0) . '&success=Document ajouté');
+        }
+
+        if ($action === 'chauffeur_document_validate') {
+            $documentId = (int)($_GET['id'] ?? 0);
+            $chauffeurId = (int)($_GET['chauffeur_id'] ?? 0);
+
+            $this->pdo->prepare("UPDATE chauffeur_documents SET status = 'valide', validation_note = NULL, validated_at = CURRENT_TIMESTAMP, updated_at = CURRENT_TIMESTAMP WHERE id = :id")
+                ->execute(['id' => $documentId]);
+
+            redirectTo('/admin.php?module=booking&action=chauffeur_documents&id=' . $chauffeurId . '&success=Document validé');
+        }
+
+        if ($action === 'chauffeur_document_reject' && $_SERVER['REQUEST_METHOD'] === 'POST') {
+            $documentId = (int)($_GET['id'] ?? 0);
+            $chauffeurId = (int)($_GET['chauffeur_id'] ?? 0);
+            $note = trim((string)($_POST['validation_note'] ?? ''));
+
+            $this->pdo->prepare("UPDATE chauffeur_documents SET status = 'refuse', validation_note = :note, validated_at = NULL, updated_at = CURRENT_TIMESTAMP WHERE id = :id")
+                ->execute([
+                    'id' => $documentId,
+                    'note' => $note,
+                ]);
+
+            redirectTo('/admin.php?module=booking&action=chauffeur_documents&id=' . $chauffeurId . '&success=Document refusé');
+        }
+
+        if ($action === 'chauffeur_document_delete') {
+            $documentId = (int)($_GET['id'] ?? 0);
+            $chauffeurId = (int)($_GET['chauffeur_id'] ?? 0);
+            $this->deleteChauffeurDocument($documentId);
+
+            redirectTo('/admin.php?module=booking&action=chauffeur_documents&id=' . $chauffeurId . '&success=Document supprimé');
+        }
+
         if ($action === 'chauffeur_create') {
             $chauffeur = $this->emptyChauffeur();
             $this->render('Nouveau chauffeur', $this->resolveView(['modules/booking-chauffeur-form.php']), compact('chauffeur'));
@@ -570,6 +623,124 @@ trait HandlesBooking
          * On produit donc une estimation structurée, remplaçable ensuite par Google Maps / OSRM / autre provider.
          */
 
+
+
+    private function uploadChauffeurDocument(int $chauffeurId): void
+    {
+        $chauffeur = $this->findChauffeur($chauffeurId);
+
+        if (!$chauffeur) {
+            redirectTo('/admin.php?module=booking&action=chauffeurs&error=Chauffeur introuvable');
+        }
+
+        $documentType = trim((string)($_POST['document_type'] ?? ''));
+        $allowedTypes = [
+            'carte_vtc',
+            'permis_conduire',
+            'assurance_rc_pro',
+            'carte_grise',
+            'assurance_vehicule',
+            'controle_technique',
+        ];
+
+        if (!in_array($documentType, $allowedTypes, true)) {
+            redirectTo('/admin.php?module=booking&action=chauffeur_documents&id=' . $chauffeurId . '&error=Type de document invalide');
+        }
+
+        $file = $_FILES['document_file'] ?? null;
+
+        if (!$file || (int)($file['error'] ?? UPLOAD_ERR_NO_FILE) !== UPLOAD_ERR_OK) {
+            redirectTo('/admin.php?module=booking&action=chauffeur_documents&id=' . $chauffeurId . '&error=Upload impossible');
+        }
+
+        $tmpPath = (string)$file['tmp_name'];
+        $originalName = basename((string)$file['name']);
+        $size = (int)$file['size'];
+
+        if ($size <= 0 || $size > 10 * 1024 * 1024) {
+            redirectTo('/admin.php?module=booking&action=chauffeur_documents&id=' . $chauffeurId . '&error=Fichier trop volumineux');
+        }
+
+        $finfo = new \finfo(FILEINFO_MIME_TYPE);
+        $mime = (string)$finfo->file($tmpPath);
+
+        $extensions = [
+            'application/pdf' => 'pdf',
+            'image/jpeg' => 'jpg',
+            'image/png' => 'png',
+            'image/webp' => 'webp',
+        ];
+
+        if (!isset($extensions[$mime])) {
+            redirectTo('/admin.php?module=booking&action=chauffeur_documents&id=' . $chauffeurId . '&error=Format non autorisé');
+        }
+
+        $uploadDir = dirname(__DIR__, 3) . '/public/uploads/chauffeur_documents';
+
+        if (!is_dir($uploadDir)) {
+            mkdir($uploadDir, 0775, true);
+        }
+
+        $filename = 'chauffeur_' . $chauffeurId . '_' . $documentType . '_' . bin2hex(random_bytes(8)) . '.' . $extensions[$mime];
+        $destination = $uploadDir . '/' . $filename;
+
+        if (!move_uploaded_file($tmpPath, $destination)) {
+            redirectTo('/admin.php?module=booking&action=chauffeur_documents&id=' . $chauffeurId . '&error=Enregistrement fichier impossible');
+        }
+
+        $stmt = $this->pdo->prepare("
+            INSERT INTO chauffeur_documents (
+                chauffeur_id,
+                document_type,
+                original_name,
+                file_path,
+                mime_type,
+                size_bytes,
+                status,
+                created_at,
+                updated_at
+            ) VALUES (
+                :chauffeur_id,
+                :document_type,
+                :original_name,
+                :file_path,
+                :mime_type,
+                :size_bytes,
+                'en_attente',
+                CURRENT_TIMESTAMP,
+                CURRENT_TIMESTAMP
+            )
+        ");
+
+        $stmt->execute([
+            'chauffeur_id' => $chauffeurId,
+            'document_type' => $documentType,
+            'original_name' => $originalName,
+            'file_path' => '/uploads/chauffeur_documents/' . $filename,
+            'mime_type' => $mime,
+            'size_bytes' => $size,
+        ]);
+    }
+
+    private function deleteChauffeurDocument(int $documentId): void
+    {
+        $stmt = $this->pdo->prepare("SELECT * FROM chauffeur_documents WHERE id = :id");
+        $stmt->execute(['id' => $documentId]);
+        $document = $stmt->fetch(\PDO::FETCH_ASSOC);
+
+        if (!$document) {
+            return;
+        }
+
+        $filePath = dirname(__DIR__, 3) . '/public' . (string)$document['file_path'];
+
+        if (is_file($filePath)) {
+            unlink($filePath);
+        }
+
+        $this->pdo->prepare("DELETE FROM chauffeur_documents WHERE id = :id")
+            ->execute(['id' => $documentId]);
+    }
 
     private function emptyChauffeur(): array
     {
