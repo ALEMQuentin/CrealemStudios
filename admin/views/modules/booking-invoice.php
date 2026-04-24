@@ -1,10 +1,25 @@
 <?php
 $company = [];
 
-$stmt = $this->pdo->query("SELECT setting_key, setting_value FROM settings");
-foreach ($stmt->fetchAll(\PDO::FETCH_ASSOC) as $row) {
-    $company[$row['setting_key']] = $row['setting_value'];
+try {
+    $stmtCompany = $this->pdo->query("SELECT setting_key, setting_value FROM settings");
+    foreach ($stmtCompany->fetchAll(\PDO::FETCH_ASSOC) as $row) {
+        $company[(string)$row['setting_key']] = (string)$row['setting_value'];
+    }
+} catch (\Throwable $e) {
+    $company = [];
 }
+
+$companyName = $company['company_name'] ?? 'Entreprise non renseignée';
+$companyTradeName = $company['company_trade_name'] ?? '';
+$companyAddress = $company['company_address'] ?? 'Adresse non renseignée';
+$companySiret = $company['company_siret'] ?? '';
+$companyVat = $company['company_vat_number'] ?? '';
+$companyVtc = $company['company_vtc_register'] ?? '';
+$companyPhone = $company['company_phone'] ?? '';
+$companyEmail = $company['company_email'] ?? '';
+$companyWebsite = $company['company_website'] ?? '';
+$companyLegal = $company['company_invoice_legal'] ?? 'Facture générée depuis CréAlemStudios. Paiement selon le mode convenu lors de la réservation.';
 
 $bookingId = (int)($booking['id'] ?? 0);
 $invoiceNumber = 'FAC-' . date('Y') . '-' . str_pad((string)$bookingId, 5, '0', STR_PAD_LEFT);
@@ -119,7 +134,7 @@ Registre VTC : <?= htmlspecialchars($company['company_vtc_register']) ?>
 
     <footer class="booking-invoice-footer">
         <p>
-            <?= htmlspecialchars($company['company_invoice_legal'] ?? 'Facture générée depuis CréAlemStudios. Paiement selon le mode convenu lors de la réservation.', ENT_QUOTES, 'UTF-8') ?>
+            <?= htmlspecialchars($companyLegal, ENT_QUOTES, 'UTF-8') ?>
         </p>
     </footer>
 </div>
