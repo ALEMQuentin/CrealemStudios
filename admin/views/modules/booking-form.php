@@ -259,9 +259,121 @@ document.querySelectorAll('[data-next-step]').forEach(b=>b.addEventListener('cli
 document.querySelectorAll('[data-prev-step]').forEach(b=>b.addEventListener('click',function(){showStep(this.dataset.prevStep);}));
 let timer=null;const search=document.getElementById('client_search');const results=document.getElementById('client_results');
 search?.addEventListener('input',function(){clearTimeout(timer);const q=this.value.trim();if(q.length<2){results.innerHTML='';return;}timer=setTimeout(async()=>{const r=await fetch('/admin.php?module=booking&action=client_search&q='+encodeURIComponent(q));const clients=await r.json();results.innerHTML='';clients.forEach(c=>{const btn=document.createElement('button');btn.type='button';btn.className='booking-result';btn.innerHTML='<strong>'+(c.name||'-')+'</strong><br><small>'+(c.phone||'-')+' · '+(c.email||'-')+'</small>';btn.addEventListener('click',()=>{document.getElementById('client_id').value=c.id||'';document.getElementById('client_name').value=c.name||'';document.getElementById('client_phone').value=c.phone||'';document.getElementById('client_email').value=c.email||'';document.getElementById('selected_client_name').textContent=c.name||'-';document.getElementById('selected_client_phone').textContent=c.phone||'-';document.getElementById('selected_client_email').textContent=c.email||'-';document.getElementById('selected_client_company').textContent=c.company||'-';document.getElementById('selected_client_address').textContent=c.address||'-';document.getElementById('selected-client-card').style.display='block';search.value=c.name||'';results.innerHTML='';});results.appendChild(btn);});},250);});
-function initGoogle(){if(!('google'in window)||!google.maps||!google.maps.places)return;document.querySelectorAll('.google-address-input').forEach(input=>new google.maps.places.Autocomplete(input,{fields:['formatted_address','geometry','name'],types:['geocode']}));}
-function drawMap(quote){if(!('google'in window)||!google.maps||!quote.origin||!quote.destination)return;document.getElementById('map_card').style.display='block';if(!map){map=new google.maps.Map(document.getElementById('route-map'),{zoom:13,center:quote.origin});}if(originMarker)originMarker.setMap(null);if(destinationMarker)destinationMarker.setMap(null);if(routePolyline)routePolyline.setMap(null);originMarker=new google.maps.Marker({position:quote.origin,map:map});destinationMarker=new google.maps.Marker({position:quote.destination,map:map});if(quote.polyline&&google.maps.geometry){routePolyline=new google.maps.Polyline({path:google.maps.geometry.encoding.decodePath(quote.polyline),map:map,strokeColor:'#111827',strokeWeight:5});}const bounds=new google.maps.LatLngBounds();bounds.extend(quote.origin);bounds.extend(quote.destination);map.fitBounds(bounds);}
-document.getElementById('calculate_quote')?.addEventListener('click',async()=>{if(!requireValue('pickup_address','Renseigne l’adresse de prise en charge.'))return;if(!requireValue('dropoff_address','Renseigne l’adresse de destination.'))return;const form=new FormData();['pickup_address','dropoff_address','vehicle_type','passengers','pickup_datetime'].forEach(id=>form.append(id,value(id)));document.getElementById('quote_status').textContent='Calcul en cours...';const r=await fetch('/admin.php?module=booking&action=quote',{method:'POST',body:form});const q=await r.json();if(q.error){alert(q.error);document.getElementById('quote_status').textContent='';return;}document.getElementById('price').value=q.price||'';document.getElementById('distance_meters').value=q.distance_meters||'';document.getElementById('duration_seconds').value=q.duration_seconds||'';document.getElementById('routing_provider').value=q.routing_provider||'';document.getElementById('quote_distance').textContent=q.distance_meters?(q.distance_meters/1000).toFixed(2)+' km':'-';document.getElementById('quote_duration').textContent=q.duration_seconds?(q.duration_seconds/60).toFixed(1)+' min':'-';document.getElementById('quote_price').textContent=q.price?q.price+' €':'-';document.getElementById('quote_card').style.display='block';document.getElementById('quote_status').textContent='Devis calculé.';drawMap(q);});
+let pickupPlace = null;
+let dropoffPlace = null;
+let directionsService = null;
+let directionsRenderer = null;
+
+function initGoogle(){
+    if(!('google' in window) || !google.maps || !google.maps.places) return;
+
+    document.querySelectorAll('.google-address-input').forEach(input => {
+        const autocomplete = new google.maps.places.Autocomplete(input, {
+            fields: ['formatted_address', 'geometry', 'name'],
+            types: ['geocode']
+        });
+
+        autocomplete.addListener('place_changed', function () {
+            const place = autocomplete.getPlace();
+
+            if (place && place.formatted_address) {
+                input.value = place.formatted_address;
+            }
+
+            if (input.id === 'pickup_address') {
+                pickupPlace = place || null;
+            }
+
+            if (input.id === 'dropoff_address') {
+                dropoffPlace = place || null;
+            }
+
+            if (value('pickup_address') && value('dropoff_address')) {
+                calculateQuote(false);
+            }
+        });
+    });
+
+    directionsService = new google.maps.DirectionsService();
+
+    const mapElement = document.getElementById('route-map');
+    if (mapElement) {
+        map = new google.maps.Map(mapElement, {
+            zoom: 11,
+            center: { lat: 48.6921, lng: 6.1844 }
+        });
+
+        directionsRenderer = new google.maps.DirectionsRenderer({
+            map: map,
+            suppressMarkers: false,
+            preserveViewport: false
+        });
+    }
+}
+function drawMap(){
+    if (!('google' in window) || !google.maps || !directionsService || !directionsRenderer) return;
+    if (!value('pickup_address') || !value('dropoff_address')) return;
+
+    document.getElementById('map_card').style.display = 'block';
+
+    directionsService.route({
+        origin: value('pickup_address'),
+        destination: value('dropoff_address'),
+        travelMode: google.maps.TravelMode.DRIVING
+    }, function(result, status) {
+        if (status === 'OK') {
+            directionsRenderer.setDirections(result);
+        }
+    });
+}
+async function calculateQuote(showAlerts = true){
+    if(!requireValue('pickup_address','Renseigne l’adresse de prise en charge.')) return;
+    if(!requireValue('dropoff_address','Renseigne l’adresse de destination.')) return;
+
+    const form = new FormData();
+    ['pickup_address','dropoff_address','vehicle_type','passengers','pickup_datetime'].forEach(id => form.append(id, value(id)));
+
+    document.getElementById('quote_status').textContent = 'Calcul en cours...';
+
+    const r = await fetch('/admin.php?module=booking&action=quote', {
+        method: 'POST',
+        body: form
+    });
+
+    const q = await r.json();
+
+    if(q.error){
+        if (showAlerts) alert(q.error);
+        document.getElementById('quote_status').textContent = '';
+        return;
+    }
+
+    document.getElementById('price').value = q.price || '';
+    document.getElementById('distance_meters').value = q.distance_meters || '';
+    document.getElementById('duration_seconds').value = q.duration_seconds || '';
+    document.getElementById('routing_provider').value = q.routing_provider || '';
+
+    document.getElementById('quote_distance').textContent = q.distance_meters ? (q.distance_meters / 1000).toFixed(2) + ' km' : '-';
+    document.getElementById('quote_duration').textContent = q.duration_seconds ? (q.duration_seconds / 60).toFixed(1) + ' min' : '-';
+    document.getElementById('quote_price').textContent = q.price ? q.price + ' €' : '-';
+
+    document.getElementById('quote_card').style.display = 'block';
+    document.getElementById('quote_status').textContent = 'Devis calculé.';
+
+    drawMap();
+}
+
+document.getElementById('calculate_quote')?.addEventListener('click', function () {
+    calculateQuote(true);
+});
+
+['pickup_address','dropoff_address','vehicle_type','passengers','pickup_datetime'].forEach(id => {
+    document.getElementById(id)?.addEventListener('change', function () {
+        if (value('pickup_address') && value('dropoff_address')) {
+            calculateQuote(false);
+        }
+    });
+});
 document.getElementById('booking-form')?.addEventListener('submit',e=>{syncClientName();if(!requireValue('pickup_address','Renseigne l’adresse de prise en charge.')){e.preventDefault();showStep(3);return;}if(!requireValue('dropoff_address','Renseigne l’adresse de destination.')){e.preventDefault();showStep(3);return;}if(!requireValue('pickup_datetime','Renseigne la date et l’heure de prise en charge.')){e.preventDefault();showStep(3);}});
 toggleClientMode();initGoogle();<?php if ($isEdit): ?>showStep(3);<?php else: ?>showStep(1);<?php endif; ?>
 })();
