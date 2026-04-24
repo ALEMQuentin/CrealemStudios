@@ -1691,3 +1691,72 @@ textarea:focus {
     font-weight: 700;
 }
 
+
+/* ===== Admin form layout correction ===== */
+.cs-admin-card form,
+form.cs-admin-card {
+    padding: 24px;
+}
+
+form.cs-admin-card > div {
+    margin-bottom: 18px;
+}
+
+form.cs-admin-card label,
+.cs-admin-card label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 700;
+    color: #1f2937;
+}
+
+form.cs-admin-card input,
+form.cs-admin-card select,
+form.cs-admin-card textarea,
+.cs-admin-card .form-control {
+    display: block;
+    width: 100%;
+    min-height: 46px;
+    padding: 12px 14px;
+    background: #ffffff;
+    color: #111827;
+    border: 1px solid #d8e0e8;
+    border-radius: 12px;
+    font-size: 15px;
+    line-height: 1.4;
+}
+
+form.cs-admin-card textarea,
+.cs-admin-card textarea.form-control {
+    min-height: 140px;
+    padding-top: 12px;
+}
+
+form.cs-admin-card input[type="file"] {
+    padding: 10px 12px;
+}
+
+form.cs-admin-card input:focus,
+form.cs-admin-card select:focus,
+form.cs-admin-card textarea:focus,
+.cs-admin-card .form-control:focus {
+    outline: none;
+    border-color: var(--cs-primary);
+    box-shadow: 0 0 0 4px rgba(47, 111, 87, 0.12);
+}
+
+form.cs-admin-card button,
+form.cs-admin-card .btn {
+    min-height: 42px;
+    padding: 10px 16px;
+    border-radius: 12px;
+}
+
+.cs-admin-page-header {
+    margin-bottom: 22px;
+}
+
+.cs-admin-page-header h1 {
+    margin-bottom: 8px;
+}
+
