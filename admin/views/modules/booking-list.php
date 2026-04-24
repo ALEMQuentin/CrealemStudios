@@ -93,6 +93,10 @@
                     <td>
                         <div style="display:flex; flex-wrap:wrap; gap:6px;">
                             <a class="btn btn-sm btn-outline-secondary" href="/admin.php?module=booking&action=voucher&id=<?= (int)$booking['id'] ?>">
+                                Bon VTC
+                            </a>
+
+                            <a class="btn btn-sm btn-outline-secondary" href="/admin.php?module=booking&action=edit&id=<?= (int)$booking['id'] ?>">
                                 Modifier
                             </a>
 
