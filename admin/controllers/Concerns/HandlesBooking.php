@@ -49,12 +49,14 @@ trait HandlesBooking
         if ($action === 'save' && $_SERVER['REQUEST_METHOD'] === 'POST') {
             $id = (int)($_GET['id'] ?? 0);
             $data = $this->reservationPayload();
+            $data['client_id'] = $this->ensureReservationClient($data);
 
             if ($id > 0) {
                 $data['id'] = $id;
 
                 $stmt = $this->pdo->prepare("
                     UPDATE reservations SET
+                        client_id = :client_id,
                         client_name = :client_name,
                         client_phone = :client_phone,
                         client_email = :client_email,
@@ -80,6 +82,7 @@ trait HandlesBooking
             } else {
                 $stmt = $this->pdo->prepare("
                     INSERT INTO reservations (
+                        client_id,
                         client_name,
                         client_phone,
                         client_email,
@@ -101,6 +104,7 @@ trait HandlesBooking
                         created_at,
                         updated_at
                     ) VALUES (
+                        :client_id,
                         :client_name,
                         :client_phone,
                         :client_email,
@@ -187,6 +191,7 @@ trait HandlesBooking
         }
 
         return [
+            'client_id' => max(0, (int)($_POST['client_id'] ?? 0)) ?: null,
             'client_name' => $clientName,
             'client_phone' => $clientPhone,
             'client_email' => $this->nullableReservationString($_POST['client_email'] ?? null),
@@ -211,6 +216,7 @@ trait HandlesBooking
     {
         return [
             'id' => null,
+            'client_id' => null,
             'client_name' => '',
             'client_phone' => '',
             'client_email' => '',
@@ -240,6 +246,78 @@ trait HandlesBooking
         $booking = $stmt->fetch(\PDO::FETCH_ASSOC);
 
         return $booking ?: null;
+    }
+
+
+    private function ensureReservationClient(array $data): ?int
+    {
+        $existingId = (int)($data['client_id'] ?? 0);
+
+        if ($existingId > 0) {
+            return $existingId;
+        }
+
+        $firstName = trim((string)($_POST['client_first_name'] ?? ''));
+        $lastName = trim((string)($_POST['client_last_name'] ?? ''));
+        $phone = trim((string)($data['client_phone'] ?? ''));
+        $email = trim((string)($data['client_email'] ?? ''));
+        $company = trim((string)($_POST['client_company'] ?? ''));
+        $homeAddress = trim((string)($_POST['client_home_address'] ?? ''));
+
+        if ($firstName === '' && $lastName === '') {
+            $fullName = trim((string)($data['client_name'] ?? ''));
+            $parts = preg_split('/\s+/', $fullName);
+            $firstName = array_shift($parts) ?: $fullName;
+            $lastName = trim(implode(' ', $parts));
+        }
+
+        if ($phone === '') {
+            return null;
+        }
+
+        $existing = $this->pdo->prepare("SELECT id FROM clients WHERE phone = :phone LIMIT 1");
+        $existing->execute(['phone' => $phone]);
+        $row = $existing->fetch(\PDO::FETCH_ASSOC);
+
+        if ($row) {
+            return (int)$row['id'];
+        }
+
+        $stmt = $this->pdo->prepare("
+            INSERT INTO clients (
+                first_name,
+                last_name,
+                email,
+                phone,
+                company,
+                home_address,
+                notes,
+                created_at,
+                updated_at
+            ) VALUES (
+                :first_name,
+                :last_name,
+                :email,
+                :phone,
+                :company,
+                :home_address,
+                :notes,
+                CURRENT_TIMESTAMP,
+                CURRENT_TIMESTAMP
+            )
+        ");
+
+        $stmt->execute([
+            'first_name' => $firstName,
+            'last_name' => $lastName,
+            'email' => $email,
+            'phone' => $phone,
+            'company' => $company,
+            'home_address' => $homeAddress,
+            'notes' => 'Client créé depuis une réservation.',
+        ]);
+
+        return (int)$this->pdo->lastInsertId();
     }
 
     private function nullableReservationString(mixed $value): ?string
