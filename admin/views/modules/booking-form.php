@@ -146,6 +146,16 @@ $googleMapsKey = file_exists($googleConfigPath) ? (string)((require $googleConfi
             <div class="booking-field"><label>Prix (€)</label><input class="booking-input" type="number" min="0" step="0.01" name="price" id="price" value="<?= booking_field($booking, 'price') ?>" readonly></div>
         </div>
 
+        
+        <div class="booking-field booking-full">
+            <label>Arrêts intermédiaires</label>
+            <div id="stops-container"></div>
+
+            <button type="button" class="booking-btn-outline" id="add-stop">
+                + Ajouter un arrêt
+            </button>
+        </div>
+
         <div class="booking-field"><label>Commentaire</label><textarea class="booking-textarea" name="customer_note" placeholder="Détails complémentaires"><?= booking_field($booking, 'customer_note') ?></textarea></div>
 
         <div class="booking-actions">
@@ -310,15 +320,28 @@ function initGoogle(){
         });
     }
 }
+function getStopValues(){
+    return Array.from(document.querySelectorAll('.stop-input'))
+        .map(input => input.value.trim())
+        .filter(value => value !== '');
+}
+
 function drawMap(){
     if (!('google' in window) || !google.maps || !directionsService || !directionsRenderer) return;
     if (!value('pickup_address') || !value('dropoff_address')) return;
 
     document.getElementById('map_card').style.display = 'block';
 
+    const waypoints = getStopValues().map(address => ({
+        location: address,
+        stopover: true
+    }));
+
     directionsService.route({
         origin: value('pickup_address'),
         destination: value('dropoff_address'),
+        waypoints: waypoints,
+        optimizeWaypoints: false,
         travelMode: google.maps.TravelMode.DRIVING
     }, function(result, status) {
         if (status === 'OK') {
@@ -374,16 +397,53 @@ document.getElementById('calculate_quote')?.addEventListener('click', function (
         }
     });
 });
+
+document.getElementById('add-stop')?.addEventListener('click', function(){
+    const container = document.getElementById('stops-container');
+    const index = container.querySelectorAll('.booking-stop').length + 1;
+
+    const row = document.createElement('div');
+    row.className = 'booking-stop';
+    row.innerHTML = `
+        <div class="booking-stop-row">
+            <input type="text" name="stops[]" class="booking-input stop-input google-address-input" placeholder="Adresse arrêt ${index}" autocomplete="off">
+            <button type="button" class="remove-stop">✕</button>
+        </div>
+    `;
+
+    container.appendChild(row);
+
+    row.querySelector('.remove-stop').addEventListener('click', function(){
+        row.remove();
+        if (value('pickup_address') && value('dropoff_address')) {
+            calculateQuote(false);
+        }
+    });
+
+    if ('google' in window && google.maps && google.maps.places) {
+        const input = row.querySelector('.stop-input');
+        const autocomplete = new google.maps.places.Autocomplete(input, {
+            fields: ['formatted_address', 'geometry', 'name'],
+            types: ['geocode']
+        });
+
+        autocomplete.addListener('place_changed', function(){
+            const place = autocomplete.getPlace();
+            if (place && place.formatted_address) {
+                input.value = place.formatted_address;
+            }
+
+            if (value('pickup_address') && value('dropoff_address')) {
+                calculateQuote(false);
+            }
+        });
+    }
+});
+
 document.getElementById('booking-form')?.addEventListener('submit',e=>{syncClientName();if(!requireValue('pickup_address','Renseigne l’adresse de prise en charge.')){e.preventDefault();showStep(3);return;}if(!requireValue('dropoff_address','Renseigne l’adresse de destination.')){e.preventDefault();showStep(3);return;}if(!requireValue('pickup_datetime','Renseigne la date et l’heure de prise en charge.')){e.preventDefault();showStep(3);}});
 toggleClientMode();initGoogle();<?php if ($isEdit): ?>showStep(3);<?php else: ?>showStep(1);<?php endif; ?>
 })();
 </script>
-
-<!-- Stops -->
-<div class="booking-field booking-full">
-    <label>Arrêts intermédiaires</label>
-
-    <div id="stops-container"></div>
 
     <button type="button" class="booking-btn-outline" id="add-stop">
         + Ajouter un arrêt
