@@ -272,44 +272,42 @@ trait HandlesBooking
         header('Content-Type: application/json; charset=utf-8');
 
         $q = trim((string)($_GET['q'] ?? ''));
+
         if ($q === '' || mb_strlen($q) < 2) {
             echo json_encode([]);
             return;
         }
 
-        $tables = ['clients', 'customers'];
-        $rows = [];
+        $stmt = $this->pdo->prepare("
+            SELECT id, first_name, last_name, email, phone, company, home_address
+            FROM clients
+            WHERE first_name LIKE :q
+               OR last_name LIKE :q
+               OR email LIKE :q
+               OR phone LIKE :q
+               OR company LIKE :q
+            ORDER BY id DESC
+            LIMIT 10
+        ");
 
-        foreach ($tables as $table) {
-            if (!method_exists($this, 'tableExists') || !$this->tableExists($table)) {
-                continue;
-            }
+        $stmt->execute([
+            'q' => '%' . $q . '%',
+        ]);
 
-            try {
-                $stmt = $this->pdo->prepare("
-                    SELECT *
-                    FROM {$table}
-                    WHERE name LIKE :q
-                       OR phone LIKE :q
-                       OR email LIKE :q
-                    ORDER BY id DESC
-                    LIMIT 10
-                ");
-
-                $stmt->execute(['q' => '%' . $q . '%']);
-                $rows = $stmt->fetchAll(\PDO::FETCH_ASSOC);
-                break;
-            } catch (\Throwable $e) {
-                $rows = [];
-            }
-        }
+        $rows = $stmt->fetchAll(\PDO::FETCH_ASSOC);
 
         $clients = array_map(static function (array $row): array {
+            $name = trim((string)($row['first_name'] ?? '') . ' ' . (string)($row['last_name'] ?? ''));
+
             return [
                 'id' => (int)($row['id'] ?? 0),
-                'name' => (string)($row['name'] ?? $row['client_name'] ?? ''),
-                'phone' => (string)($row['phone'] ?? $row['client_phone'] ?? ''),
-                'email' => (string)($row['email'] ?? $row['client_email'] ?? ''),
+                'name' => $name,
+                'first_name' => (string)($row['first_name'] ?? ''),
+                'last_name' => (string)($row['last_name'] ?? ''),
+                'email' => (string)($row['email'] ?? ''),
+                'phone' => (string)($row['phone'] ?? ''),
+                'company' => (string)($row['company'] ?? ''),
+                'address' => (string)($row['home_address'] ?? ''),
             ];
         }, $rows);
 
