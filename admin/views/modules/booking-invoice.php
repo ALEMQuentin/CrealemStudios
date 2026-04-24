@@ -1,4 +1,11 @@
 <?php
+$company = [];
+
+$stmt = $this->pdo->query("SELECT `key`, `value` FROM settings");
+foreach ($stmt->fetchAll(\PDO::FETCH_ASSOC) as $row) {
+    $company[$row['key']] = $row['value'];
+}
+
 $bookingId = (int)($booking['id'] ?? 0);
 $invoiceNumber = 'FAC-' . date('Y') . '-' . str_pad((string)$bookingId, 5, '0', STR_PAD_LEFT);
 
@@ -38,10 +45,9 @@ $distanceKm = !empty($booking['distance_meters'])
         </div>
 
         <div>
-            <strong>ALEM QUENTIN SAS</strong><br>
-            5 rue de Cronstadt<br>
-            54000 Nancy<br>
-            SIRET : 93519598200019
+            <strong><?= htmlspecialchars($company['company_name'] ?? '') ?></strong><br>
+<?= nl2br(htmlspecialchars($company['company_address'] ?? '')) ?><br>
+SIRET : <?= htmlspecialchars($company['company_siret'] ?? '') ?>
         </div>
     </header>
 
