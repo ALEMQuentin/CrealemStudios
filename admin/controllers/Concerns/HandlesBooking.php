@@ -399,14 +399,43 @@ trait HandlesBooking
         $pickup = trim((string)($_POST['pickup_address'] ?? ''));
         $dropoff = trim((string)($_POST['dropoff_address'] ?? ''));
         $vehicle = trim((string)($_POST['vehicle_type'] ?? 'berline'));
-        $passengers = max(1, (int)($_POST['passengers'] ?? 1));
-        $luggage = max(0, (int)($_POST['luggage'] ?? 0));
 
         if ($pickup === '' || $dropoff === '') {
             http_response_code(422);
             echo json_encode(['error' => 'Adresses manquantes'], JSON_UNESCAPED_UNICODE);
             return;
         }
+
+        // simulation distance (en attendant Google réel)
+        $km = max(5, min(50, strlen($pickup + $dropoff) % 30 + 5));
+        $minutes = $km * 2;
+
+        // récupération tarif DB
+        $stmt = $this->pdo->prepare("SELECT * FROM booking_tariffs WHERE vehicle_type = :v LIMIT 1");
+        $stmt->execute(['v' => $vehicle]);
+        $tariff = $stmt->fetch(\PDO::FETCH_ASSOC);
+
+        if (!$tariff) {
+            http_response_code(500);
+            echo json_encode(['error' => 'Tarif introuvable'], JSON_UNESCAPED_UNICODE);
+            return;
+        }
+
+        $price = $tariff['base_fare']
+            + ($km * $tariff['price_per_km'])
+            + ($minutes * $tariff['price_per_minute']);
+
+        $price = max($price, $tariff['minimum_fare']);
+        $price = round($price, 2);
+
+        echo json_encode([
+            'price' => $price,
+            'distance_meters' => $km * 1000,
+            'duration_seconds' => $minutes * 60,
+            'routing_provider' => 'tariff_engine',
+        ], JSON_UNESCAPED_UNICODE);
+    }
+
 
         /*
          * Devis local provisoire.
