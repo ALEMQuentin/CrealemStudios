@@ -378,3 +378,15 @@ document.getElementById('booking-form')?.addEventListener('submit',e=>{syncClien
 toggleClientMode();initGoogle();<?php if ($isEdit): ?>showStep(3);<?php else: ?>showStep(1);<?php endif; ?>
 })();
 </script>
+
+<!-- Stops -->
+<div class="booking-field booking-full">
+    <label>Arrêts intermédiaires</label>
+
+    <div id="stops-container"></div>
+
+    <button type="button" class="booking-btn-outline" id="add-stop">
+        + Ajouter un arrêt
+    </button>
+</div>
+
