@@ -1958,3 +1958,61 @@ form.cs-admin-card textarea.form-control::placeholder {
     cursor: pointer;
 }
 
+
+/* ===== Booking stops inline UX ===== */
+.booking-route-fields {
+    grid-column: 1 / -1;
+    display: grid;
+    gap: 14px;
+}
+
+.booking-stops-inline {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 12px;
+    align-items: start;
+    margin: 2px 0;
+}
+
+.booking-stops-inline #stops-container {
+    display: grid;
+    gap: 10px;
+}
+
+.booking-stop-row {
+    display: grid;
+    grid-template-columns: 1fr 42px;
+    gap: 10px;
+    align-items: center;
+}
+
+.booking-stop-add,
+.booking-stop-row .remove-stop {
+    width: 42px;
+    height: 42px;
+    border-radius: 999px;
+    border: 1px solid var(--cs-primary);
+    background: #fff;
+    color: var(--cs-primary);
+    font-size: 22px;
+    font-weight: 800;
+    line-height: 1;
+    cursor: pointer;
+}
+
+.booking-stop-row .remove-stop {
+    border-color: #ef4444;
+    color: #ef4444;
+    font-size: 18px;
+}
+
+.booking-stop-add:hover {
+    background: var(--cs-primary);
+    color: #fff;
+}
+
+.booking-stop-row .remove-stop:hover {
+    background: #ef4444;
+    color: #fff;
+}
+
