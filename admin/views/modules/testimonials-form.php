@@ -32,8 +32,7 @@
                     </select>
                 </div>
                 <div class="col-12">
-                    <label class="form-label">Contenu</label>
-                    <textarea class="form-control" name="content" rows="8" required><?= e($testimonial['content'] ?? '') ?></textarea>
+                    <label class="form-label" class="required">Contenu</label><textarea class="form-control" name="content" rows="8" required><?= e($testimonial['content'] ?? '') ?></textarea>
                 </div>
                 <div class="col-12 mt-4">
                     <button class="btn btn-primary" type="submit">Enregistrer l’avis</button>

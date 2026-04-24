@@ -13,8 +13,7 @@
         <form method="post" action="/admin.php?module=media&action=upload" enctype="multipart/form-data">
             <div class="row">
                 <div class="col-md-8">
-                    <label class="form-label">Fichier média</label>
-                    <input type="file" name="media_file" class="form-control" accept=".jpg,.jpeg,.png,.webp,.gif,.svg" required>
+                    <label class="form-label" class="required">Fichier média</label><input type="file" name="media_file" class="form-control" accept=".jpg,.jpeg,.png,.webp,.gif,.svg" required>
                     <div class="text-muted mt-2">
                         Formats autorisés : JPG, PNG, WEBP, GIF, SVG
                     </div>

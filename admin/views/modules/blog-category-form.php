@@ -4,13 +4,11 @@
 
         <form method="post" action="/?module=blog&action=save_category<?= $isEdit ? '&id=' . (int)$category['id'] : '' ?>">
             <div class="mb-3">
-                <label class="form-label">Nom</label>
-                <input type="text" class="form-control" name="name" required value="<?= e($category['name'] ?? '') ?>">
+                <label class="form-label" class="required">Nom</label><input type="text" class="form-control" name="name" required value="<?= e($category['name'] ?? '') ?>">
             </div>
 
             <div class="mb-4">
-                <label class="form-label">Slug</label>
-                <input type="text" class="form-control" name="slug" required value="<?= e($category['slug'] ?? '') ?>">
+                <label class="form-label" class="required">Slug</label><input type="text" class="form-control" name="slug" required value="<?= e($category['slug'] ?? '') ?>">
             </div>
 
             <div class="d-flex gap-2 flex-wrap">

@@ -87,8 +87,7 @@
                 <form method="post" action="/admin.php?module=menus&action=add_item&id=<?= (int)$menu['id'] ?>">
                     <div class="row g-3">
                         <div class="col-md-5">
-                            <label class="form-label">Libellé</label>
-                            <input type="text" class="form-control" name="label" required>
+                            <label class="form-label" class="required">Libellé</label><input type="text" class="form-control" name="label" required>
                         </div>
 
                         <div class="col-md-5">

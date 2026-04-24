@@ -4,8 +4,7 @@
 
         <form method="post" action="" enctype="multipart/form-data">
             <div class="mb-3">
-                <label>Choisir un fichier</label>
-                <input type="file" name="file" required>
+                <label class="required">Choisir un fichier</label><input type="file" name="file" required>
             </div>
 
             <button type="submit">Uploader</button>

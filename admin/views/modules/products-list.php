@@ -77,8 +77,7 @@
     <div class="card">
         <div class="card-body d-flex gap-2 flex-wrap align-items-end">
             <div>
-                <label class="form-label">Action groupée</label>
-                <select class="form-select" name="bulk_action" required>
+                <label class="form-label" class="required">Action groupée</label><select class="form-select" name="bulk_action" required>
                     <option value="">Choisir</option>
                     <option value="publish">Publier</option>
                     <option value="draft">Mettre en brouillon</option>
