@@ -171,6 +171,7 @@ trait HandlesBooking
                         distance_meters = :distance_meters,
                         duration_seconds = :duration_seconds,
                         routing_provider = :routing_provider,
+                        stops = :stops,
                         customer_note = :customer_note,
                         internal_note = :internal_note,
                         status = :status,
@@ -351,6 +352,7 @@ trait HandlesBooking
             'distance_meters' => '',
             'duration_seconds' => '',
             'routing_provider' => '',
+            'stops' => '[]',
             'customer_note' => '',
             'internal_note' => '',
             'status' => 'a_confirmer',
@@ -519,6 +521,7 @@ trait HandlesBooking
         $pickup = trim((string)($_POST['pickup_address'] ?? ''));
         $dropoff = trim((string)($_POST['dropoff_address'] ?? ''));
         $vehicle = trim((string)($_POST['vehicle_type'] ?? 'berline'));
+        $stops = array_values(array_filter(array_map('trim', (array)($_POST['stops'] ?? []))));
 
         if ($pickup === '' || $dropoff === '') {
             http_response_code(422);
@@ -535,38 +538,46 @@ trait HandlesBooking
             return;
         }
 
-        $url = 'https://maps.googleapis.com/maps/api/distancematrix/json?'
-            . http_build_query([
-                'origins' => $pickup,
-                'destinations' => $dropoff,
-                'mode' => 'driving',
-                'language' => 'fr',
-                'units' => 'metric',
-                'key' => $googleKey,
-            ]);
+        $params = [
+            'origin' => $pickup,
+            'destination' => $dropoff,
+            'mode' => 'driving',
+            'language' => 'fr',
+            'units' => 'metric',
+            'key' => $googleKey,
+        ];
 
+        if (!empty($stops)) {
+            $params['waypoints'] = implode('|', $stops);
+        }
+
+        $url = 'https://maps.googleapis.com/maps/api/directions/json?' . http_build_query($params);
         $raw = @file_get_contents($url);
+
         if ($raw === false) {
             http_response_code(502);
-            echo json_encode(['error' => 'Impossible de contacter Google Distance Matrix'], JSON_UNESCAPED_UNICODE);
+            echo json_encode(['error' => 'Impossible de contacter Google Directions'], JSON_UNESCAPED_UNICODE);
             return;
         }
 
         $google = json_decode($raw, true);
-        $element = $google['rows'][0]['elements'][0] ?? null;
 
-        if (($google['status'] ?? '') !== 'OK' || !$element || ($element['status'] ?? '') !== 'OK') {
+        if (($google['status'] ?? '') !== 'OK' || empty($google['routes'][0]['legs'])) {
             http_response_code(422);
             echo json_encode([
                 'error' => 'Google n’a pas pu calculer cet itinéraire',
                 'google_status' => $google['status'] ?? null,
-                'route_status' => $element['status'] ?? null,
             ], JSON_UNESCAPED_UNICODE);
             return;
         }
 
-        $distanceMeters = (int)($element['distance']['value'] ?? 0);
-        $durationSeconds = (int)($element['duration']['value'] ?? 0);
+        $distanceMeters = 0;
+        $durationSeconds = 0;
+
+        foreach ($google['routes'][0]['legs'] as $leg) {
+            $distanceMeters += (int)($leg['distance']['value'] ?? 0);
+            $durationSeconds += (int)($leg['duration']['value'] ?? 0);
+        }
 
         $stmt = $this->pdo->prepare("
             SELECT *
@@ -595,7 +606,9 @@ trait HandlesBooking
             + ($km * (float)$tariff['price_per_km'])
             + ($minutes * (float)$tariff['price_per_minute']);
 
-        $hour = (int)date('H');
+        $pickupDatetime = trim((string)($_POST['pickup_datetime'] ?? ''));
+        $hour = $pickupDatetime !== '' ? (int)date('H', strtotime($pickupDatetime)) : (int)date('H');
+
         if ($hour >= 19 || $hour < 7) {
             $price *= (float)$tariff['night_multiplier'];
         }
@@ -607,11 +620,11 @@ trait HandlesBooking
             'price' => $price,
             'distance_meters' => $distanceMeters,
             'duration_seconds' => $durationSeconds,
-            'routing_provider' => 'google_distance_matrix',
-            'google_origin' => $google['origin_addresses'][0] ?? $pickup,
-            'google_destination' => $google['destination_addresses'][0] ?? $dropoff,
+            'routing_provider' => 'google_directions',
+            'stops' => $stops,
         ], JSON_UNESCAPED_UNICODE);
     }
+
 
 
 
