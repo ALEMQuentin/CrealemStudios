@@ -12,243 +12,41 @@ function booking_field(array $booking, string $key, mixed $default = ''): string
 $status = (string)($booking['status'] ?? 'a_confirmer');
 $payment = (string)($booking['payment_method'] ?? '');
 $vehicle = (string)($booking['vehicle_type'] ?? '');
+$googleConfigPath = dirname(__DIR__, 3) . '/config/google.local.php';
+$googleMapsKey = file_exists($googleConfigPath) ? (string)((require $googleConfigPath)['maps_api_key'] ?? '') : '';
 ?>
 
 <style>
-.booking-page-title {
-    margin-bottom: 26px;
-}
-
-.booking-page-title h1 {
-    margin: 0;
-    font-size: 44px;
-    line-height: 1.05;
-    font-weight: 800;
-}
-
-.booking-page-title p {
-    margin: 12px 0 0;
-    color: #6b7280;
-    font-size: 18px;
-    font-weight: 600;
-}
-
-.booking-tabs {
-    display: flex;
-    gap: 12px;
-    flex-wrap: wrap;
-    margin-bottom: 24px;
-}
-
-.booking-tab {
-    border: 1px solid #9ca3af;
-    border-radius: 14px;
-    padding: 10px 14px;
-    background: transparent;
-    color: #9ca3af;
-    font-weight: 800;
-    font-size: 16px;
-    cursor: pointer;
-}
-
-.booking-tab.is-active {
-    background: var(--cs-primary);
-    border-color: var(--cs-primary);
-    color: #ffffff;
-}
-
-.booking-card {
-    background: #ffffff;
-    border: 1px solid #dbe1e8;
-    border-radius: 22px;
-    padding: 26px;
-    box-shadow: 0 12px 28px rgba(15, 23, 42, 0.05);
-}
-
-.booking-panel {
-    display: none;
-}
-
-.booking-panel.is-active {
-    display: block;
-}
-
-.booking-panel h2 {
-    margin: 0 0 8px;
-    font-size: 24px;
-    font-weight: 800;
-}
-
-.booking-muted {
-    color: #6b7280;
-    font-size: 18px;
-    margin: 0 0 28px;
-}
-
-.booking-field {
-    margin-bottom: 18px;
-}
-
-.booking-field label,
-.booking-label {
-    display: block;
-    margin-bottom: 8px;
-    font-size: 17px;
-    font-weight: 800;
-}
-
-.booking-input,
-.booking-select,
-.booking-textarea {
-    width: 100%;
-    border: 1px solid #dbe1e8;
-    border-radius: 14px;
-    padding: 14px 16px;
-    background: #ffffff;
-    font-size: 18px;
-    color: #111827;
-}
-
-.booking-textarea {
-    min-height: 120px;
-    resize: vertical;
-}
-
-.booking-grid {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 18px;
-}
-
-.booking-radio-line {
-    display: flex;
-    gap: 14px;
-    flex-wrap: wrap;
-    font-size: 18px;
-}
-
-.booking-client-card,
-.booking-quote-card,
-.booking-map-card {
-    border: 1px solid #dbe1e8;
-    border-radius: 18px;
-    padding: 20px;
-    margin-top: 18px;
-    background: #ffffff;
-}
-
-.booking-client-card h3,
-.booking-quote-card h3,
-.booking-map-card h3 {
-    margin: 0 0 6px;
-    font-size: 20px;
-    font-weight: 800;
-}
-
-.booking-client-details {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 20px 60px;
-    margin-top: 22px;
-    font-size: 18px;
-}
-
-.booking-actions {
-    display: flex;
-    gap: 12px;
-    flex-wrap: wrap;
-    margin-top: 26px;
-}
-
-.booking-btn-primary {
-    border: 0;
-    border-radius: 14px;
-    padding: 14px 20px;
-    background: var(--cs-primary);
-    color: #fff;
-    font-weight: 800;
-    font-size: 18px;
-    cursor: pointer;
-}
-
-.booking-btn-secondary {
-    border: 1px solid #6b7280;
-    border-radius: 14px;
-    padding: 14px 20px;
-    background: #fff;
-    color: #6b7280;
-    font-weight: 800;
-    font-size: 18px;
-    cursor: pointer;
-}
-
-.booking-btn-outline {
-    border: 1px solid var(--cs-primary);
-    border-radius: 14px;
-    padding: 10px 14px;
-    background: #fff;
-    color: var(--cs-primary);
-    font-weight: 800;
-    font-size: 16px;
-    cursor: pointer;
-}
-
-.booking-quote-line {
-    display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: 18px;
-    margin-top: 18px;
-    font-size: 18px;
-}
-
-.booking-map-preview {
-    height: 320px;
-    border-radius: 16px;
-    overflow: hidden;
-    background: #eef2f7;
-    margin-top: 16px;
-    position: relative;
-}
-
-.booking-map-preview iframe,
-.booking-map-preview img {
-    width: 100%;
-    height: 100%;
-    border: 0;
-    object-fit: cover;
-}
-
-.booking-results {
-    display: grid;
-    gap: 8px;
-    margin-top: 10px;
-}
-
-.booking-result {
-    border: 1px solid #dbe1e8;
-    border-radius: 12px;
-    padding: 10px 12px;
-    background: #fff;
-    text-align: left;
-    cursor: pointer;
-}
-
-.booking-result:hover {
-    border-color: var(--cs-primary);
-    background: #f8fbff;
-}
-
-@media (max-width: 900px) {
-    .booking-grid,
-    .booking-client-details,
-    .booking-quote-line {
-        grid-template-columns: 1fr;
-    }
-
-    .booking-page-title h1 {
-        font-size: 34px;
-    }
-}
+.booking-page-title{margin-bottom:26px}
+.booking-page-title h1{margin:0;font-size:44px;line-height:1.05;font-weight:800}
+.booking-page-title p{margin:12px 0 0;color:#6b7280;font-size:18px;font-weight:600}
+.booking-tabs{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:24px}
+.booking-tab{border:1px solid #9ca3af;border-radius:14px;padding:10px 14px;background:transparent;color:#9ca3af;font-weight:800;font-size:16px;cursor:pointer}
+.booking-tab.is-active{background:var(--cs-primary);border-color:var(--cs-primary);color:#fff}
+.booking-card{background:#fff;border:1px solid #dbe1e8;border-radius:22px;padding:26px;box-shadow:0 12px 28px rgba(15,23,42,.05)}
+.booking-panel{display:none}
+.booking-panel.is-active{display:block}
+.booking-panel h2{margin:0 0 8px;font-size:24px;font-weight:800}
+.booking-muted{color:#6b7280;font-size:18px;margin:0 0 28px}
+.booking-field{margin-bottom:18px}
+.booking-field label,.booking-label{display:block;margin-bottom:8px;font-size:17px;font-weight:800}
+.booking-input,.booking-select,.booking-textarea{width:100%;border:1px solid #dbe1e8;border-radius:14px;padding:14px 16px;background:#fff;font-size:18px;color:#111827}
+.booking-textarea{min-height:120px;resize:vertical}
+.booking-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px}
+.booking-radio-line{display:flex;gap:14px;flex-wrap:wrap;font-size:18px}
+.booking-client-card,.booking-quote-card,.booking-map-card{border:1px solid #dbe1e8;border-radius:18px;padding:20px;margin-top:18px;background:#fff}
+.booking-client-card h3,.booking-quote-card h3,.booking-map-card h3{margin:0 0 6px;font-size:20px;font-weight:800}
+.booking-client-details{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:20px 60px;margin-top:22px;font-size:18px}
+.booking-actions{display:flex;gap:12px;flex-wrap:wrap;margin-top:26px}
+.booking-btn-primary{border:0;border-radius:14px;padding:14px 20px;background:var(--cs-primary);color:#fff;font-weight:800;font-size:18px;cursor:pointer}
+.booking-btn-secondary{border:1px solid #6b7280;border-radius:14px;padding:14px 20px;background:#fff;color:#6b7280;font-weight:800;font-size:18px;cursor:pointer}
+.booking-btn-outline{border:1px solid var(--cs-primary);border-radius:14px;padding:10px 14px;background:#fff;color:var(--cs-primary);font-weight:800;font-size:16px;cursor:pointer}
+.booking-quote-line{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:18px;margin-top:18px;font-size:18px}
+.booking-map-preview{height:320px;border-radius:16px;overflow:hidden;background:#eef2f7;margin-top:16px}
+.booking-results{display:grid;gap:8px;margin-top:10px}
+.booking-result{border:1px solid #dbe1e8;border-radius:12px;padding:10px 12px;background:#fff;text-align:left;cursor:pointer}
+.booking-result:hover{border-color:var(--cs-primary);background:#f8fbff}
+@media(max-width:900px){.booking-grid,.booking-client-details,.booking-quote-line{grid-template-columns:1fr}.booking-page-title h1{font-size:34px}}
 </style>
 
 <div class="booking-page-title">
@@ -258,6 +56,7 @@ $vehicle = (string)($booking['vehicle_type'] ?? '');
 
 <form method="post" action="<?= htmlspecialchars($actionUrl, ENT_QUOTES, 'UTF-8') ?>" id="booking-form">
     <input type="hidden" name="client_id" id="client_id" value="<?= booking_field($booking, 'client_id') ?>">
+    <input type="hidden" name="client_name" id="client_name" value="<?= booking_field($booking, 'client_name') ?>">
     <input type="hidden" name="routing_provider" id="routing_provider" value="<?= booking_field($booking, 'routing_provider') ?>">
     <input type="hidden" name="distance_meters" id="distance_meters" value="<?= booking_field($booking, 'distance_meters') ?>">
     <input type="hidden" name="duration_seconds" id="duration_seconds" value="<?= booking_field($booking, 'duration_seconds') ?>">
@@ -275,15 +74,8 @@ $vehicle = (string)($booking['vehicle_type'] ?? '');
         <div class="booking-field">
             <span class="booking-label">Type de client</span>
             <div class="booking-radio-line">
-                <label>
-                    <input type="radio" name="client_mode" value="existing" checked>
-                    Client existant
-                </label>
-
-                <label>
-                    <input type="radio" name="client_mode" value="new">
-                    Nouveau client
-                </label>
+                <label><input type="radio" name="client_mode" value="existing" checked> Client existant</label>
+                <label><input type="radio" name="client_mode" value="new"> Nouveau client</label>
             </div>
         </div>
 
@@ -297,7 +89,6 @@ $vehicle = (string)($booking['vehicle_type'] ?? '');
             <div class="booking-client-card" id="selected-client-card" style="display:none;">
                 <h3>Client sélectionné</h3>
                 <p class="booking-muted">Informations récupérées depuis le compte client</p>
-
                 <div class="booking-client-details">
                     <div><strong>Nom complet :</strong> <span id="selected_client_name">-</span></div>
                     <div><strong>Entreprise :</strong> <span id="selected_client_company">-</span></div>
@@ -310,20 +101,12 @@ $vehicle = (string)($booking['vehicle_type'] ?? '');
 
         <div id="new-client-block" style="display:none;">
             <div class="booking-grid">
-                <div class="booking-field">
-                    <label>Nom client *</label>
-                    <input class="booking-input" name="client_name" id="client_name" value="<?= booking_field($booking, 'client_name') ?>">
-                </div>
-
-                <div class="booking-field">
-                    <label>Téléphone *</label>
-                    <input class="booking-input" name="client_phone" id="client_phone" value="<?= booking_field($booking, 'client_phone') ?>">
-                </div>
-
-                <div class="booking-field">
-                    <label>Email</label>
-                    <input class="booking-input" type="email" name="client_email" id="client_email" value="<?= booking_field($booking, 'client_email') ?>">
-                </div>
+                <div class="booking-field"><label>Prénom</label><input class="booking-input" name="client_first_name" id="client_first_name"></div>
+                <div class="booking-field"><label>Nom</label><input class="booking-input" name="client_last_name" id="client_last_name"></div>
+                <div class="booking-field"><label>Téléphone</label><input class="booking-input" name="client_phone" id="client_phone"></div>
+                <div class="booking-field"><label>Email</label><input class="booking-input" type="email" name="client_email" id="client_email"></div>
+                <div class="booking-field"><label>Entreprise</label><input class="booking-input" name="client_company" id="client_company"></div>
+                <div class="booking-field"><label>Adresse domicile</label><input class="booking-input google-address-input" name="client_home_address" id="client_home_address" autocomplete="off"></div>
             </div>
         </div>
 
@@ -335,7 +118,6 @@ $vehicle = (string)($booking['vehicle_type'] ?? '');
     <section class="booking-card booking-panel" data-step-panel="2">
         <h2>Étape 2 · Paiement</h2>
         <p class="booking-muted">Choisir le mode de paiement avant les informations de course.</p>
-
         <div class="booking-field">
             <label>Mode de paiement</label>
             <select class="booking-select" name="payment_method" id="payment_method">
@@ -346,7 +128,6 @@ $vehicle = (string)($booking['vehicle_type'] ?? '');
                 <option value="invoice" <?= $payment === 'invoice' ? 'selected' : '' ?>>Facturation entreprise</option>
             </select>
         </div>
-
         <div class="booking-actions">
             <button type="button" class="booking-btn-secondary" data-prev-step="1">Retour</button>
             <button type="button" class="booking-btn-primary" data-next-step="3">Continuer vers la réservation</button>
@@ -356,48 +137,16 @@ $vehicle = (string)($booking['vehicle_type'] ?? '');
     <section class="booking-card booking-panel" data-step-panel="3">
         <h2>Étape 3 · Réservation</h2>
         <p class="booking-muted">Saisir les informations de course.</p>
-
         <div class="booking-grid">
-            <div class="booking-field">
-                <label>Adresse de prise en charge</label>
-                <input class="booking-input google-address-input" name="pickup_address" id="pickup_address" placeholder="Indiquez un lieu" autocomplete="off" value="<?= booking_field($booking, 'pickup_address') ?>">
-            </div>
-
-            <div class="booking-field">
-                <label>Adresse de destination</label>
-                <input class="booking-input google-address-input" name="dropoff_address" id="dropoff_address" placeholder="Indiquez un lieu" autocomplete="off" value="<?= booking_field($booking, 'dropoff_address') ?>">
-            </div>
-
-            <div class="booking-field">
-                <label>Date et heure de prise en charge</label>
-                <input class="booking-input" type="datetime-local" name="pickup_datetime" id="pickup_datetime" value="<?= booking_field($booking, 'pickup_datetime') ?>">
-            </div>
-
-            <div class="booking-field">
-                <label>Nombre de passagers</label>
-                <input class="booking-input" type="number" min="1" name="passengers" id="passengers" value="<?= (int)($booking['passengers'] ?? 1) ?>">
-            </div>
-
-            <div class="booking-field">
-                <label>Véhicule</label>
-                <select class="booking-select" name="vehicle_type" id="vehicle_type">
-                    <option value="">Choisir</option>
-                    <option value="berline" <?= $vehicle === 'berline' ? 'selected' : '' ?>>Berline</option>
-                    <option value="van" <?= $vehicle === 'van' ? 'selected' : '' ?>>Van</option>
-                    <option value="business" <?= $vehicle === 'business' ? 'selected' : '' ?>>Business</option>
-                </select>
-            </div>
-
-            <div class="booking-field">
-                <label>Prix (€)</label>
-                <input class="booking-input" type="number" min="0" step="0.01" name="price" id="price" value="<?= booking_field($booking, 'price') ?>" readonly>
-            </div>
+            <div class="booking-field"><label>Adresse de prise en charge</label><input class="booking-input google-address-input" name="pickup_address" id="pickup_address" placeholder="Indiquez un lieu" autocomplete="off" value="<?= booking_field($booking, 'pickup_address') ?>"></div>
+            <div class="booking-field"><label>Adresse de destination</label><input class="booking-input google-address-input" name="dropoff_address" id="dropoff_address" placeholder="Indiquez un lieu" autocomplete="off" value="<?= booking_field($booking, 'dropoff_address') ?>"></div>
+            <div class="booking-field"><label>Date et heure de prise en charge</label><input class="booking-input" type="datetime-local" name="pickup_datetime" id="pickup_datetime" value="<?= booking_field($booking, 'pickup_datetime') ?>"></div>
+            <div class="booking-field"><label>Nombre de passagers</label><input class="booking-input" type="number" min="1" name="passengers" id="passengers" value="<?= (int)($booking['passengers'] ?? 1) ?>"></div>
+            <div class="booking-field"><label>Véhicule</label><select class="booking-select" name="vehicle_type" id="vehicle_type"><option value="">Choisir</option><option value="berline" <?= $vehicle === 'berline' ? 'selected' : '' ?>>Berline</option><option value="van" <?= $vehicle === 'van' ? 'selected' : '' ?>>Van</option><option value="business" <?= $vehicle === 'business' ? 'selected' : '' ?>>Business</option></select></div>
+            <div class="booking-field"><label>Prix (€)</label><input class="booking-input" type="number" min="0" step="0.01" name="price" id="price" value="<?= booking_field($booking, 'price') ?>" readonly></div>
         </div>
 
-        <div class="booking-field">
-            <label>Commentaire</label>
-            <textarea class="booking-textarea" name="customer_note" placeholder="Détails complémentaires"><?= booking_field($booking, 'customer_note') ?></textarea>
-        </div>
+        <div class="booking-field"><label>Commentaire</label><textarea class="booking-textarea" name="customer_note" placeholder="Détails complémentaires"><?= booking_field($booking, 'customer_note') ?></textarea></div>
 
         <div class="booking-actions">
             <button type="button" class="booking-btn-outline" id="calculate_quote">Calculer le prix</button>
@@ -406,8 +155,7 @@ $vehicle = (string)($booking['vehicle_type'] ?? '');
 
         <div class="booking-quote-card" id="quote_card" style="display:none;">
             <h3>Devis calculé</h3>
-            <p class="booking-muted">Estimation basée sur le calcul disponible dans le CMS.</p>
-
+            <p class="booking-muted">Estimation basée sur Google et tes paramètres tarifaires.</p>
             <div class="booking-quote-line">
                 <div><strong>Distance :</strong> <span id="quote_distance">-</span></div>
                 <div><strong>Durée :</strong> <span id="quote_duration">-</span></div>
@@ -418,7 +166,7 @@ $vehicle = (string)($booking['vehicle_type'] ?? '');
         <div class="booking-map-card" id="map_card" style="display:none;">
             <h3>Itinéraire</h3>
             <p class="booking-muted">Visualisation du trajet estimé.</p>
-            <div class="booking-map-preview" id="map_preview"></div>
+            <div class="booking-map-preview" id="route-map"></div>
         </div>
 
         <div class="booking-field" style="max-width:320px;">
@@ -439,199 +187,30 @@ $vehicle = (string)($booking['vehicle_type'] ?? '');
     </section>
 </form>
 
-<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAtlc5hJlvtT6J0Wkt13l2JMTE_NfPByI4&libraries=places,geometry"></script>
+<?php if ($googleMapsKey !== ''): ?>
+<script src="https://maps.googleapis.com/maps/api/js?key=<?= htmlspecialchars($googleMapsKey, ENT_QUOTES, 'UTF-8') ?>&libraries=places,geometry"></script>
+<?php endif; ?>
+
 <script>
-(function () {
-    const panels = Array.from(document.querySelectorAll('[data-step-panel]'));
-    const tabs = Array.from(document.querySelectorAll('[data-step-button]'));
-
-    function showStep(step) {
-        panels.forEach(panel => panel.classList.toggle('is-active', panel.dataset.stepPanel === String(step)));
-        tabs.forEach(tab => tab.classList.toggle('is-active', tab.dataset.stepButton === String(step)));
-    }
-
-    function value(id) {
-        return document.getElementById(id)?.value?.trim() || '';
-    }
-
-    function requireValue(id, message) {
-        const field = document.getElementById(id);
-        if (!field || !field.value.trim()) {
-            alert(message);
-            if (field) field.focus();
-            return false;
-        }
-        return true;
-    }
-
-    function toggleClientMode() {
-        const mode = document.querySelector('input[name="client_mode"]:checked')?.value || 'existing';
-        document.getElementById('existing-client-block').style.display = mode === 'existing' ? 'block' : 'none';
-        document.getElementById('new-client-block').style.display = mode === 'new' ? 'block' : 'none';
-
-        if (mode === 'new') {
-            document.getElementById('client_id').value = '';
-        }
-    }
-
-    document.querySelectorAll('input[name="client_mode"]').forEach(input => {
-        input.addEventListener('change', toggleClientMode);
-    });
-
-    document.querySelectorAll('[data-next-step]').forEach(button => {
-        button.addEventListener('click', function () {
-            const next = this.dataset.nextStep;
-
-            if (next === '2') {
-                const mode = document.querySelector('input[name="client_mode"]:checked')?.value || 'existing';
-                if (mode === 'existing' && !value('client_id')) {
-                    alert('Sélectionne un client existant ou choisis nouveau client.');
-                    return;
-                }
-
-                if (mode === 'new') {
-                    if (!requireValue('client_name', 'Renseigne le nom du client.')) return;
-                    if (!requireValue('client_phone', 'Renseigne le téléphone du client.')) return;
-                }
-            }
-
-            if (next === '3' && !requireValue('payment_method', 'Choisis un mode de paiement.')) return;
-
-            showStep(next);
-        });
-    });
-
-    document.querySelectorAll('[data-prev-step]').forEach(button => {
-        button.addEventListener('click', function () {
-            showStep(this.dataset.prevStep);
-        });
-    });
-
-    let clientTimer = null;
-    const clientSearch = document.getElementById('client_search');
-    const clientResults = document.getElementById('client_results');
-
-    clientSearch?.addEventListener('input', function () {
-        clearTimeout(clientTimer);
-
-        const q = this.value.trim();
-        if (q.length < 2) {
-            clientResults.innerHTML = '';
-            return;
-        }
-
-        clientTimer = setTimeout(async function () {
-            const response = await fetch('/admin.php?module=booking&action=client_search&q=' + encodeURIComponent(q));
-            const clients = await response.json();
-
-            clientResults.innerHTML = '';
-
-            clients.forEach(client => {
-                const button = document.createElement('button');
-                button.type = 'button';
-                button.className = 'booking-result';
-                button.innerHTML = '<strong>' + (client.name || '-') + '</strong><br><small>' + (client.phone || '-') + ' · ' + (client.email || '-') + '</small>';
-
-                button.addEventListener('click', function () {
-                    document.getElementById('client_id').value = client.id || '';
-                    document.getElementById('client_name').value = client.name || '';
-                    document.getElementById('client_phone').value = client.phone || '';
-                    document.getElementById('client_email').value = client.email || '';
-
-                    document.getElementById('selected_client_name').textContent = client.name || '-';
-                    document.getElementById('selected_client_phone').textContent = client.phone || '-';
-                    document.getElementById('selected_client_email').textContent = client.email || '-';
-                    document.getElementById('selected_client_company').textContent = client.company || '-';
-                    document.getElementById('selected_client_address').textContent = client.address || '-';
-                    document.getElementById('selected-client-card').style.display = 'block';
-
-                    clientSearch.value = client.name || '';
-                    clientResults.innerHTML = '';
-                });
-
-                clientResults.appendChild(button);
-            });
-        }, 250);
-    });
-
-    document.getElementById('calculate_quote')?.addEventListener('click', async function () {
-        if (!requireValue('pickup_address', 'Renseigne l’adresse de départ.')) return;
-        if (!requireValue('dropoff_address', 'Renseigne l’adresse de destination.')) return;
-
-        const form = new FormData();
-        form.append('pickup_address', value('pickup_address'));
-        form.append('dropoff_address', value('dropoff_address'));
-        form.append('vehicle_type', value('vehicle_type'));
-        form.append('passengers', value('passengers'));
-
-        document.getElementById('quote_status').textContent = 'Calcul en cours...';
-
-        const response = await fetch('/admin.php?module=booking&action=quote', {
-            method: 'POST',
-            body: form
-        });
-
-        const quote = await response.json();
-
-        if (quote.error) {
-            alert(quote.error);
-            document.getElementById('quote_status').textContent = '';
-            return;
-        }
-
-        document.getElementById('price').value = quote.price || '';
-        document.getElementById('distance_meters').value = quote.distance_meters || '';
-        document.getElementById('duration_seconds').value = quote.duration_seconds || '';
-        document.getElementById('routing_provider').value = quote.routing_provider || 'local_estimate';
-
-        document.getElementById('quote_distance').textContent = quote.distance_meters ? (quote.distance_meters / 1000).toFixed(2) + ' km' : '-';
-        document.getElementById('quote_duration').textContent = quote.duration_seconds ? (quote.duration_seconds / 60).toFixed(1) + ' min' : '-';
-        document.getElementById('quote_price').textContent = quote.price ? quote.price + ' €' : '-';
-
-        document.getElementById('quote_card').style.display = 'block';
-        document.getElementById('quote_status').textContent = 'Devis calculé.';
-
-        const pickup = encodeURIComponent(value('pickup_address'));
-        const dropoff = encodeURIComponent(value('dropoff_address'));
-        const mapUrl = 'https://www.google.com/maps/embed/v1/directions?key=&origin=' + pickup + '&destination=' + dropoff;
-
-        document.getElementById('map_card').style.display = 'block';
-        document.getElementById('map_preview').innerHTML = '<div style="padding:20px;color:#6b7280;">Carte Google prête à brancher dès qu’une clé API est configurée.</div>';
-    });
-
-    if ('google' in window && google.maps && google.maps.places) {
-        document.querySelectorAll('.google-address-input').forEach(input => {
-            new google.maps.places.Autocomplete(input, {
-                fields: ['formatted_address', 'geometry', 'name'],
-                types: ['geocode']
-            });
-        });
-    }
-
-    document.getElementById('booking-form')?.addEventListener('submit', function (event) {
-        if (!requireValue('pickup_address', 'Renseigne l’adresse de prise en charge.')) {
-            event.preventDefault();
-            showStep(3);
-            return;
-        }
-
-        if (!requireValue('dropoff_address', 'Renseigne l’adresse de destination.')) {
-            event.preventDefault();
-            showStep(3);
-            return;
-        }
-
-        if (!requireValue('pickup_datetime', 'Renseigne la date et l’heure de prise en charge.')) {
-            event.preventDefault();
-            showStep(3);
-        }
-    });
-
-    toggleClientMode();
-    <?php if ($isEdit): ?>
-    showStep(3);
-    <?php else: ?>
-    showStep(1);
-    <?php endif; ?>
+(function(){
+let map=null, originMarker=null, destinationMarker=null, routePolyline=null;
+const panels=[...document.querySelectorAll('[data-step-panel]')];
+const tabs=[...document.querySelectorAll('[data-step-button]')];
+function showStep(step){panels.forEach(p=>p.classList.toggle('is-active',p.dataset.stepPanel===String(step)));tabs.forEach(t=>t.classList.toggle('is-active',t.dataset.stepButton===String(step)));}
+function value(id){return document.getElementById(id)?.value?.trim()||'';}
+function requireValue(id,msg){const f=document.getElementById(id);if(!f||!f.value.trim()){alert(msg);if(f)f.focus();return false;}return true;}
+function syncClientName(){document.getElementById('client_name').value=(value('client_first_name')+' '+value('client_last_name')).trim();}
+function toggleClientMode(){const mode=document.querySelector('input[name="client_mode"]:checked')?.value||'existing';document.getElementById('existing-client-block').style.display=mode==='existing'?'block':'none';document.getElementById('new-client-block').style.display=mode==='new'?'block':'none';if(mode==='new'){document.getElementById('client_id').value='';}}
+document.querySelectorAll('input[name="client_mode"]').forEach(i=>i.addEventListener('change',toggleClientMode));
+['client_first_name','client_last_name'].forEach(id=>document.getElementById(id)?.addEventListener('input',syncClientName));
+document.querySelectorAll('[data-next-step]').forEach(b=>b.addEventListener('click',function(){const next=this.dataset.nextStep;if(next==='2'){const mode=document.querySelector('input[name="client_mode"]:checked')?.value||'existing';if(mode==='existing'&&!value('client_id')){alert('Sélectionne un client existant ou choisis nouveau client.');return;}if(mode==='new'){syncClientName();if(!requireValue('client_first_name','Renseigne le prénom.'))return;if(!requireValue('client_last_name','Renseigne le nom.'))return;if(!requireValue('client_phone','Renseigne le téléphone.'))return;}}if(next==='3'&&!requireValue('payment_method','Choisis un mode de paiement.'))return;showStep(next);}));
+document.querySelectorAll('[data-prev-step]').forEach(b=>b.addEventListener('click',function(){showStep(this.dataset.prevStep);}));
+let timer=null;const search=document.getElementById('client_search');const results=document.getElementById('client_results');
+search?.addEventListener('input',function(){clearTimeout(timer);const q=this.value.trim();if(q.length<2){results.innerHTML='';return;}timer=setTimeout(async()=>{const r=await fetch('/admin.php?module=booking&action=client_search&q='+encodeURIComponent(q));const clients=await r.json();results.innerHTML='';clients.forEach(c=>{const btn=document.createElement('button');btn.type='button';btn.className='booking-result';btn.innerHTML='<strong>'+(c.name||'-')+'</strong><br><small>'+(c.phone||'-')+' · '+(c.email||'-')+'</small>';btn.addEventListener('click',()=>{document.getElementById('client_id').value=c.id||'';document.getElementById('client_name').value=c.name||'';document.getElementById('client_phone').value=c.phone||'';document.getElementById('client_email').value=c.email||'';document.getElementById('selected_client_name').textContent=c.name||'-';document.getElementById('selected_client_phone').textContent=c.phone||'-';document.getElementById('selected_client_email').textContent=c.email||'-';document.getElementById('selected_client_company').textContent=c.company||'-';document.getElementById('selected_client_address').textContent=c.address||'-';document.getElementById('selected-client-card').style.display='block';search.value=c.name||'';results.innerHTML='';});results.appendChild(btn);});},250);});
+function initGoogle(){if(!('google'in window)||!google.maps||!google.maps.places)return;document.querySelectorAll('.google-address-input').forEach(input=>new google.maps.places.Autocomplete(input,{fields:['formatted_address','geometry','name'],types:['geocode']}));}
+function drawMap(quote){if(!('google'in window)||!google.maps||!quote.origin||!quote.destination)return;document.getElementById('map_card').style.display='block';if(!map){map=new google.maps.Map(document.getElementById('route-map'),{zoom:13,center:quote.origin});}if(originMarker)originMarker.setMap(null);if(destinationMarker)destinationMarker.setMap(null);if(routePolyline)routePolyline.setMap(null);originMarker=new google.maps.Marker({position:quote.origin,map:map});destinationMarker=new google.maps.Marker({position:quote.destination,map:map});if(quote.polyline&&google.maps.geometry){routePolyline=new google.maps.Polyline({path:google.maps.geometry.encoding.decodePath(quote.polyline),map:map,strokeColor:'#111827',strokeWeight:5});}const bounds=new google.maps.LatLngBounds();bounds.extend(quote.origin);bounds.extend(quote.destination);map.fitBounds(bounds);}
+document.getElementById('calculate_quote')?.addEventListener('click',async()=>{if(!requireValue('pickup_address','Renseigne l’adresse de prise en charge.'))return;if(!requireValue('dropoff_address','Renseigne l’adresse de destination.'))return;const form=new FormData();['pickup_address','dropoff_address','vehicle_type','passengers','pickup_datetime'].forEach(id=>form.append(id,value(id)));document.getElementById('quote_status').textContent='Calcul en cours...';const r=await fetch('/admin.php?module=booking&action=quote',{method:'POST',body:form});const q=await r.json();if(q.error){alert(q.error);document.getElementById('quote_status').textContent='';return;}document.getElementById('price').value=q.price||'';document.getElementById('distance_meters').value=q.distance_meters||'';document.getElementById('duration_seconds').value=q.duration_seconds||'';document.getElementById('routing_provider').value=q.routing_provider||'';document.getElementById('quote_distance').textContent=q.distance_meters?(q.distance_meters/1000).toFixed(2)+' km':'-';document.getElementById('quote_duration').textContent=q.duration_seconds?(q.duration_seconds/60).toFixed(1)+' min':'-';document.getElementById('quote_price').textContent=q.price?q.price+' €':'-';document.getElementById('quote_card').style.display='block';document.getElementById('quote_status').textContent='Devis calculé.';drawMap(q);});
+document.getElementById('booking-form')?.addEventListener('submit',e=>{syncClientName();if(!requireValue('pickup_address','Renseigne l’adresse de prise en charge.')){e.preventDefault();showStep(3);return;}if(!requireValue('dropoff_address','Renseigne l’adresse de destination.')){e.preventDefault();showStep(3);return;}if(!requireValue('pickup_datetime','Renseigne la date et l’heure de prise en charge.')){e.preventDefault();showStep(3);}});
+toggleClientMode();initGoogle();<?php if ($isEdit): ?>showStep(3);<?php else: ?>showStep(1);<?php endif; ?>
 })();
 </script>

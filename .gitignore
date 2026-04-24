@@ -20,3 +20,5 @@ public/uploads/
 .trash/
 tmp/
 cache/
+
+config/google.local.php
