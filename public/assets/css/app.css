@@ -1760,3 +1760,83 @@ form.cs-admin-card .btn {
     margin-bottom: 8px;
 }
 
+
+/* ===== Chauffeur documents UI polish ===== */
+.cs-admin-page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 18px;
+}
+
+.cs-admin-page-header p {
+    color: #64748b;
+    font-weight: 600;
+}
+
+.cs-admin-card h2 {
+    margin-top: 0;
+    margin-bottom: 18px;
+}
+
+.cs-admin-card form[enctype="multipart/form-data"] {
+    display: grid;
+    gap: 18px;
+}
+
+.cs-admin-card form[enctype="multipart/form-data"] > div:first-of-type {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 22px;
+    align-items: end;
+}
+
+.cs-admin-card input[type="file"]::file-selector-button {
+    border: 1px solid #d8e0e8;
+    border-radius: 10px;
+    background: #f8fafc;
+    padding: 9px 14px;
+    margin-right: 12px;
+    cursor: pointer;
+    font-weight: 700;
+}
+
+.cs-admin-card form[enctype="multipart/form-data"] button[type="submit"] {
+    justify-self: center;
+    min-width: 240px;
+}
+
+.cs-admin-table td[colspan] {
+    text-align: center;
+    padding: 54px 20px;
+    color: #64748b;
+    font-weight: 700;
+}
+
+.cs-admin-table td[colspan]::before {
+    content: "▣";
+    display: block;
+    width: 62px;
+    height: 62px;
+    line-height: 58px;
+    margin: 0 auto 12px;
+    border-radius: 999px;
+    background: #eef2f7;
+    color: #64748b;
+    font-size: 30px;
+}
+
+@media (max-width: 900px) {
+    .cs-admin-page-header {
+        flex-direction: column;
+    }
+
+    .cs-admin-card form[enctype="multipart/form-data"] > div:first-of-type {
+        grid-template-columns: 1fr;
+    }
+
+    .cs-admin-card form[enctype="multipart/form-data"] button[type="submit"] {
+        justify-self: stretch;
+    }
+}
+
