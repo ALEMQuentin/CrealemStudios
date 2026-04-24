@@ -1579,3 +1579,25 @@ textarea:required:focus {
     margin-left: 3px;
 }
 
+
+/* ===== Global required fields indicator ===== */
+label.required::after,
+.booking-label.required::after {
+    content: " *";
+    color: #dc3545;
+    font-weight: 700;
+    margin-left: 3px;
+}
+
+input:required,
+select:required,
+textarea:required {
+    border-left: 3px solid #dc3545;
+}
+
+input:required:focus,
+select:required:focus,
+textarea:required:focus {
+    border-left-color: var(--cs-primary);
+}
+

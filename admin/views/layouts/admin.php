@@ -326,5 +326,30 @@ $accordionSystemOpen = in_array($currentModule, ['users', 'settings'], true);
     </div>
 </div>
 
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    document.querySelectorAll('input[required], select[required], textarea[required]').forEach(function (field) {
+        const id = field.getAttribute('id');
+        let label = null;
+
+        if (id) {
+            label = document.querySelector('label[for="' + id + '"]');
+        }
+
+        if (!label) {
+            const wrapper = field.closest('.booking-field, .cs-field, .form-group, div');
+            if (wrapper) {
+                label = wrapper.querySelector('label, .booking-label');
+            }
+        }
+
+        if (label && !label.classList.contains('required')) {
+            label.classList.add('required');
+        }
+    });
+});
+</script>
+
 </body>
 </html>
