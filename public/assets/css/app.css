@@ -2016,3 +2016,70 @@ form.cs-admin-card textarea.form-control::placeholder {
     color: #fff;
 }
 
+
+/* ===== Booking route stack: pickup -> stops -> destination ===== */
+.booking-route-stack {
+    grid-column: 1 / -1;
+    display: grid;
+    gap: 16px;
+}
+
+.booking-stops-between {
+    display: grid;
+    gap: 10px;
+    padding-left: 18px;
+    border-left: 3px dashed #d8e0e8;
+}
+
+.booking-stops-between #stops-container {
+    display: grid;
+    gap: 10px;
+}
+
+.booking-stop {
+    width: 100%;
+}
+
+.booking-stop-row {
+    display: grid;
+    grid-template-columns: 1fr 44px;
+    gap: 10px;
+    align-items: center;
+}
+
+.booking-stop-row .stop-input {
+    width: 100%;
+}
+
+.booking-stop-add {
+    justify-self: start;
+    border: 1px solid var(--cs-primary);
+    border-radius: 999px;
+    background: #fff;
+    color: var(--cs-primary);
+    padding: 9px 14px;
+    font-weight: 800;
+    cursor: pointer;
+}
+
+.booking-stop-add:hover {
+    background: var(--cs-primary);
+    color: #fff;
+}
+
+.booking-stop-row .remove-stop {
+    width: 44px;
+    height: 44px;
+    border-radius: 999px;
+    border: 1px solid #ef4444;
+    background: #fff;
+    color: #ef4444;
+    font-weight: 800;
+    cursor: pointer;
+}
+
+.booking-stop-row .remove-stop:hover {
+    background: #ef4444;
+    color: #fff;
+}
+

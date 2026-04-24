@@ -138,8 +138,19 @@ $googleMapsKey = file_exists($googleConfigPath) ? (string)((require $googleConfi
         <h2>Étape 3 · Réservation</h2>
         <p class="booking-muted">Saisir les informations de course.</p>
         <div class="booking-grid">
+            <div class="booking-route-stack">
             <div class="booking-field"><label>Adresse de prise en charge</label><input class="booking-input google-address-input" name="pickup_address" id="pickup_address" data-conditional-required="1" placeholder="Indiquez un lieu" autocomplete="off" value="<?= booking_field($booking, 'pickup_address') ?>"></div>
+
+            <div class="booking-stops-between">
+                <div id="stops-container"></div>
+
+                <button type="button" class="booking-stop-add" id="add-stop" title="Ajouter un arrêt intermédiaire">
+                    + Ajouter un arrêt
+                </button>
+            </div>
+
             <div class="booking-field"><label>Adresse de destination</label><input class="booking-input google-address-input" name="dropoff_address" id="dropoff_address" data-conditional-required="1" placeholder="Indiquez un lieu" autocomplete="off" value="<?= booking_field($booking, 'dropoff_address') ?>"></div>
+        </div>
             <div class="booking-field"><label>Date et heure de prise en charge</label><input class="booking-input" type="datetime-local" name="pickup_datetime" id="pickup_datetime" data-conditional-required="1" value="<?= booking_field($booking, 'pickup_datetime') ?>"></div>
             <div class="booking-field"><label>Nombre de passagers</label><input class="booking-input" type="number" min="1" name="passengers" id="passengers" value="<?= (int)($booking['passengers'] ?? 1) ?>"></div>
             <div class="booking-field"><label>Véhicule</label><select class="booking-select" name="vehicle_type" id="vehicle_type" data-conditional-required="1"><option value="">Choisir</option><option value="berline" <?= $vehicle === 'berline' ? 'selected' : '' ?>>Berline</option><option value="van" <?= $vehicle === 'van' ? 'selected' : '' ?>>Van</option><option value="business" <?= $vehicle === 'business' ? 'selected' : '' ?>>Business</option></select></div>
@@ -147,14 +158,6 @@ $googleMapsKey = file_exists($googleConfigPath) ? (string)((require $googleConfi
         </div>
 
         
-        <div class="booking-field booking-full">
-            <label>Arrêts intermédiaires</label>
-            <div id="stops-container"></div>
-
-            <button type="button" class="booking-btn-outline" id="add-stop">
-                + Ajouter un arrêt
-            </button>
-        </div>
 
         <div class="booking-field"><label>Commentaire</label><textarea class="booking-textarea" name="customer_note" placeholder="Détails complémentaires"><?= booking_field($booking, 'customer_note') ?></textarea></div>
 
@@ -354,7 +357,7 @@ async function calculateQuote(showAlerts = true){
     if(!requireValue('dropoff_address','Renseigne l’adresse de destination.')) return;
 
     const form = new FormData();
-    ['pickup_address','dropoff_address','vehicle_type','passengers','pickup_datetime'].forEach(id => form.append(id, value(id)));
+    ['pickup_address','dropoff_address','vehicle_type','passengers','pickup_datetime'].forEach(id => form.append(id, value(id))); getStopValues().forEach(stop => form.append('stops[]', stop));
 
     document.getElementById('quote_status').textContent = 'Calcul en cours...';
 
@@ -445,8 +448,5 @@ toggleClientMode();initGoogle();<?php if ($isEdit): ?>showStep(3);<?php else: ?>
 })();
 </script>
 
-    <button type="button" class="booking-btn-outline" id="add-stop">
-        + Ajouter un arrêt
-    </button>
 </div>
 
