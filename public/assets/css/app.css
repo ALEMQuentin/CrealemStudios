@@ -1840,3 +1840,56 @@ form.cs-admin-card .btn {
     }
 }
 
+
+/* ===== Fix chauffeur form visibility and spacing ===== */
+form.cs-admin-card {
+    padding: 28px !important;
+    gap: 24px !important;
+}
+
+form.cs-admin-card > div {
+    gap: 22px !important;
+    margin-bottom: 4px;
+}
+
+form.cs-admin-card label {
+    margin-bottom: 10px !important;
+    color: #1e293b !important;
+    font-size: 14px;
+    font-weight: 700;
+}
+
+form.cs-admin-card input.form-control,
+form.cs-admin-card select.form-control,
+form.cs-admin-card textarea.form-control {
+    min-height: 48px !important;
+    padding: 12px 16px !important;
+    border: 1px solid #cbd5e1 !important;
+    border-radius: 12px !important;
+    background: #ffffff !important;
+    color: #0f172a !important;
+    box-shadow: inset 0 1px 2px rgba(15, 23, 42, 0.04);
+}
+
+form.cs-admin-card textarea.form-control {
+    min-height: 150px !important;
+}
+
+form.cs-admin-card input.form-control:hover,
+form.cs-admin-card select.form-control:hover,
+form.cs-admin-card textarea.form-control:hover {
+    border-color: #94a3b8 !important;
+}
+
+form.cs-admin-card input.form-control:focus,
+form.cs-admin-card select.form-control:focus,
+form.cs-admin-card textarea.form-control:focus {
+    border-color: var(--cs-primary) !important;
+    box-shadow: 0 0 0 4px rgba(47, 111, 87, 0.14) !important;
+}
+
+form.cs-admin-card input.form-control::placeholder,
+form.cs-admin-card textarea.form-control::placeholder {
+    color: #94a3b8;
+}
+
