@@ -32,7 +32,8 @@
                             <td><?= e($client['email'] ?? '') ?></td>
                             <td><?= e($client['phone'] ?? '') ?></td>
                             <td class="d-flex gap-2 flex-wrap">
-                                <a class="btn btn-sm btn-outline-secondary" href="/admin.php?module=clients&action=edit&id=<?= (int)$client['id'] ?>">Modifier</a>
+                                <a class="btn btn-sm btn-outline-secondary" href="/admin.php?module=clients&action=edit&id=<?= (int)$client['id'] ?>">Voir</a>
+<a class="btn btn-sm btn-outline-secondary" href="/admin.php?module=clients&action=edit&id=<?= (int)$client['id'] ?>">Modifier</a>
                                 <a class="btn btn-sm btn-outline-danger" href="/admin.php?module=clients&action=delete&id=<?= (int)$client['id'] ?>" onclick="return confirm('Supprimer ce client ?')">Supprimer</a>
                             </td>
                         </tr>

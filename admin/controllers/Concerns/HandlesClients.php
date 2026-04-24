@@ -13,7 +13,24 @@ trait HandlesClients
             return;
         }
 
-        if ($action === 'create') {
+        
+
+        if ($action === 'show') {
+            $id = (int)($_GET['id'] ?? 0);
+
+            $client = $this->fetchOne("SELECT * FROM clients WHERE id = :id", ['id' => $id]);
+            if (!$client) redirectTo('/admin.php?module=clients&error=Client introuvable');
+
+            $stmt = $this->pdo->prepare("SELECT * FROM reservations WHERE client_id = :id ORDER BY id DESC");
+            $stmt->execute(['id' => $id]);
+            $reservations = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+            $this->render('Fiche client', $this->resolveView(['modules/clients-show.php']), compact('client','reservations'));
+            return;
+        }
+
+
+if ($action === 'create') {
             $client = ['first_name' => '', 'last_name' => '', 'email' => '', 'phone' => '', 'company' => '', 'notes' => ''];
             $isEdit = false;
             $this->render('Ajouter un client', $this->resolveView(['modules/clients-form.php']), compact('client', 'isEdit'));

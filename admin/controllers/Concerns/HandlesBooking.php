@@ -32,7 +32,24 @@ trait HandlesBooking
             return;
         }
 
-        if ($action === 'chauffeur_documents') {
+        
+
+        if ($action === 'chauffeur_history') {
+            $id = (int)($_GET['id'] ?? 0);
+
+            $chauffeur = $this->findChauffeur($id);
+            if (!$chauffeur) redirectTo('/admin.php?module=booking');
+
+            $stmt = $this->pdo->prepare("SELECT * FROM reservations WHERE chauffeur_id = :id ORDER BY id DESC");
+            $stmt->execute(['id' => $id]);
+            $reservations = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+            $this->render('Historique chauffeur', $this->resolveView(['modules/booking-chauffeur-history.php']), compact('chauffeur','reservations'));
+            return;
+        }
+
+
+if ($action === 'chauffeur_documents') {
             $id = (int)($_GET['id'] ?? 0);
             $chauffeur = $this->findChauffeur($id);
 
