@@ -134,7 +134,7 @@ trait HandlesBooking
                 exit;
             }
 
-            require __DIR__ . '/../../views/modules/booking-voucher.php';
+            $this->render('Bon de réservation VTC', $this->resolveView(['modules/booking-voucher.php']), compact('booking'));
             return;
         }
 
