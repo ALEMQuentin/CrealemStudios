@@ -417,6 +417,48 @@ trait HandlesBooking
             return;
         }
 
+        $googleConfigPath = dirname(__DIR__, 3) . '/config/google.local.php';
+        $googleKey = file_exists($googleConfigPath) ? (string)((require $googleConfigPath)['maps_api_key'] ?? '') : '';
+
+        if ($googleKey === '') {
+            http_response_code(422);
+            echo json_encode(['error' => 'Clé Google Maps manquante'], JSON_UNESCAPED_UNICODE);
+            return;
+        }
+
+        $url = 'https://maps.googleapis.com/maps/api/distancematrix/json?'
+            . http_build_query([
+                'origins' => $pickup,
+                'destinations' => $dropoff,
+                'mode' => 'driving',
+                'language' => 'fr',
+                'units' => 'metric',
+                'key' => $googleKey,
+            ]);
+
+        $raw = @file_get_contents($url);
+        if ($raw === false) {
+            http_response_code(502);
+            echo json_encode(['error' => 'Impossible de contacter Google Distance Matrix'], JSON_UNESCAPED_UNICODE);
+            return;
+        }
+
+        $google = json_decode($raw, true);
+        $element = $google['rows'][0]['elements'][0] ?? null;
+
+        if (($google['status'] ?? '') !== 'OK' || !$element || ($element['status'] ?? '') !== 'OK') {
+            http_response_code(422);
+            echo json_encode([
+                'error' => 'Google n’a pas pu calculer cet itinéraire',
+                'google_status' => $google['status'] ?? null,
+                'route_status' => $element['status'] ?? null,
+            ], JSON_UNESCAPED_UNICODE);
+            return;
+        }
+
+        $distanceMeters = (int)($element['distance']['value'] ?? 0);
+        $durationSeconds = (int)($element['duration']['value'] ?? 0);
+
         $stmt = $this->pdo->prepare("
             SELECT *
             FROM booking_tariffs
@@ -437,23 +479,31 @@ trait HandlesBooking
             return;
         }
 
-        $estimatedKm = max(5, min(80, (int)ceil((mb_strlen($pickup) + mb_strlen($dropoff)) / 12)));
-        $estimatedMinutes = max(10, (int)ceil($estimatedKm * 2.2));
+        $km = $distanceMeters / 1000;
+        $minutes = $durationSeconds / 60;
 
         $price = (float)$tariff['base_fare']
-            + ($estimatedKm * (float)$tariff['price_per_km'])
-            + ($estimatedMinutes * (float)$tariff['price_per_minute']);
+            + ($km * (float)$tariff['price_per_km'])
+            + ($minutes * (float)$tariff['price_per_minute']);
+
+        $hour = (int)date('H');
+        if ($hour >= 19 || $hour < 7) {
+            $price *= (float)$tariff['night_multiplier'];
+        }
 
         $price = max($price, (float)$tariff['minimum_fare']);
         $price = round($price, 2);
 
         echo json_encode([
             'price' => $price,
-            'distance_meters' => $estimatedKm * 1000,
-            'duration_seconds' => $estimatedMinutes * 60,
-            'routing_provider' => 'booking_tariffs_local',
+            'distance_meters' => $distanceMeters,
+            'duration_seconds' => $durationSeconds,
+            'routing_provider' => 'google_distance_matrix',
+            'google_origin' => $google['origin_addresses'][0] ?? $pickup,
+            'google_destination' => $google['destination_addresses'][0] ?? $dropoff,
         ], JSON_UNESCAPED_UNICODE);
     }
+
 
 
 
