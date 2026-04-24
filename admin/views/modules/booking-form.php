@@ -52,8 +52,8 @@ $vehicle = (string)($booking['vehicle_type'] ?? '');
 }
 
 .booking-tab.is-active {
-    background: #3b82f6;
-    border-color: #3b82f6;
+    background: var(--cs-primary);
+    border-color: var(--cs-primary);
     color: #ffffff;
 }
 
@@ -164,7 +164,7 @@ $vehicle = (string)($booking['vehicle_type'] ?? '');
     border: 0;
     border-radius: 14px;
     padding: 14px 20px;
-    background: #1677ff;
+    background: var(--cs-primary);
     color: #fff;
     font-weight: 800;
     font-size: 18px;
@@ -183,11 +183,11 @@ $vehicle = (string)($booking['vehicle_type'] ?? '');
 }
 
 .booking-btn-outline {
-    border: 1px solid #1677ff;
+    border: 1px solid var(--cs-primary);
     border-radius: 14px;
     padding: 10px 14px;
     background: #fff;
-    color: #1677ff;
+    color: var(--cs-primary);
     font-weight: 800;
     font-size: 16px;
     cursor: pointer;
@@ -234,7 +234,7 @@ $vehicle = (string)($booking['vehicle_type'] ?? '');
 }
 
 .booking-result:hover {
-    border-color: #1677ff;
+    border-color: var(--cs-primary);
     background: #f8fbff;
 }
 
@@ -439,6 +439,7 @@ $vehicle = (string)($booking['vehicle_type'] ?? '');
     </section>
 </form>
 
+<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAtlc5hJlvtT6J0Wkt13l2JMTE_NfPByI4&libraries=places,geometry"></script>
 <script>
 (function () {
     const panels = Array.from(document.querySelectorAll('[data-step-panel]'));
@@ -467,6 +468,10 @@ $vehicle = (string)($booking['vehicle_type'] ?? '');
         const mode = document.querySelector('input[name="client_mode"]:checked')?.value || 'existing';
         document.getElementById('existing-client-block').style.display = mode === 'existing' ? 'block' : 'none';
         document.getElementById('new-client-block').style.display = mode === 'new' ? 'block' : 'none';
+
+        if (mode === 'new') {
+            document.getElementById('client_id').value = '';
+        }
     }
 
     document.querySelectorAll('input[name="client_mode"]').forEach(input => {
