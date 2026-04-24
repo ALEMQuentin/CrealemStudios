@@ -26,6 +26,41 @@ trait HandlesBooking
             redirectTo('/admin.php?module=booking&action=tariffs&success=Tarifs enregistrés');
         }
 
+        if ($action === 'chauffeurs') {
+            $chauffeurs = $this->pdo->query("SELECT * FROM chauffeurs ORDER BY last_name ASC, first_name ASC")->fetchAll(\PDO::FETCH_ASSOC);
+            $this->render('Chauffeurs', $this->resolveView(['modules/booking-chauffeurs-list.php']), compact('chauffeurs'));
+            return;
+        }
+
+        if ($action === 'chauffeur_create') {
+            $chauffeur = $this->emptyChauffeur();
+            $this->render('Nouveau chauffeur', $this->resolveView(['modules/booking-chauffeur-form.php']), compact('chauffeur'));
+            return;
+        }
+
+        if ($action === 'chauffeur_edit') {
+            $id = (int)($_GET['id'] ?? 0);
+            $chauffeur = $this->findChauffeur($id);
+
+            if (!$chauffeur) {
+                redirectTo('/admin.php?module=booking&action=chauffeurs&error=Chauffeur introuvable');
+            }
+
+            $this->render('Modifier chauffeur', $this->resolveView(['modules/booking-chauffeur-form.php']), compact('chauffeur'));
+            return;
+        }
+
+        if ($action === 'chauffeur_save' && $_SERVER['REQUEST_METHOD'] === 'POST') {
+            $this->saveChauffeur((int)($_GET['id'] ?? 0));
+            redirectTo('/admin.php?module=booking&action=chauffeurs&success=Chauffeur enregistré');
+        }
+
+        if ($action === 'chauffeur_delete') {
+            $id = (int)($_GET['id'] ?? 0);
+            $this->pdo->prepare("DELETE FROM chauffeurs WHERE id = :id")->execute(['id' => $id]);
+            redirectTo('/admin.php?module=booking&action=chauffeurs&success=Chauffeur supprimé');
+        }
+
         if ($action === 'client_search') {
             $this->bookingClientSearch();
             return;
@@ -68,6 +103,7 @@ trait HandlesBooking
                 $stmt = $this->pdo->prepare("
                     UPDATE reservations SET
                         client_id = :client_id,
+                        chauffeur_id = :chauffeur_id,
                         client_name = :client_name,
                         client_phone = :client_phone,
                         client_email = :client_email,
@@ -94,6 +130,7 @@ trait HandlesBooking
                 $stmt = $this->pdo->prepare("
                     INSERT INTO reservations (
                         client_id,
+                        chauffeur_id,
                         client_name,
                         client_phone,
                         client_email,
@@ -116,6 +153,7 @@ trait HandlesBooking
                         updated_at
                     ) VALUES (
                         :client_id,
+                        :chauffeur_id,
                         :client_name,
                         :client_phone,
                         :client_email,
@@ -219,6 +257,7 @@ trait HandlesBooking
 
         return [
             'client_id' => max(0, (int)($_POST['client_id'] ?? 0)) ?: null,
+            'chauffeur_id' => max(0, (int)($_POST['chauffeur_id'] ?? 0)) ?: null,
             'client_name' => $clientName,
             'client_phone' => $clientPhone,
             'client_email' => $this->nullableReservationString($_POST['client_email'] ?? null),
@@ -244,6 +283,7 @@ trait HandlesBooking
         return [
             'id' => null,
             'client_id' => null,
+            'chauffeur_id' => null,
             'client_name' => '',
             'client_phone' => '',
             'client_email' => '',
@@ -529,6 +569,104 @@ trait HandlesBooking
          * Sans API cartographique branchée dans CrealemStudios, on ne peut pas calculer une vraie distance routière.
          * On produit donc une estimation structurée, remplaçable ensuite par Google Maps / OSRM / autre provider.
          */
+
+
+    private function emptyChauffeur(): array
+    {
+        return [
+            'id' => null,
+            'first_name' => '',
+            'last_name' => '',
+            'phone' => '',
+            'email' => '',
+            'vehicle_label' => '',
+            'vehicle_plate' => '',
+            'vtc_card_number' => '',
+            'status' => 'active',
+            'notes' => '',
+        ];
+    }
+
+    private function findChauffeur(int $id): ?array
+    {
+        $stmt = $this->pdo->prepare("SELECT * FROM chauffeurs WHERE id = :id");
+        $stmt->execute(['id' => $id]);
+
+        $chauffeur = $stmt->fetch(\PDO::FETCH_ASSOC);
+
+        return $chauffeur ?: null;
+    }
+
+    private function saveChauffeur(int $id = 0): void
+    {
+        $data = [
+            'first_name' => trim((string)($_POST['first_name'] ?? '')),
+            'last_name' => trim((string)($_POST['last_name'] ?? '')),
+            'phone' => trim((string)($_POST['phone'] ?? '')),
+            'email' => trim((string)($_POST['email'] ?? '')),
+            'vehicle_label' => trim((string)($_POST['vehicle_label'] ?? '')),
+            'vehicle_plate' => trim((string)($_POST['vehicle_plate'] ?? '')),
+            'vtc_card_number' => trim((string)($_POST['vtc_card_number'] ?? '')),
+            'status' => in_array((string)($_POST['status'] ?? 'active'), ['active', 'inactive'], true) ? (string)$_POST['status'] : 'active',
+            'notes' => trim((string)($_POST['notes'] ?? '')),
+        ];
+
+        if ($data['first_name'] === '' || $data['last_name'] === '') {
+            redirectTo('/admin.php?module=booking&action=chauffeurs&error=Nom chauffeur obligatoire');
+        }
+
+        if ($id > 0) {
+            $data['id'] = $id;
+
+            $stmt = $this->pdo->prepare("
+                UPDATE chauffeurs SET
+                    first_name = :first_name,
+                    last_name = :last_name,
+                    phone = :phone,
+                    email = :email,
+                    vehicle_label = :vehicle_label,
+                    vehicle_plate = :vehicle_plate,
+                    vtc_card_number = :vtc_card_number,
+                    status = :status,
+                    notes = :notes,
+                    updated_at = CURRENT_TIMESTAMP
+                WHERE id = :id
+            ");
+
+            $stmt->execute($data);
+            return;
+        }
+
+        $stmt = $this->pdo->prepare("
+            INSERT INTO chauffeurs (
+                first_name,
+                last_name,
+                phone,
+                email,
+                vehicle_label,
+                vehicle_plate,
+                vtc_card_number,
+                status,
+                notes,
+                created_at,
+                updated_at
+            ) VALUES (
+                :first_name,
+                :last_name,
+                :phone,
+                :email,
+                :vehicle_label,
+                :vehicle_plate,
+                :vtc_card_number,
+                :status,
+                :notes,
+                CURRENT_TIMESTAMP,
+                CURRENT_TIMESTAMP
+            )
+        ");
+
+        $stmt->execute($data);
+    }
 
     private function saveBookingTariffs(): void
     {

@@ -31,6 +31,7 @@
                     <th>Trajet</th>
                     <th>Passagers</th>
                     <th>Prix</th>
+                    <th>Chauffeur</th>
                     <th>Statut</th>
                     <th style="width:220px;">Actions</th>
                 </tr>
@@ -72,6 +73,14 @@
                             <?= number_format((float)$booking['price'], 2, ',', ' ') ?> €
                         <?php else: ?>
                             -
+                        <?php endif; ?>
+                    </td>
+
+                    <td>
+                        <?php if (!empty($booking['chauffeur_id'])): ?>
+                            #<?= (int)$booking['chauffeur_id'] ?>
+                        <?php else: ?>
+                            Non assigné
                         <?php endif; ?>
                     </td>
 
