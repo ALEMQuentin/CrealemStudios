@@ -2319,3 +2319,40 @@ form.cs-admin-card textarea.form-control::placeholder {
     }
 }
 
+
+/* ===== Print only VTC voucher ===== */
+@media print {
+    body * {
+        visibility: hidden !important;
+    }
+
+    .vtc-voucher,
+    .vtc-voucher * {
+        visibility: visible !important;
+    }
+
+    .vtc-voucher {
+        position: absolute !important;
+        left: 0 !important;
+        top: 0 !important;
+        width: 100% !important;
+        max-width: none !important;
+        margin: 0 !important;
+        padding: 18mm !important;
+        border: none !important;
+        box-shadow: none !important;
+        background: #ffffff !important;
+    }
+
+    .no-print,
+    .no-print * {
+        display: none !important;
+        visibility: hidden !important;
+    }
+
+    @page {
+        size: A4;
+        margin: 0;
+    }
+}
+
