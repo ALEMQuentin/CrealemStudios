@@ -18,17 +18,17 @@ function company_setting(array $settings, string $key, string $default = ''): st
     <div class="company-settings-grid">
         <div>
             <label class="required">Nom de l’entreprise</label>
-            <input class="form-control" name="company_name" required value="<?= company_setting($companySettings, 'company_name', 'ALEM QUENTIN SAS') ?>">
+            <input class="form-control" name="company_name" required value="<?= company_setting($companySettings, 'company_name') ?>">
         </div>
 
         <div>
             <label>Nom commercial</label>
-            <input class="form-control" name="company_trade_name" value="<?= company_setting($companySettings, 'company_trade_name', 'Quentin Chauffeur Privé') ?>">
+            <input class="form-control" name="company_trade_name" value="<?= company_setting($companySettings, 'company_trade_name') ?>">
         </div>
 
         <div>
             <label class="required">SIRET</label>
-            <input class="form-control" name="company_siret" required value="<?= company_setting($companySettings, 'company_siret', '93519598200019') ?>">
+            <input class="form-control" name="company_siret" required value="<?= company_setting($companySettings, 'company_siret') ?>">
         </div>
 
         <div>
@@ -38,12 +38,12 @@ function company_setting(array $settings, string $key, string $default = ''): st
 
         <div>
             <label>Registre VTC</label>
-            <input class="form-control" name="company_vtc_register" value="<?= company_setting($companySettings, 'company_vtc_register', 'EVTC054240028') ?>">
+            <input class="form-control" name="company_vtc_register" value="<?= company_setting($companySettings, 'company_vtc_register') ?>">
         </div>
 
         <div>
             <label>Téléphone</label>
-            <input class="form-control" name="company_phone" value="<?= company_setting($companySettings, 'company_phone', '+33 6 04 17 56 89') ?>">
+            <input class="form-control" name="company_phone" value="<?= company_setting($companySettings, 'company_phone') ?>">
         </div>
 
         <div>
@@ -59,12 +59,12 @@ function company_setting(array $settings, string $key, string $default = ''): st
 
     <div>
         <label class="required">Adresse complète</label>
-        <textarea class="form-control" name="company_address" required rows="4"><?= company_setting($companySettings, 'company_address', "5 rue de Cronstadt\n54000 Nancy") ?></textarea>
+        <textarea class="form-control" name="company_address" required rows="4"><?= company_setting($companySettings, 'company_address') ?></textarea>
     </div>
 
     <div>
         <label>Mentions légales facture</label>
-        <textarea class="form-control" name="company_invoice_legal" rows="4"><?= company_setting($companySettings, 'company_invoice_legal', 'Facture générée depuis CréAlemStudios. Paiement selon le mode convenu lors de la réservation.') ?></textarea>
+        <textarea class="form-control" name="company_invoice_legal" rows="4"><?= company_setting($companySettings, 'company_invoice_legal') ?></textarea>
     </div>
 
     <div class="company-settings-actions">
