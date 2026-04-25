@@ -23,14 +23,20 @@ use App\Controllers\Admin\Concerns\HandlesMedia;
 use App\Controllers\Admin\Concerns\HandlesProducts;
 
 use App\Controllers\Admin\Concerns\HandlesBlog;
+
 use App\Controllers\Admin\Concerns\HandlesUsers;
+
 use App\Controllers\Admin\Concerns\HandlesSettings;
+
 use App\Controllers\Admin\Concerns\HandlesMenus;
 
 use App\Controllers\Admin\Concerns\HandlesPages;
 
 use App\Models\Content;
+
 use PDO;
+
+use App\Controllers\Admin\Concerns\HandlesReservationForms;
 
 class Kernel
 {
@@ -62,7 +68,7 @@ class Kernel
     use HandlesSettings;
 
     use HandlesMenus;
-use App\Controllers\Admin\Concerns\HandlesReservationForms;
+
     use HandlesReservationForms;
 
     use HandlesPages;
@@ -143,6 +149,10 @@ case 'subscriptions':
                 $this->handleSubscriptions($action);
                 return;
             case 'booking_forms':
+                $this->handleReservationForms($action);
+                break;
+
+            case 'reservation_forms':
                 $this->handleReservationForms($action);
                 break;
 
