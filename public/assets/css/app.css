@@ -2726,3 +2726,26 @@ form[action="/admin.php?module=settings&action=save_company"] .form-control:focu
     }
 }
 
+
+/* FIX modules optionnels */
+.settings-module-card {
+    display: flex !important;
+    align-items: center !important;
+    gap: 12px !important;
+    padding: 14px 16px !important;
+    border-radius: 14px !important;
+    background: #fff !important;
+    border: 1px solid #cbd5e1 !important;
+}
+
+.settings-module-card input[type="checkbox"] {
+    width: 18px !important;
+    height: 18px !important;
+    flex: 0 0 18px !important;
+}
+
+.settings-module-card span {
+    flex: 1;
+    font-weight: 600;
+}
+
