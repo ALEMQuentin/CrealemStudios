@@ -23,6 +23,7 @@ use App\Controllers\Admin\Concerns\HandlesMedia;
 use App\Controllers\Admin\Concerns\HandlesProducts;
 
 use App\Controllers\Admin\Concerns\HandlesBlog;
+use App\Controllers\Admin\Concerns\HandlesUsers;
 
 use App\Controllers\Admin\Concerns\HandlesPages;
 
@@ -53,6 +54,8 @@ class Kernel
     use HandlesProducts;
 
     use HandlesBlog;
+
+    use HandlesUsers;
 
     use HandlesPages;
 
