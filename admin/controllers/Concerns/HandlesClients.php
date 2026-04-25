@@ -74,4 +74,51 @@ if ($action === 'create') {
 
         redirectTo('/admin.php?module=clients');
     }
+    private function ensureClientUserAccount(int $clientId): void
+    {
+        $client = $this->fetchOne("SELECT * FROM clients WHERE id = :id", ['id' => $clientId]);
+
+        if (!$client || empty($client['email'])) {
+            return;
+        }
+
+        if (!empty($client['user_id'])) {
+            return;
+        }
+
+        $existingUser = $this->fetchOne("SELECT * FROM users WHERE email = :email LIMIT 1", [
+            'email' => $client['email'],
+        ]);
+
+        if ($existingUser) {
+            $this->pdo->prepare("UPDATE clients SET user_id = :user_id WHERE id = :client_id")
+                ->execute([
+                    'user_id' => (int)$existingUser['id'],
+                    'client_id' => $clientId,
+                ]);
+            return;
+        }
+
+        $name = trim((string)($client['first_name'] ?? '') . ' ' . (string)($client['last_name'] ?? ''));
+        $temporaryPassword = password_hash(bin2hex(random_bytes(8)), PASSWORD_DEFAULT);
+
+        $stmt = $this->pdo->prepare("
+            INSERT INTO users (name, email, password, role, created_at, updated_at)
+            VALUES (:name, :email, :password, 'client', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+        ");
+
+        $stmt->execute([
+            'name' => $name !== '' ? $name : (string)$client['email'],
+            'email' => (string)$client['email'],
+            'password' => $temporaryPassword,
+        ]);
+
+        $this->pdo->prepare("UPDATE clients SET user_id = :user_id WHERE id = :client_id")
+            ->execute([
+                'user_id' => (int)$this->pdo->lastInsertId(),
+                'client_id' => $clientId,
+            ]);
+    }
+
+
 }
