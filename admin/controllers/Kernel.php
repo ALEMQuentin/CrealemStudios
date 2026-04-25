@@ -25,6 +25,7 @@ use App\Controllers\Admin\Concerns\HandlesProducts;
 use App\Controllers\Admin\Concerns\HandlesBlog;
 use App\Controllers\Admin\Concerns\HandlesUsers;
 use App\Controllers\Admin\Concerns\HandlesSettings;
+use App\Controllers\Admin\Concerns\HandlesMenus;
 
 use App\Controllers\Admin\Concerns\HandlesPages;
 
@@ -59,6 +60,8 @@ class Kernel
     use HandlesUsers;
 
     use HandlesSettings;
+
+    use HandlesMenus;
 
     use HandlesPages;
 
