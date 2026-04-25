@@ -15,6 +15,23 @@ trait HandlesReservationForms
             exit;
         }
 
+        
+        if ($action === 'fields') {
+
+            $formId = (int)($_GET['id'] ?? 0);
+
+            $stmt = $this->pdo->prepare("SELECT * FROM booking_forms WHERE id = ?");
+            $stmt->execute([$formId]);
+            $form = $stmt->fetch();
+
+            $stmt = $this->pdo->prepare("SELECT * FROM booking_form_fields WHERE form_id = ? ORDER BY position ASC");
+            $stmt->execute([$formId]);
+            $fields = $stmt->fetchAll();
+
+            $this->render('Champs formulaire', 'modules/reservation_forms-fields.php', compact('form', 'fields'));
+            return;
+        }
+
         if ($action === 'create') {
             $this->render('Créer formulaire', 'modules/reservation_forms-create.php');
             return;
