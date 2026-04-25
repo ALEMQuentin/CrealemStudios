@@ -35,15 +35,35 @@
     </div></div></div>
 
     <div class="col-md-4"><div class="card"><div class="card-body">
-        <div class="text-muted">Courses non assignées</div>
+        <div class="text-muted">Non assignées</div>
         <div class="display-6 text-danger"><?= (int)$stats['unassigned'] ?></div>
     </div></div></div>
 
 </div>
 
+<?php if (!empty($unassignedBookings)): ?>
+<div class="card mt-4 border-danger">
+    <div class="card-body">
+        <h2 class="h5 text-danger mb-3">⚠️ Courses à assigner</h2>
+
+        <ul class="mb-0">
+            <?php foreach ($unassignedBookings as $b): ?>
+                <li>
+                    <?= htmlspecialchars($b['date']) ?> — 
+                    <?= htmlspecialchars($b['client']) ?> — 
+                    <?= htmlspecialchars($b['route']) ?>
+                    <a href="/admin.php?module=booking&action=edit&id=<?= $b['id'] ?>">→ assigner</a>
+                </li>
+            <?php endforeach; ?>
+        </ul>
+    </div>
+</div>
+<?php endif; ?>
+
 <div class="card mt-4">
     <div class="card-body">
         <h2 class="h5 mb-3">Dernières réservations</h2>
+
         <table class="table">
             <thead>
                 <tr>
@@ -64,5 +84,6 @@
                 <?php endforeach; ?>
             </tbody>
         </table>
+
     </div>
 </div>

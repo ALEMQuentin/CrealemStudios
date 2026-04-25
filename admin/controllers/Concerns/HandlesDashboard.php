@@ -11,7 +11,6 @@ trait HandlesDashboard
         $month = date('Y-m');
 
         $stats = [
-
             'bookings_today' => $this->countQuery("
                 SELECT COUNT(*) FROM reservations
                 WHERE DATE(pickup_datetime) = :today
@@ -43,7 +42,7 @@ trait HandlesDashboard
             "),
         ];
 
-        $stmt = $this->pdo->query("
+        $recentBookings = $this->fetchAll("
             SELECT
                 id,
                 pickup_datetime AS date,
@@ -51,11 +50,21 @@ trait HandlesDashboard
                 pickup_address || ' → ' || dropoff_address AS route,
                 status
             FROM reservations
-            ORDER BY pickup_datetime DESC
+            ORDER BY datetime(pickup_datetime) DESC
             LIMIT 10
         ");
 
-        $recentBookings = $stmt ? $stmt->fetchAll(\PDO::FETCH_ASSOC) : [];
+        $unassignedBookings = $this->fetchAll("
+            SELECT
+                id,
+                pickup_datetime AS date,
+                client_name AS client,
+                pickup_address || ' → ' || dropoff_address AS route
+            FROM reservations
+            WHERE chauffeur_id IS NULL
+            ORDER BY datetime(pickup_datetime) ASC
+            LIMIT 5
+        ");
 
         $this->render(
             'Dashboard',
@@ -63,7 +72,7 @@ trait HandlesDashboard
                 'modules/dashboard.php',
                 'admin/dashboard.php',
             ]),
-            compact('stats', 'recentBookings')
+            compact('stats', 'recentBookings', 'unassignedBookings')
         );
     }
 
@@ -79,5 +88,12 @@ trait HandlesDashboard
         $stmt = $this->pdo->prepare($sql);
         $stmt->execute($params);
         return (float)($stmt->fetchColumn() ?? 0);
+    }
+
+    private function fetchAll(string $sql, array $params = []): array
+    {
+        $stmt = $this->pdo->prepare($sql);
+        $stmt->execute($params);
+        return $stmt->fetchAll(\PDO::FETCH_ASSOC);
     }
 }
