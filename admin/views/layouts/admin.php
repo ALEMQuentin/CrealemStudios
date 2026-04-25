@@ -209,8 +209,9 @@ $accordionSystemOpen = in_array($currentModule, ['users', 'settings'], true);
                         Ajouter un utilisateur
                     </a>
                     <a class="cs-admin-subnav-link <?= ($currentModule === 'settings') ? 'is-active' : '' ?>" href="/admin.php?module=settings">
-                    <a class="cs-sidebar-link cs-sidebar-sublink" href="/admin.php?module=settings&action=company">Paramètres entreprise</a>
                         Paramètres
+                    </a>
+                    <a class="cs-admin-subnav-link" href="/admin.php?module=settings&action=company">Paramètres entreprise
                     </a>
                 </div>
             </nav>
