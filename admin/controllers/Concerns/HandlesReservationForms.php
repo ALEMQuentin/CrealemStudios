@@ -16,6 +16,28 @@ trait HandlesReservationForms
         }
 
         
+        
+        if ($action === 'add_field') {
+
+            $formId = (int)($_GET['id'] ?? 0);
+
+            $stmt = $this->pdo->prepare("
+                INSERT INTO booking_form_fields (form_id, name, label, type, required)
+                VALUES (?, ?, ?, ?, ?)
+            ");
+
+            $stmt->execute([
+                $formId,
+                $_POST['name'],
+                $_POST['label'],
+                $_POST['type'],
+                (int)$_POST['required']
+            ]);
+
+            header("Location: /admin.php?module=booking_forms&action=fields&id=" . $formId);
+            exit;
+        }
+
         if ($action === 'fields') {
 
             $formId = (int)($_GET['id'] ?? 0);
