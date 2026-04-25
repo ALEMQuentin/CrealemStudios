@@ -19,7 +19,7 @@ trait HandlesDashboard
 
             'bookings_upcoming' => $this->countQuery("
                 SELECT COUNT(*) FROM reservations
-                WHERE pickup_datetime > NOW()
+                WHERE datetime(pickup_datetime) > datetime('now')
             "),
 
             'clients' => $this->safeCount('clients'),
@@ -28,18 +28,18 @@ trait HandlesDashboard
             'revenue_today' => $this->sumQuery("
                 SELECT SUM(price) FROM reservations
                 WHERE DATE(pickup_datetime) = :today
-                AND status = 'completed'
+                AND status = 'terminee'
             ", ['today' => $today]),
 
             'revenue_month' => $this->sumQuery("
                 SELECT SUM(price) FROM reservations
-                WHERE DATE_FORMAT(pickup_datetime, '%Y-%m') = :month
-                AND status = 'completed'
+                WHERE strftime('%Y-%m', pickup_datetime) = :month
+                AND status = 'terminee'
             ", ['month' => $month]),
 
             'unassigned' => $this->countQuery("
                 SELECT COUNT(*) FROM reservations
-                WHERE driver_id IS NULL
+                WHERE chauffeur_id IS NULL
             "),
         ];
 
@@ -48,7 +48,7 @@ trait HandlesDashboard
                 id,
                 pickup_datetime AS date,
                 client_name AS client,
-                CONCAT(pickup_address, ' → ', dropoff_address) AS route,
+                pickup_address || ' → ' || dropoff_address AS route,
                 status
             FROM reservations
             ORDER BY pickup_datetime DESC
