@@ -2726,3 +2726,56 @@ form[action="/admin.php?module=settings&action=save_company"] .form-control:focu
     }
 }
 
+
+/* ===== Global admin input visibility fix ===== */
+.cs-admin-body input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="hidden"]),
+.cs-admin-body select,
+.cs-admin-body textarea,
+.cs-admin-body .form-control,
+.cs-admin-body .booking-input,
+.cs-admin-body .booking-select,
+.cs-admin-body .booking-textarea {
+    width: 100%;
+    min-height: 46px;
+    padding: 12px 14px;
+    border: 1px solid #cbd5e1 !important;
+    border-radius: 12px !important;
+    background: #ffffff !important;
+    color: #0f172a !important;
+    box-shadow: inset 0 1px 2px rgba(15, 23, 42, 0.04);
+    box-sizing: border-box;
+}
+
+.cs-admin-body textarea,
+.cs-admin-body textarea.form-control {
+    min-height: 120px;
+}
+
+.cs-admin-body input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="hidden"]):hover,
+.cs-admin-body select:hover,
+.cs-admin-body textarea:hover,
+.cs-admin-body .form-control:hover {
+    border-color: #94a3b8 !important;
+}
+
+.cs-admin-body input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="hidden"]):focus,
+.cs-admin-body select:focus,
+.cs-admin-body textarea:focus,
+.cs-admin-body .form-control:focus {
+    outline: none !important;
+    border-color: var(--cs-primary) !important;
+    box-shadow: 0 0 0 4px rgba(47, 111, 87, 0.14) !important;
+}
+
+.cs-admin-body label {
+    display: block;
+    margin-bottom: 8px;
+    color: #1e293b;
+    font-weight: 700;
+}
+
+.cs-admin-body input::placeholder,
+.cs-admin-body textarea::placeholder {
+    color: #94a3b8;
+}
+
