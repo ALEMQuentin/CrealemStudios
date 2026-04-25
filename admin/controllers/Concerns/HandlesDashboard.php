@@ -3,45 +3,42 @@ declare(strict_types=1);
 
 namespace App\Controllers\Admin\Concerns;
 
-use PDO;
-
 trait HandlesDashboard
 {
     private function handleDashboard(): void
     {
         $today = date('Y-m-d');
 
-        // Stats principales
         $stats = [
             'bookings_today' => $this->countQuery("
-                SELECT COUNT(*) FROM bookings 
-                WHERE DATE(pickup_date) = :today
+                SELECT COUNT(*)
+                FROM reservations
+                WHERE DATE(pickup_datetime) = :today
             ", ['today' => $today]),
 
             'bookings_upcoming' => $this->countQuery("
-                SELECT COUNT(*) FROM bookings 
-                WHERE pickup_date > NOW()
+                SELECT COUNT(*)
+                FROM reservations
+                WHERE datetime(pickup_datetime) >= datetime('now')
             "),
 
             'clients' => $this->safeCount('clients'),
-            'drivers' => $this->safeCount('drivers'),
+            'drivers' => $this->safeCount('chauffeurs'),
         ];
 
-        // Dernières réservations
         $stmt = $this->pdo->query("
-            SELECT 
-                b.id,
-                b.pickup_date AS date,
-                CONCAT(c.first_name, ' ', c.last_name) AS client,
-                CONCAT(b.pickup_address, ' → ', b.dropoff_address) AS route,
-                b.status
-            FROM bookings b
-            LEFT JOIN clients c ON c.id = b.client_id
-            ORDER BY b.pickup_date DESC
+            SELECT
+                id,
+                pickup_datetime AS date,
+                client_name AS client,
+                pickup_address || ' → ' || dropoff_address AS route,
+                status
+            FROM reservations
+            ORDER BY datetime(pickup_datetime) DESC, id DESC
             LIMIT 10
         ");
 
-        $recentBookings = $stmt ? $stmt->fetchAll(PDO::FETCH_ASSOC) : [];
+        $recentBookings = $stmt ? $stmt->fetchAll(\PDO::FETCH_ASSOC) : [];
 
         $this->render(
             'Dashboard',
@@ -57,6 +54,7 @@ trait HandlesDashboard
     {
         $stmt = $this->pdo->prepare($sql);
         $stmt->execute($params);
+
         return (int)$stmt->fetchColumn();
     }
 }
