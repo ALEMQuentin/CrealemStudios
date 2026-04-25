@@ -62,6 +62,7 @@ class Kernel
     use HandlesSettings;
 
     use HandlesMenus;
+    use HandlesReservationForms;
 
     use HandlesPages;
 
@@ -140,7 +141,15 @@ class Kernel
 case 'subscriptions':
                 $this->handleSubscriptions($action);
                 return;
+            case 'booking_forms':
+                $this->handleReservationForms($action);
+                break;
+
             case 'booking':
+            case 'booking_forms':
+                $this->handleReservationForms($action);
+                break;
+
             case 'booking':
                 $this->handleBooking($action);
                 return;
