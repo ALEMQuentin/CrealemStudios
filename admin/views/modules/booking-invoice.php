@@ -2,21 +2,24 @@
 $company = [];
 
 try {
-    $company = $this->pdo->query("SELECT * FROM company_settings LIMIT 1")->fetch(\PDO::FETCH_ASSOC) ?: [];
+    $stmtCompany = $this->pdo->query("SELECT setting_key, setting_value FROM settings");
+    foreach ($stmtCompany->fetchAll(\PDO::FETCH_ASSOC) as $row) {
+        $company[(string)$row['setting_key']] = (string)$row['setting_value'];
+    }
 } catch (\Throwable $e) {
     $company = [];
 }
 
-$companyName = $company['name'] ?? 'Entreprise non renseignée';
-$companyTradeName = $company['trade_name'] ?? '';
-$companyAddress = $company['address'] ?? 'Adresse non renseignée';
-$companySiret = $company['siret'] ?? '';
-$companyVat = $company['vat_number'] ?? '';
-$companyVtc = $company['vtc_register'] ?? '';
-$companyPhone = $company['phone'] ?? '';
-$companyEmail = $company['email'] ?? '';
-$companyWebsite = $company['website'] ?? '';
-$companyLegal = $company['invoice_legal'] ?? 'Facture générée depuis CréAlemStudios. Paiement selon le mode convenu lors de la réservation.';
+$companyName = $company['company_name'] ?? 'Entreprise non renseignée';
+$companyTradeName = $company['company_trade_name'] ?? '';
+$companyAddress = $company['company_address'] ?? 'Adresse non renseignée';
+$companySiret = $company['company_siret'] ?? '';
+$companyVat = $company['company_vat_number'] ?? '';
+$companyVtc = $company['company_vtc_register'] ?? '';
+$companyPhone = $company['company_phone'] ?? '';
+$companyEmail = $company['company_email'] ?? '';
+$companyWebsite = $company['company_website'] ?? '';
+$companyLegal = $company['company_invoice_legal'] ?? 'Facture générée depuis CréAlemStudios. Paiement selon le mode convenu lors de la réservation.';
 
 $bookingId = (int)($booking['id'] ?? 0);
 $invoiceNumber = 'FAC-' . date('Y') . '-' . str_pad((string)$bookingId, 5, '0', STR_PAD_LEFT);
@@ -57,14 +60,14 @@ $distanceKm = !empty($booking['distance_meters'])
         </div>
 
         <div>
-            <strong><?= htmlspecialchars($company['name'] ?? 'Entreprise non renseignée') ?></strong><br>
-<?= nl2br(htmlspecialchars($company['address'] ?? 'Adresse non renseignée')) ?><br>
-SIRET : <?= htmlspecialchars($company['siret'] ?? '') ?><br>
-<?php if (!empty($company['vat_number'])): ?>
-TVA : <?= htmlspecialchars($company['vat_number']) ?><br>
+            <strong><?= htmlspecialchars($company['company_name'] ?? 'Entreprise non renseignée') ?></strong><br>
+<?= nl2br(htmlspecialchars($company['company_address'] ?? 'Adresse non renseignée')) ?><br>
+SIRET : <?= htmlspecialchars($company['company_siret'] ?? '') ?><br>
+<?php if (!empty($company['company_vat_number'])): ?>
+TVA : <?= htmlspecialchars($company['company_vat_number']) ?><br>
 <?php endif; ?>
-<?php if (!empty($company['vtc_register'])): ?>
-Registre VTC : <?= htmlspecialchars($company['vtc_register']) ?>
+<?php if (!empty($company['company_vtc_register'])): ?>
+Registre VTC : <?= htmlspecialchars($company['company_vtc_register']) ?>
 <?php endif; ?>
         </div>
     </header>

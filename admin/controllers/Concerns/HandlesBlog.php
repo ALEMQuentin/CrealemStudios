@@ -400,7 +400,7 @@ trait HandlesBlog
         }
 
         if ($action === 'save_company' && $_SERVER['REQUEST_METHOD'] === 'POST') {
-            $this->saveCompanySettingsV2();
+            $this->saveCompanySettings();
             redirectTo('/admin.php?module=settings&action=company&success=Paramètres entreprise enregistrés');
         }
 
@@ -465,10 +465,6 @@ trait HandlesBlog
         ];
 
         foreach ($allowed as $key) {
-
-            if (!isset($_POST[$key])) {
-                continue;
-            }
             $value = trim((string)($_POST[$key] ?? ''));
 
             $existing = $this->pdo->prepare("SELECT id FROM settings WHERE setting_key = :key LIMIT 1");
@@ -486,38 +482,4 @@ trait HandlesBlog
     }
 
 
-    private function saveCompanySettingsV2(): void
-    {
-        $data = [
-            'name' => $_POST['company_name'] ?? '',
-            'trade_name' => $_POST['company_trade_name'] ?? '',
-            'address' => $_POST['company_address'] ?? '',
-            'siret' => $_POST['company_siret'] ?? '',
-            'vat_number' => $_POST['company_vat_number'] ?? '',
-            'vtc_register' => $_POST['company_vtc_register'] ?? '',
-            'phone' => $_POST['company_phone'] ?? '',
-            'email' => $_POST['company_email'] ?? '',
-            'website' => $_POST['company_website'] ?? '',
-            'invoice_legal' => $_POST['company_invoice_legal'] ?? '',
-        ];
-
-        $stmt = $this->pdo->prepare("
-            UPDATE company_settings SET
-                name=:name,
-                trade_name=:trade_name,
-                address=:address,
-                siret=:siret,
-                vat_number=:vat_number,
-                vtc_register=:vtc_register,
-                phone=:phone,
-                email=:email,
-                website=:website,
-                invoice_legal=:invoice_legal,
-                updated_at=CURRENT_TIMESTAMP
-            WHERE id=1
-        ");
-
-        $stmt->execute($data);
-    }
-    
 }
