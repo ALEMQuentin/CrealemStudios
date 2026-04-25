@@ -62,6 +62,7 @@ class Kernel
     use HandlesSettings;
 
     use HandlesMenus;
+use App\Controllers\Admin\Concerns\HandlesReservationForms;
     use HandlesReservationForms;
 
     use HandlesPages;
