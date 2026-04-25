@@ -27,6 +27,7 @@
                     <select class="form-select" name="role">
                         <option value="admin" <?= (($user['role'] ?? '') === 'admin') ? 'selected' : '' ?>>Administrateur</option>
                         <option value="editor" <?= (($user['role'] ?? '') === 'editor') ? 'selected' : '' ?>>Éditeur</option>
+                    <option value="client" <?= (($user['role'] ?? '') === 'client') ? 'selected' : '' ?>>Client</option>
                     </select>
                 </div>
 

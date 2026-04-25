@@ -40,7 +40,7 @@ trait HandlesUsers
             $data = [
                 'name' => trim($_POST['name'] ?? ''),
                 'email' => trim($_POST['email'] ?? ''),
-                'role' => trim($_POST['role'] ?? 'editor'),
+                'role' => in_array(trim((string)($_POST['role'] ?? 'editor')), ['admin', 'editor', 'client'], true) ? trim((string)$_POST['role']) : 'editor',
                 'updated_at' => $now,
             ];
 
