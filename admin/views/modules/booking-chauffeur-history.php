@@ -16,6 +16,7 @@ $name = trim(($chauffeur['first_name'] ?? '') . ' ' . ($chauffeur['last_name'] ?
                 <th>Date</th>
                 <th>Client</th>
                 <th>Prix</th>
+                <th>Documents</th>
             </tr>
         </thead>
 
@@ -26,6 +27,11 @@ $name = trim(($chauffeur['first_name'] ?? '') . ' ' . ($chauffeur['last_name'] ?
                 <td><?= htmlspecialchars($b['pickup_datetime'] ?? '') ?></td>
                 <td><?= htmlspecialchars($b['client_name'] ?? '') ?></td>
                 <td><?= number_format((float)$b['price'], 2, ',', ' ') ?> €</td>
+                <td>
+                    <a class="btn btn-sm btn-outline-secondary" href="/admin.php?module=booking&action=voucher&id=<?= (int)$b['id'] ?>">
+                        Bon VTC
+                    </a>
+                </td>
             </tr>
         <?php endforeach; ?>
         </tbody>
