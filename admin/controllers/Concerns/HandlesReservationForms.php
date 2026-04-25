@@ -50,17 +50,17 @@ trait HandlesReservationForms
             $stmt->execute([$formId]);
             $fields = $stmt->fetchAll();
 
-            $this->render('Champs formulaire', 'modules/reservation_forms-fields.php', compact('form', 'fields'));
+            $this->render('Champs formulaire', $this->resolveView(['modules/reservation_forms-fields.php']), compact('form', 'fields'));
             return;
         }
 
         if ($action === 'create') {
-            $this->render('Créer formulaire', 'modules/reservation_forms-create.php');
+            $this->render('Créer formulaire', $this->resolveView(['modules/reservation_forms-create.php']));
             return;
         }
 
         $forms = $this->pdo->query("SELECT * FROM reservation_forms ORDER BY id DESC")->fetchAll();
 
-        $this->render('Formulaires réservation', 'modules/reservation_forms-index.php', compact('forms'));
+        $this->render('Formulaires réservation', $this->resolveView(['modules/reservation_forms-index.php']), compact('forms'));
     }
 }
