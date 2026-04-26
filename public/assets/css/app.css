@@ -2801,3 +2801,25 @@ form[action="/admin.php?module=settings&action=save_company"] .form-control:focu
     margin-left: 8px;
 }
 
+
+/* ===== Sidebar relation client / reservations group ===== */
+.cs-admin-subnav-group {
+    margin: 8px 0;
+    padding: 8px 0 8px 12px;
+    border-left: 2px solid rgba(255,255,255,0.18);
+}
+
+.cs-admin-subnav-title {
+    margin: 4px 0 8px;
+    padding-left: 10px;
+    color: rgba(255,255,255,0.72);
+    font-size: 12px;
+    font-weight: 900;
+    text-transform: uppercase;
+    letter-spacing: .04em;
+}
+
+.cs-admin-subnav-group .cs-admin-subnav-link {
+    margin-left: 8px;
+}
+

@@ -174,13 +174,24 @@ $accordionSystemOpen = in_array($currentModule, ['users', 'settings'], true);
                         <?php endif; ?>
 
                         <?php if (($settings['module_booking'] ?? '0') === '1'): ?>
-                            <a class="cs-admin-subnav-link <?= ($currentModule === 'booking' && $currentAction === 'index') ? 'is-active' : '' ?>" href="/admin.php?module=booking">
-                                Toutes les réservations
-                            </a>
-                            <a class="cs-admin-subnav-link <?= ($currentModule === 'booking' && $currentAction === 'create') ? 'is-active' : '' ?>" href="/admin.php?module=booking&action=create">
-                                Ajouter une réservation
-                            </a>
-                        <?php endif; ?>
+
+<div class="cs-admin-subnav-group">
+    <div class="cs-admin-subnav-title">Réservations</div>
+
+    <a class="cs-admin-subnav-link <?= ($currentModule === 'booking' && $currentAction === 'index') ? 'is-active' : '' ?>" href="/admin.php?module=booking">
+        Toutes les réservations
+    </a>
+
+    <a class="cs-admin-subnav-link <?= ($currentModule === 'booking' && $currentAction === 'create') ? 'is-active' : '' ?>" href="/admin.php?module=booking&action=create">
+        Ajouter une réservation
+    </a>
+
+    <a class="cs-admin-subnav-link <?= ($currentModule === 'reservation_forms') ? 'is-active' : '' ?>" href="/admin.php?module=reservation_forms">
+        Formulaires de réservation
+    </a>
+</div>
+
+<?php endif; ?>
 
                         <?php if (($settings['module_subscriptions'] ?? '0') === '1'): ?>
                             <a class="cs-admin-subnav-link <?= ($currentModule === 'subscriptions' && $currentAction === 'index') ? 'is-active' : '' ?>" href="/admin.php?module=subscriptions">
