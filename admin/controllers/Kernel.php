@@ -148,9 +148,6 @@ class Kernel
 case 'subscriptions':
                 $this->handleSubscriptions($action);
                 return;
-            case 'booking_forms':
-                $this->handleReservationForms($action);
-                break;
 
             case 'reservation_forms':
                 $this->handleReservationForms($action);
@@ -158,7 +155,7 @@ case 'subscriptions':
 
             case 'booking':
             case 'booking_forms':
-                $this->handleReservationForms($action);
+                $this->handleBooking($action);
                 break;
 
             case 'booking':
