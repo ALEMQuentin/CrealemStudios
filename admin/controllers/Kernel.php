@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 namespace App\Controllers\Admin;
 
+use App\Controllers\Admin\Modules\UserModule;
 use PDO;
 
 final class Kernel
@@ -20,6 +21,20 @@ final class Kernel
         switch ($this->module) {
             case 'dashboard':
                 $this->dashboard();
+                return;
+
+            case 'users':
+                (new UserModule($this->pdo))->handleUsers(
+                    $this->action,
+                    fn (string $title, string $view, array $data = []) => $this->render($title, $view, $data)
+                );
+                return;
+
+            case 'roles':
+                (new UserModule($this->pdo))->handleRoles(
+                    $this->action,
+                    fn (string $title, string $view, array $data = []) => $this->render($title, $view, $data)
+                );
                 return;
 
             default:
