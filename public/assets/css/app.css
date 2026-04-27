@@ -2897,3 +2897,33 @@ form[action="/admin.php?module=settings&action=save_company"] .form-control:focu
     gap: 10px;
 }
 
+
+/* ===== Global CMS checkbox/radio normalization ===== */
+.cs-admin-body input[type="checkbox"],
+.cs-admin-body input[type="radio"] {
+    width: 18px !important;
+    height: 18px !important;
+    min-width: 18px !important;
+    min-height: 18px !important;
+    max-width: 18px !important;
+    max-height: 18px !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    flex: 0 0 18px !important;
+    box-shadow: none !important;
+    cursor: pointer;
+    accent-color: var(--cs-primary);
+}
+
+.cs-admin-body input[type="radio"] {
+    border-radius: 999px !important;
+}
+
+.cs-admin-body label:has(input[type="checkbox"]),
+.cs-admin-body label:has(input[type="radio"]) {
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 10px !important;
+    cursor: pointer;
+}
+
