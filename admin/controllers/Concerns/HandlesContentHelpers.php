@@ -13,27 +13,45 @@ trait HandlesContentHelpers
         $featuredMediaId = trim((string)($_POST['featured_media_id'] ?? ''));
 
         if ($metaTitle !== '') {
-            $stmt = $this->pdo->prepare("INSERT INTO contents_meta (content_id, meta_key, meta_value) VALUES (?, ?, ?) ON DUPLICATE KEY UPDATE meta_value = VALUES(meta_value)");
-$stmt->execute([$id ?? 0, "meta", json_encode($this->pdo, $contentId, 'meta_title', $metaTitle)]);
+            $stmt = $this->pdo->prepare("DELETE FROM contents_meta WHERE content_id = ?");
+$stmt->execute([$id]);
+
+$stmt = $this->pdo->prepare("INSERT INTO contents_meta (content_id, meta_key, meta_value) VALUES (?, ?, ?)");
+$stmt->execute([$id, "meta", json_encode($data)]);
         } else {
-            $stmt = $this->pdo->prepare("INSERT INTO contents_meta (content_id, meta_key, meta_value) VALUES (?, ?, ?) ON DUPLICATE KEY UPDATE meta_value = VALUES(meta_value)");
-$stmt->execute([$id ?? 0, "meta", json_encode($this->pdo, $contentId, 'meta_title')]);
+            $stmt = $this->pdo->prepare("DELETE FROM contents_meta WHERE content_id = ?");
+$stmt->execute([$id]);
+
+$stmt = $this->pdo->prepare("INSERT INTO contents_meta (content_id, meta_key, meta_value) VALUES (?, ?, ?)");
+$stmt->execute([$id, "meta", json_encode($data)]);
         }
 
         if ($metaDescription !== '') {
-            $stmt = $this->pdo->prepare("INSERT INTO contents_meta (content_id, meta_key, meta_value) VALUES (?, ?, ?) ON DUPLICATE KEY UPDATE meta_value = VALUES(meta_value)");
-$stmt->execute([$id ?? 0, "meta", json_encode($this->pdo, $contentId, 'meta_description', $metaDescription)]);
+            $stmt = $this->pdo->prepare("DELETE FROM contents_meta WHERE content_id = ?");
+$stmt->execute([$id]);
+
+$stmt = $this->pdo->prepare("INSERT INTO contents_meta (content_id, meta_key, meta_value) VALUES (?, ?, ?)");
+$stmt->execute([$id, "meta", json_encode($data)]);
         } else {
-            $stmt = $this->pdo->prepare("INSERT INTO contents_meta (content_id, meta_key, meta_value) VALUES (?, ?, ?) ON DUPLICATE KEY UPDATE meta_value = VALUES(meta_value)");
-$stmt->execute([$id ?? 0, "meta", json_encode($this->pdo, $contentId, 'meta_description')]);
+            $stmt = $this->pdo->prepare("DELETE FROM contents_meta WHERE content_id = ?");
+$stmt->execute([$id]);
+
+$stmt = $this->pdo->prepare("INSERT INTO contents_meta (content_id, meta_key, meta_value) VALUES (?, ?, ?)");
+$stmt->execute([$id, "meta", json_encode($data)]);
         }
 
         if ($featuredMediaId !== '') {
-            $stmt = $this->pdo->prepare("INSERT INTO contents_meta (content_id, meta_key, meta_value) VALUES (?, ?, ?) ON DUPLICATE KEY UPDATE meta_value = VALUES(meta_value)");
-$stmt->execute([$id ?? 0, "meta", json_encode($this->pdo, $contentId, 'featured_media_id', $featuredMediaId)]);
+            $stmt = $this->pdo->prepare("DELETE FROM contents_meta WHERE content_id = ?");
+$stmt->execute([$id]);
+
+$stmt = $this->pdo->prepare("INSERT INTO contents_meta (content_id, meta_key, meta_value) VALUES (?, ?, ?)");
+$stmt->execute([$id, "meta", json_encode($data)]);
         } else {
-            $stmt = $this->pdo->prepare("INSERT INTO contents_meta (content_id, meta_key, meta_value) VALUES (?, ?, ?) ON DUPLICATE KEY UPDATE meta_value = VALUES(meta_value)");
-$stmt->execute([$id ?? 0, "meta", json_encode($this->pdo, $contentId, 'featured_media_id')]);
+            $stmt = $this->pdo->prepare("DELETE FROM contents_meta WHERE content_id = ?");
+$stmt->execute([$id]);
+
+$stmt = $this->pdo->prepare("INSERT INTO contents_meta (content_id, meta_key, meta_value) VALUES (?, ?, ?)");
+$stmt->execute([$id, "meta", json_encode($data)]);
         }
     }
 
