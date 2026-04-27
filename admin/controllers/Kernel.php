@@ -181,7 +181,7 @@ class Kernel
     private function resolveView(array $candidates): string
     {
         foreach ($candidates as $candidate) {
-            $path = base_path('admin/views/' . $candidate);
+            $path = \base_path('admin/views/' . $candidate);
 
             if (is_file($path)) {
                 return $path;
