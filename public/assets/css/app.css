@@ -2848,3 +2848,52 @@ form[action="/admin.php?module=settings&action=save_company"] .form-control:focu
     font-size: 22px;
 }
 
+
+/* ===== FIX CHECKBOX / RADIO SIZE (reservation forms) ===== */
+
+.reservation-form-config input[type="checkbox"],
+.reservation-form-config input[type="radio"] {
+    width: 16px;
+    height: 16px;
+    transform: none;
+    cursor: pointer;
+}
+
+.reservation-form-config .settings-module-card {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 12px;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    background: #fff;
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+
+.reservation-form-config .settings-module-card:hover {
+    border-color: #3b82f6;
+    background: #f8fbff;
+}
+
+.reservation-form-config .settings-module-card input {
+    flex-shrink: 0;
+}
+
+.reservation-form-config .settings-module-card span {
+    font-size: 14px;
+    color: #1e293b;
+}
+
+/* Option sélectionnée */
+.reservation-form-config .settings-module-card input:checked + span {
+    font-weight: 600;
+}
+
+/* grille plus compacte */
+.reservation-form-config .settings-modules-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 10px;
+}
+
