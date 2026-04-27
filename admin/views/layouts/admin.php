@@ -12,7 +12,7 @@
             <a href="/admin.php?module=dashboard">Dashboard</a>
             <a href="/admin.php?module=users">Utilisateurs</a>
             <a href="/admin.php?module=roles">Rôles</a>
-            <a href="/admin.php?module=clients">Clients</a>
+            <a href="/admin.php?module=clients">Clients</a> <a href="/admin.php?module=drivers">Chauffeurs</a>
         </nav>
     </header>
 
