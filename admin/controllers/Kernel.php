@@ -1,77 +1,44 @@
 <?php
+declare(strict_types=1);
 
 namespace App\Controllers\Admin;
 
-use App\Controllers\Admin\Concerns\HandlesContentHelpers;
-
-use App\Controllers\Admin\Concerns\HandlesDashboard;
-
-use App\Controllers\Admin\Concerns\HandlesSubscriptions;
-
-use App\Controllers\Admin\Concerns\HandlesBooking;
-
-use App\Controllers\Admin\Concerns\HandlesClients;
-
-use App\Controllers\Admin\Concerns\HandlesTestimonials;
-
-use App\Controllers\Admin\Concerns\HandlesGallery;
-
-use App\Controllers\Admin\Concerns\HandlesForms;
-
-use App\Controllers\Admin\Concerns\HandlesMedia;
-
-use App\Controllers\Admin\Concerns\HandlesProducts;
-
 use App\Controllers\Admin\Concerns\HandlesBlog;
-
-use App\Controllers\Admin\Concerns\HandlesUsers;
-
-use App\Controllers\Admin\Concerns\HandlesSettings;
-
+use App\Controllers\Admin\Concerns\HandlesBooking;
+use App\Controllers\Admin\Concerns\HandlesClients;
+use App\Controllers\Admin\Concerns\HandlesContentHelpers;
+use App\Controllers\Admin\Concerns\HandlesDashboard;
+use App\Controllers\Admin\Concerns\HandlesForms;
+use App\Controllers\Admin\Concerns\HandlesGallery;
+use App\Controllers\Admin\Concerns\HandlesMedia;
 use App\Controllers\Admin\Concerns\HandlesMenus;
-
 use App\Controllers\Admin\Concerns\HandlesPages;
-
-use App\Models\Content;
-
-use PDO;
-
+use App\Controllers\Admin\Concerns\HandlesProducts;
 use App\Controllers\Admin\Concerns\HandlesReservationForms;
+use App\Controllers\Admin\Concerns\HandlesSettings;
+use App\Controllers\Admin\Concerns\HandlesSubscriptions;
+use App\Controllers\Admin\Concerns\HandlesTestimonials;
+use App\Controllers\Admin\Concerns\HandlesUsers;
+use PDO;
 
 class Kernel
 {
-
-    use HandlesContentHelpers;
-
-    use HandlesDashboard;
-
-    use HandlesSubscriptions;
-
-    use HandlesBooking;
-
-    use HandlesClients;
-
-    use HandlesTestimonials;
-
-    use HandlesGallery;
-
-    use HandlesForms;
-
-    use HandlesMedia;
-
-    use HandlesProducts;
-
     use HandlesBlog;
-
-    use HandlesUsers;
-
-    use HandlesSettings;
-
+    use HandlesBooking;
+    use HandlesClients;
+    use HandlesContentHelpers;
+    use HandlesDashboard;
+    use HandlesForms;
+    use HandlesGallery;
+    use HandlesMedia;
     use HandlesMenus;
-
-    use HandlesReservationForms;
-
     use HandlesPages;
+    use HandlesProducts;
+    use HandlesReservationForms;
+    use HandlesSettings;
+    use HandlesSubscriptions;
+    use HandlesTestimonials;
+    use HandlesUsers;
 
     private PDO $pdo;
     private array $config;
@@ -150,12 +117,12 @@ class Kernel
                 $this->handleClients($action);
                 return;
 
-            case 'reservation_forms':
-                $this->handleReservationForms($action);
-                return;
-
             case 'booking':
                 $this->handleBooking($action);
+                return;
+
+            case 'reservation_forms':
+                $this->handleReservationForms($action);
                 return;
 
             default:
@@ -180,8 +147,11 @@ class Kernel
 
     private function resolveView(array $candidates): string
     {
+        $viewsRoot = dirname(__DIR__, 2) . '/views';
+
         foreach ($candidates as $candidate) {
-            $path = \base_path('admin/views/' . $candidate);
+            $candidate = ltrim($candidate, '/');
+            $path = $viewsRoot . '/' . $candidate;
 
             if (is_file($path)) {
                 return $path;
@@ -190,6 +160,4 @@ class Kernel
 
         throw new \RuntimeException('Vue introuvable : ' . implode(', ', $candidates));
     }
-
-
 }
