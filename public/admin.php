@@ -1,8 +1,24 @@
 <?php
+declare(strict_types=1);
 
-require_once __DIR__ . '/../admin/controllers/Kernel.php';
+require_once dirname(__DIR__) . '/app/bootstrap.php';
 
+use App\Core\Database;
 use App\Controllers\Admin\Kernel;
 
-$kernel = new Kernel();
+$config = appConfig();
+$pdo = Database::getInstance($config['db']);
+
+$module = trim((string)($_GET['module'] ?? 'dashboard'));
+$action = trim((string)($_GET['action'] ?? 'index'));
+
+if ($module === '') {
+    $module = 'dashboard';
+}
+
+if ($action === '') {
+    $action = 'index';
+}
+
+$kernel = new Kernel($pdo, $config, $module, $action);
 $kernel->handle();

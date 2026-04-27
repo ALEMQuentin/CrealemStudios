@@ -1,30 +1,61 @@
 <?php
+declare(strict_types=1);
 
 namespace App\Controllers\Admin;
 
-class Kernel
-{
-    public function handle()
-    {
-        $module = $_GET['module'] ?? 'dashboard';
+use PDO;
 
-        switch ($module) {
+final class Kernel
+{
+    public function __construct(
+        private PDO $pdo,
+        private array $config,
+        private string $module,
+        private string $action
+    ) {
+    }
+
+    public function handle(): void
+    {
+        switch ($this->module) {
             case 'dashboard':
+                $this->dashboard();
+                return;
+
             default:
-                return $this->render('modules/dashboard');
+                http_response_code(404);
+                echo 'Module introuvable';
+                return;
         }
     }
 
-    protected function render(string $view, array $data = [])
+    private function dashboard(): void
     {
+        $stats = [
+            'database' => 'connectée',
+            'module' => 'dashboard',
+        ];
+
+        $this->render('Dashboard', 'modules/dashboard.php', compact('stats'));
+    }
+
+    private function render(string $pageTitle, string $view, array $data = []): void
+    {
+        $viewPath = $this->resolveView($view);
+
         extract($data);
 
-        $viewPath = __DIR__ . '/../views/' . $view . '.php';
+        require $this->resolveView('layouts/admin.php');
+    }
 
-        if (!file_exists($viewPath)) {
-            throw new \RuntimeException("Vue introuvable : " . $view);
+    private function resolveView(string $view): string
+    {
+        $path = dirname(__DIR__) . '/views/' . ltrim($view, '/');
+
+        if (!is_file($path)) {
+            throw new \RuntimeException('Vue introuvable : ' . $view);
         }
 
-        require __DIR__ . '/../views/layouts/admin.php';
+        return $path;
     }
 }
