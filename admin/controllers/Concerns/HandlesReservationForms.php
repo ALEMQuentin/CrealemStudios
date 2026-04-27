@@ -11,7 +11,11 @@ trait HandlesReservationForms
             $stmt = $this->pdo->prepare("INSERT INTO reservation_forms (name, type) VALUES (?, ?)");
             $stmt->execute([$_POST['name'], $_POST['type']]);
 
-            header("Location: /admin.php?module=reservation_forms");
+            $formId = (int)$this->pdo->lastInsertId();
+
+            $this->createDefaultFields($formId, $_POST['type']);
+
+            header("Location: /admin.php?module=reservation_forms&action=fields&id=" . $formId);
             exit;
         }
 
