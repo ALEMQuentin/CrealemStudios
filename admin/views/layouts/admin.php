@@ -7,10 +7,12 @@
 <body>
     <header>
         <h1>CrealemStudios</h1>
+
         <nav>
             <a href="/admin.php?module=dashboard">Dashboard</a>
             <a href="/admin.php?module=users">Utilisateurs</a>
             <a href="/admin.php?module=roles">Rôles</a>
+            <a href="/admin.php?module=clients">Clients</a>
         </nav>
     </header>
 
