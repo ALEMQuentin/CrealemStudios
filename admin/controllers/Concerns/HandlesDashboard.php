@@ -21,8 +21,8 @@ trait HandlesDashboard
                 WHERE datetime(pickup_datetime) > datetime('now')
             "),
 
-            'clients' => $this->safeCount('clients'),
-            'drivers' => $this->safeCount('chauffeurs'),
+            'clients' => $this->countQuery("SELECT COUNT(*) FROM clients"),
+            'drivers' => $this->countQuery("SELECT COUNT(*) FROM chauffeurs"),
 
             'revenue_today' => $this->sumQuery("
                 SELECT SUM(price) FROM reservations

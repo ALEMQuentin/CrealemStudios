@@ -142,64 +142,31 @@ class Kernel
                 $this->handleTestimonials($action);
                 return;
 
+            case 'subscriptions':
+                $this->handleSubscriptions($action);
+                return;
+
             case 'clients':
                 $this->handleClients($action);
-                return;
-case 'subscriptions':
-                $this->handleSubscriptions($action);
                 return;
 
             case 'reservation_forms':
                 $this->handleReservationForms($action);
-                break;
-
-            case 'booking':
-            case 'booking_forms':
-                $this->handleBooking($action);
-                break;
+                return;
 
             case 'booking':
                 $this->handleBooking($action);
                 return;
 
-default:
+            default:
                 if (!headers_sent()) {
                     http_response_code(404);
                 }
+
                 echo 'Module introuvable';
                 return;
         }
     }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
     private function render(string $pageTitle, string $viewPath, array $data = []): void
     {
