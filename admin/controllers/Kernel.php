@@ -86,6 +86,67 @@ class Kernel
         $this->module = $module;
         $this->action = $action;
         $this->settings = getSettings($pdo);
+                'text' => trim($_POST['cta_text'] ?? ''),
+                'button_text' => trim($_POST['cta_button_text'] ?? ''),
+                'button_url' => trim($_POST['cta_button_url'] ?? ''),
+            ],
+            'posts-list' => [
+                'title' => trim($_POST['posts_list_title'] ?? ''),
+                'limit' => (int)($_POST['posts_list_limit'] ?? 3),
+            ],
+            default => [],
+        };
+    }
+
+    private function render(string $pageTitle, string $viewPath, array $data = []): void
+    {
+        extract($data);
+        $module = $this->module;
+        $action = $this->action;
+        $config = $this->config;
+        $settings = $this->settings;
+
+        require ADMIN_VIEWS_PATH . '/layouts/admin.php';
+    }
+
+    private function resolveView(array $candidates): string
+    {
+        $base = ADMIN_VIEWS_PATH . '/';
+
+        foreach ($candidates as $candidate) {
+            $path = $base . $candidate;
+            if (file_exists($path)) {
+                return $path;
+            }
+        }
+
+        return $base . 'admin/module-placeholder.php';
+    }
+
+    private function titleFor(string $module): string
+    {
+        return match ($module) {
+            'products' => 'Produits',
+            'forms' => 'Formulaires',
+            'booking' => 'Réservations',
+            'clients' => 'Clients',
+            'testimonials' => 'Avis',
+            'gallery' => 'Galerie',
+            'subscriptions' => 'Abonnements',
+            default => ucfirst($module),
+        };
+    }
+
+    private function tableExists(string $table): bool
+    {
+        $stmt = $this->pdo->prepare("SELECT name FROM sqlite_master WHERE type = 'table' AND name = :name LIMIT 1");
+        $stmt->execute(['name' => $table]);
+
+        return (bool) $stmt->fetch(PDO::FETCH_ASSOC);
+    }
+
+    private function insertRow(string $table, array $data): int
+    {
     }
 
     public function handle(): void
